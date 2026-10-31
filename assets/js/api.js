@@ -211,6 +211,10 @@
         p_note: payload.note || null
       });
     },
+    /* --- contratto di incarico --- */
+    contract: function () { return call("my_contract"); },
+    acceptContract: function () { return call("accept_contract"); },
+
     myWallets: function () { return call("my_wallets"); },
     addWallet: function (payload) {
       return call("add_wallet", {

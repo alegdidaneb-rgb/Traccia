@@ -1896,3 +1896,237 @@ body.is-area .appv2 { min-height: calc(100vh - 62px); }
   gap: 0.75rem;
 }
 .pill--muted { background: var(--line-soft); color: var(--muted); }
+
+/* --------------------------------------------------------------------------
+   §34 · contratto di incarico
+   Il documento deve reggere due letture: quella a schermo, dentro l'area
+   riservata, e quella su carta. Il foglio A4 comanda la misura del testo,
+   quindi le unità sono in pt e il contrasto è pieno.
+   -------------------------------------------------------------------------- */
+#contratto .pnl__head { align-items: baseline; }
+
+.ctr {
+  --ctr-line: #d8d6cf;
+  margin-top: 1.25rem;
+  padding: 2.4rem 2.6rem 2rem;
+  background: #fff;
+  border: 1px solid var(--ctr-line);
+  border-radius: 4px;
+  color: #14140f;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.ctr__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ctr-line);
+}
+
+.ctr__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.ctr__mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+}
+
+.ctr__meta {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.15rem 0.9rem;
+  text-align: right;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.ctr__meta b { color: #14140f; font-weight: 600; }
+.ctr__meta .ctr__num { font-family: var(--mono, ui-monospace, monospace); letter-spacing: 0.01em; }
+
+.ctr__title {
+  margin: 1.6rem 0 1.1rem;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 500;
+}
+
+.ctr__ok {
+  margin: 0 0 1.2rem;
+  padding: 0.55rem 0.8rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-wash);
+  font-size: 0.75rem;
+  color: var(--accent-ink);
+}
+
+.ctr__parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  padding: 1.1rem 0;
+  border-top: 1px solid var(--ctr-line);
+  border-bottom: 1px solid var(--ctr-line);
+  font-size: 0.78125rem;
+}
+.ctr__parties > div { min-width: 0; overflow-wrap: break-word; }
+.ctr__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ctr__mono { font-family: var(--mono, ui-monospace, monospace); font-size: 0.75rem; }
+.ctr__todo { color: #9a6a00; }
+
+.ctr__body h2 {
+  margin: 1.5rem 0 0.5rem;
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.ctr__body p { margin: 0 0 0.6rem; }
+.ctr__body section:first-child h2 { margin-top: 1.4rem; }
+
+.ctr__phases {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.3rem;
+}
+.ctr__phases li { padding-left: 0.15rem; }
+
+.ctr__table {
+  width: 100%;
+  margin: 0.7rem 0 0.9rem;
+  border-collapse: collapse;
+  font-size: 0.78125rem;
+}
+.ctr__table th,
+.ctr__table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--ctr-line);
+  text-align: left;
+  vertical-align: top;
+}
+.ctr__table th {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ctr__table tr:first-child th { border-bottom: 1px solid #b9b7ae; }
+
+.ctr__table--limits th { width: 46%; font-size: 0.75rem; letter-spacing: 0; text-transform: none; color: #14140f; font-weight: 500; }
+.ctr__table--limits td { text-align: right; }
+
+.ctr__sign {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 2.2rem;
+  padding-top: 0.4rem;
+}
+.ctr__line {
+  display: block;
+  height: 1px;
+  background: #14140f;
+  margin-bottom: 0.45rem;
+}
+.ctr__sign p { margin: 0; font-size: 0.71875rem; line-height: 1.5; }
+
+.ctr__foot {
+  margin-top: 1.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--ctr-line);
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+
+/* barra delle azioni: accetta + stampa */
+.ctr-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0 0.25rem;
+}
+.ctr-bar[hidden] { display: none; }
+.ctr-bar__state { margin-left: auto; font-size: 0.6875rem; color: var(--muted); }
+
+@media (max-width: 760px) {
+  .ctr { padding: 1.4rem 1.15rem; font-size: 0.78rem; }
+  .ctr__head { flex-direction: column; gap: 0.75rem; }
+  .ctr__meta { text-align: left; }
+  .ctr__title { font-size: 1.2rem; }
+  .ctr__parties { grid-template-columns: 1fr; }
+  .ctr__sign { grid-template-columns: 1fr; gap: 1.8rem; }
+  .ctr-bar__state { margin-left: 0; width: 100%; }
+}
+
+/* --------------------------------------------------------------- stampa -- */
+@media print {
+  @page { size: A4; margin: 18mm 16mm; }
+
+  body { background: #fff !important; }
+  .site-header, .site-footer, .appv2__bar, .appv2__head, .ctr-bar,
+  nav, .skip-link, .cookie-bar, .scroll-progress, .toast-stack,
+  [data-readonly-note], .staff-bar { display: none !important; }
+
+  /* Si stampa solo il contratto. `#contratto` sta dentro
+     `.appv2__grid > .appv2__col`: nascondere i soli figli di `.appv2__wrap`
+     farebbe sparire anche il contenitore e uscirebbe una pagina bianca.
+     `case.js` marca la colonna con `.is-print-host` prima di stampare. */
+  body.is-printing .appv2__wrap,
+  body.is-printing .appv2__grid { display: block !important; }
+  body.is-printing .appv2__col { display: none !important; }
+  body.is-printing .appv2__col.is-print-host { display: block !important; }
+  body.is-printing .appv2__col.is-print-host > *:not(#contratto) { display: none !important; }
+  body.is-printing #contratto { display: block !important; }
+
+  .appv2__wrap, .container, .section {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #contratto { border: 0 !important; }
+  #contratto .pnl__head, #contratto .pnl__body > p { display: none !important; }
+
+  .ctr {
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    font-size: 9.4pt;
+    line-height: 1.5;
+  }
+  .ctr__body h2 { break-after: avoid; }
+  .ctr__table, .ctr__sign, .ctr__parties { break-inside: avoid; }
+  .ctr__body section { break-inside: auto; }
+  .ctr__mark, .ctr__ok {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
