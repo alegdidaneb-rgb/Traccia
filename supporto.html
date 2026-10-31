@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supporto e segnalazioni — Traccia</title>
+  <meta name="description" content="Cosa fare subito dopo una truffa finanziaria: come bloccarti, quali documenti conservare, dove segnalare in Italia e come riconoscere una seconda truffa di recupero fondi.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it/supporto.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Supporto e segnalazioni — Traccia">
+  <meta property="og:description" content="Cosa fare subito dopo una truffa finanziaria: come bloccarti, quali documenti conservare, dove segnalare in Italia e come riconoscere una seconda truffa di recupero fondi.">
+  <meta property="og:url" content="https://traccia.it/supporto.html">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261031b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261031b">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261031b" defer></script>
+  <script src="assets/js/api.js?v=20261031b" defer></script>
+  <script src="assets/js/session.js?v=20261031b" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Cosa fare subito dopo una truffa finanziaria: come bloccarti, quali documenti conservare, dove segnalare in Italia e come riconoscere una seconda truffa di recupero fondi.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="come-funziona.html">Come funziona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="casi.html">Casi seguiti</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="crypto.html">Truffe cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="chi-siamo.html">Chi siamo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
+        <li><a class="nav-link is-active" data-nav="supporto" href="supporto.html" aria-current="page">Supporto</a></li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
+          <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="app.html">La mia pratica</a>
+            <a class="nav-user__link nav-user__link--admin" href="admin.html" data-auth-admin hidden>Console admin</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+  <main id="main">
+    <section class="page-head page-head--media grain">
+  <div class="page-head--media__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/support-calm-800.webp 800w, assets/img/support-calm-1400.webp 1400w" sizes="100vw">
+      <img src="assets/img/support-calm-1400.jpg" srcset="assets/img/support-calm-800.jpg 800w, assets/img/support-calm-1400.jpg 1400w"
+           sizes="100vw" alt="" width="1400" height="933" loading="lazy" decoding="async">
+    </picture>
+  </div>
+  <div class="container">
+    <div class="page-head__inner">
+      <div>
+        <span class="eyebrow">Supporto</span>
+        <h1 class="h1 balance" style="margin-top:.75rem">Prima le cose urgenti, poi il resto.</h1>
+        <p class="lead mt-3" style="max-width:60ch">Se hai appena subito una truffa, l'ordine delle azioni conta più della
+      velocità con cui ci scrivi. Qui c'è cosa fare nelle prime ore, cosa
+      conservare e dove segnalare.</p>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COSA FARE SUBITO ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mx-auto" style="max-width:620px" data-reveal="up">
+      <span class="eyebrow">Adesso</span>
+      <h2 class="h2 balance mt-2">Le prime sei cose da fare.</h2>
+      <p class="lead mt-2">Nell'ordine in cui vanno fatte.</p>
+    </div>
+
+    <div class="checklist mt-5" data-reveal-group="urgenti">
+      <div class="checklist__item reveal">
+        <span class="checklist__n">1</span>
+        <div>
+          <h3 class="h3">Ferma i pagamenti, non chiudere il conto</h3>
+          <p class="small muted mt-1">
+            Revoca gli addebiti ricorrenti e le deleghe. Contatta la tua banca
+            per far bloccare ulteriori bonifici verso quell'IBAN, ma
+            <strong>non chiudere il conto</strong>: l'estratto conto è la prova
+            principale, e serve alla denuncia.
+          </p>
+        </div>
+      </div>
+
+      <div class="checklist__item reveal">
+        <span class="checklist__n">2</span>
+        <div>
+          <h3 class="h3">Se hai dato accesso al wallet, mettilo al sicuro</h3>
+          <p class="small muted mt-1">
+            Se hai condiviso una seed phrase o firmato una transazione di
+            approvazione, il wallet va considerato compromesso: creane uno
+            nuovo e sposta i token rimasti. Non è recuperabile quello che è già
+            uscito, ma si evita il resto.
+          </p>
+        </div>
+      </div>
+
+      <div class="checklist__item reveal">
+        <span class="checklist__n">3</span>
+        <div>
+          <h3 class="h3">Conserva tutto, adesso</h3>
+          <p class="small muted mt-1">
+            Screenshot delle schermate, email, chat, profili social, ricevute
+            dei bonifici, hash delle transazioni. Salvali anche in un posto
+            diverso dal tuo computer: le piattaforme chiudono i siti e
+            cancellano i canali nel giro di poche settimane.
+          </p>
+        </div>
+      </div>
+
+      <div class="checklist__item reveal">
+        <span class="checklist__n">4</span>
+        <div>
+          <h3 class="h3">Denuncia</h3>
+          <p class="small muted mt-1">
+            Puoi presentare denuncia a qualsiasi stazione dei Carabinieri o
+            commissariato, oppure online alla Polizia di Stato. Per le truffe
+            telematiche la competenza più frequente è della Polizia Postale.
+            Serve la documentazione raccolta al punto 3.
+          </p>
+        </div>
+      </div>
+
+      <div class="checklist__item reveal">
+        <span class="checklist__n">5</span>
+        <div>
+          <h3 class="h3">Chiedi la conservazione dei dati</h3>
+          <p class="small muted mt-1">
+            Scrivi alla banca e all'exchange coinvolti chiedendo la
+            conservazione dei dati relativi alle operazioni e ai destinatari.
+            I dati di traffico e le informazioni sulle controparti hanno tempi
+            di conservazione limitati: ogni giorno conta.
+          </p>
+        </div>
+      </div>
+
+      <div class="checklist__item reveal">
+        <span class="checklist__n">6</span>
+        <div>
+          <h3 class="h3">Segnala alle autorità di vigilanza</h3>
+          <p class="small muted mt-1">
+            Alla CONSOB se la piattaforma offre servizi di investimento senza
+            autorizzazione, all'AGCM per le pratiche commerciali scorrette,
+            all'OCLAFP per le comunicazioni sospette. Sono segnalazioni diverse
+            dalla denuncia e servono a fermare la piattaforma, non a farti
+            recuperare i soldi.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SECONDA TRUFFA ============================ -->
+<section class="section" id="mai-pagare" style="background:var(--warn-wash);border-top:1px solid rgba(163,102,11,.18);border-bottom:1px solid rgba(163,102,11,.18)">
+  <div class="container">
+    <div class="split">
+      <div class="reveal reveal--left">
+        <span class="eyebrow" style="color:var(--warn)">Seconda truffa</span>
+        <h2 class="h2 balance mt-2">«Per sbloccare i fondi serve un pagamento»: no.</h2>
+        <p class="lead mt-3">
+          È lo schema più diffuso e colpisce chi è già stato truffato una volta
+          — anche a distanza di mesi. Funziona perché arriva quando sei
+          disposto a tutto pur di recuperare.
+        </p>
+        <p class="small mt-2" style="color:var(--ink-soft)">
+          Vale anche per noi: il nostro contributo è il prezzo di un'analisi
+          tecnica, si paga una volta sola, e non dipende dall'esito.
+          <strong>Non abbiamo una «tassa di sblocco» e non abbiamo mai chiesto
+          un anticipo in criptovaluta.</strong>
+        </p>
+      </div>
+
+      <div class="reveal reveal--right">
+        <div class="card">
+          <h3 class="h3">Le richieste che sono sempre una truffa</h3>
+          <ul class="limits mt-3" style="gap:1rem">
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Imposta anticipata</strong> da versare per «liberare» il capitale</span>
+            </li>
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Pagamento in criptovaluta</strong> verso un wallet personale</span>
+            </li>
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Accesso da remoto</strong> al tuo computer con software di controllo</span>
+            </li>
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Codici OTP</strong>, PIN o credenziali del conto</span>
+            </li>
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Seed phrase</strong> del wallet, «per verificare la proprietà»</span>
+            </li>
+            <li class="limits__item">
+              <span class="limits__x" aria-hidden="true">✕</span>
+              <span class="small"><strong>Contatti mai cercati</strong> che ti chiamano offrendo un recupero</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DOCUMENTI ============================ -->
+<section class="section" id="documenti">
+  <div class="container">
+    <div class="split split--reverse">
+      <div class="split__visual reveal reveal--right">
+        <div class="card card--soft">
+          <h3 class="h3">Il principio</h3>
+          <p class="small muted mt-2">
+            Tutto quello che è già successo lascia una traccia da qualche parte:
+            nella tua banca, nel tuo telefono, nei registri pubblici delle
+            blockchain. Il lavoro è mettere insieme i pezzi prima che scadano.
+          </p>
+          <p class="small muted mt-2">
+            Per questo la raccolta va fatta subito, anche se poi decidi di non
+            procedere con nessuno.
+          </p>
+        </div>
+      </div>
+
+      <div class="reveal reveal--left">
+        <span class="eyebrow">Documenti</span>
+        <h2 class="h2 balance mt-2">Cosa conservare, e perché.</h2>
+        <div class="table-scroll mt-4">
+          <table class="data-table">
+            <thead>
+              <tr><th>Documento</th><th>A cosa serve</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Estratti conto con le operazioni</td><td>Prova l'uscita del denaro, con data e importo.</td></tr>
+              <tr><td>Ricevute dei bonifici</td><td>Identificano IBAN e intestatario del destinatario.</td></tr>
+              <tr><td>Screenshot della piattaforma</td><td>Mostrano il saldo «finto» e le richieste di versamento.</td></tr>
+              <tr><td>Email e chat</td><td>Ricostruiscono chi ti ha contattato, come e quando.</td></tr>
+              <tr><td>Hash delle transazioni cripto</td><td>Rendono il percorso verificabile da chiunque.</td></tr>
+              <tr><td>Dati del profilo social o del sito</td><td>Indirizzi web, nomi, recapiti usati dai truffatori.</td></tr>
+              <tr><td>Denuncia presentata</td><td>Serve per ogni richiesta successiva a banche e autorità.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DOVE SEGNALARE ============================ -->
+<section class="section section--soft" id="segnalare">
+  <div class="container">
+    <div class="text-center mx-auto" style="max-width:620px" data-reveal="up">
+      <span class="eyebrow">Segnalazioni</span>
+      <h2 class="h2 balance mt-2">A chi rivolgersi in Italia.</h2>
+      <p class="lead mt-2">
+        Sono canali pubblici e gratuiti. Nessuno di questi recupera i tuoi
+        soldi: servono a fermare la truffa e a costruire la prova.
+      </p>
+    </div>
+
+    <div class="grid grid--2 mt-5" data-reveal-group="canali">
+      <article class="card reveal">
+        <h3 class="h3">Polizia Postale</h3>
+        <p class="small muted mt-1">
+          Per le truffe telematiche e le frodi online. Puoi presentare la
+          denuncia presso un ufficio o tramite il commissariato online.
+        </p>
+      </article>
+      <article class="card reveal">
+        <h3 class="h3">Carabinieri o Polizia di Stato</h3>
+        <p class="small muted mt-1">
+          Qualsiasi stazione o commissariato è competente a ricevere una
+          denuncia. Chiedi copia con il numero di protocollo.
+        </p>
+      </article>
+      <article class="card reveal">
+        <h3 class="h3">CONSOB</h3>
+        <p class="small muted mt-1">
+          Per segnalare soggetti che offrono servizi di investimento senza
+          autorizzazione. Tiene un sito di avvisi sulle piattaforme abusive:
+          vale la pena controllarlo prima di investire.
+        </p>
+      </article>
+      <article class="card reveal">
+        <h3 class="h3">Banca d'Italia</h3>
+        <p class="small muted mt-1">
+          Per segnalare comportamenti irregolari di intermediari autorizzati e
+          per le questioni relative a conti e pagamenti.
+        </p>
+      </article>
+      <article class="card reveal">
+        <h3 class="h3">AGCM</h3>
+        <p class="small muted mt-1">
+          Per le pratiche commerciali scorrette e la pubblicità ingannevole
+          delle piattaforme.
+        </p>
+      </article>
+      <article class="card reveal">
+        <h3 class="h3">OCLAFP — Banca d'Italia</h3>
+        <p class="small muted mt-1">
+          Riceve le segnalazioni di operazioni sospette. Ci si arriva
+          normalmente tramite un intermediario, ma è utile sapere che esiste.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTATTI ============================ -->
+<section class="section" id="contatti">
+  <div class="container">
+    <div class="split">
+      <div class="reveal reveal--left">
+        <span class="eyebrow">Contatti</span>
+        <h2 class="h2 balance mt-2">Scrivici.</h2>
+        <p class="lead mt-2">
+          Rispondiamo entro 48 ore lavorative. Il primo colloquio è gratuito e
+          non comporta alcun impegno.
+        </p>
+
+        <div class="contact-list mt-4">
+          <div class="contact-list__item">
+            <span class="contact-list__label">Email</span>
+            <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>
+          </div>
+          <div class="contact-list__item">
+            <span class="contact-list__label">Telefono</span>
+            <a href="tel:+3901100000000">+39 011 0000 0000</a>
+            <p class="xs muted mt-1">Lun–Ven 9:00–18:00. Non chiamiamo mai noi per primi.</p>
+          </div>
+          <div class="contact-list__item">
+            <span class="contact-list__label">PEC</span>
+            <a href="mailto:traccia@pec.it">traccia@pec.it</a>
+          </div>
+        </div>
+
+        <p class="disclaimer mt-4">
+          <strong>Non chiediamo mai</strong> chiavi private, seed phrase,
+          credenziali bancarie o accesso remoto al tuo dispositivo. Se ricevi
+          una richiesta di questo tipo a nostro nome, inoltraci l'email e non
+          rispondere.
+        </p>
+      </div>
+
+      <div class="reveal reveal--right">
+        <form class="form card" data-demo-form>
+          <h3 class="h3">Modulo di contatto</h3>
+          <p class="xs muted mt-1">
+            Per aprire una pratica vera serve la segnalazione in area riservata,
+            dove puoi caricare i documenti.
+          </p>
+
+          <div class="form-row mt-3">
+            <div class="field">
+              <label for="nome">Nome e cognome</label>
+              <input id="nome" name="nome" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field mt-3">
+            <label for="argomento">Tipo di situazione</label>
+            <select id="argomento" name="argomento">
+              <option>Finto broker o piattaforma di trading</option>
+              <option>Truffa con criptovalute</option>
+              <option>Mi hanno chiesto soldi per sbloccare il prelievo</option>
+              <option>Sono stato contattato da un finto recupero fondi</option>
+              <option>Altro</option>
+            </select>
+          </div>
+
+          <div class="field mt-3">
+            <label for="messaggio">Cosa è successo</label>
+            <textarea id="messaggio" name="messaggio" rows="5" required></textarea>
+            <p class="field__hint">Non inserire codici, password o chiavi private.</p>
+          </div>
+
+          <div class="field field--check mt-3">
+            <input id="privacy" name="privacy" type="checkbox" required>
+            <label for="privacy">
+              Ho letto la <a href="privacy.html">privacy policy</a> e acconsento
+              al trattamento dei dati per essere ricontattato.
+            </label>
+          </div>
+
+          <button class="btn btn--accent btn--block mt-4" type="submit">Invia il messaggio</button>
+          <p class="form__note xs muted mt-2">
+            Questo modulo è dimostrativo e non invia dati a un server.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="section section--soft" id="faq">
+  <div class="container container--narrow">
+    <div class="text-center" data-reveal="up">
+      <span class="eyebrow">Domande</span>
+      <h2 class="h2 balance mt-2">Domande frequenti.</h2>
+    </div>
+
+    <div class="faq mt-5" data-reveal-group="faq">
+      <details class="faq__item reveal">
+        <summary><span>Ho perso tutto, non posso permettermi nemmeno l'analisi</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            La valutazione iniziale è gratuita e la prima cosa da fare è la
+            denuncia, che non costa nulla. Se il caso non ha sbocco, non ti
+            chiediamo il contributo. Se ce l'ha e ci sono difficoltà economiche,
+            scrivicelo: valutiamo caso per caso se procedere e come.
+          </p>
+        </div>
+      </details>
+      <details class="faq__item reveal">
+        <summary><span>Ho pagato con carta: posso fare chargeback?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Puoi chiederlo alla tua banca o all'emittente della carta, e in
+            alcuni casi ci sono termini molto stretti (spesso 120 giorni
+            dall'operazione). Non è garantito: dipende dal tipo di pagamento e
+            dalle condizioni del circuito. È comunque una delle prime cose da
+            tentare, e va fatta subito.
+          </p>
+        </div>
+      </details>
+      <details class="faq__item reveal">
+        <summary><span>Quanto tempo ho per agire?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Non esiste un termine unico, ma tre scadenze contano: i termini del
+            chargeback (mesi), la conservazione dei dati da parte degli
+            intermediari (mesi), e i termini di prescrizione delle azioni civili
+            (anni). Le prime due sono quelle che si esauriscono prima.
+          </p>
+        </div>
+      </details>
+      <details class="faq__item reveal">
+        <summary><span>Devo dirlo a qualcuno in famiglia?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            La vergogna è la leva principale di chi truffa, e la ragione per
+            cui molte truffe non vengono denunciate. Parlarne aiuta: riduce il
+            rischio che la seconda truffa funzioni, che è quello che succede
+            più spesso.
+          </p>
+        </div>
+      </details>
+      <details class="faq__item reveal">
+        <summary><span>Posso segnalarvi una piattaforma senza aprire una pratica?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Sì, scrivendo a <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+            Le segnalazioni ci aiutano a riconoscere gli schemi ricorrenti. Non
+            possiamo però dare pareri legali a chi non è nostro cliente.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Analisi forense delle truffe finanziarie online. Ricostruiamo il percorso dei tuoi soldi quando una
+          piattaforma di investimento non ti restituisce più il capitale.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servizio</h4>
+        <ul>
+          <li><a href="come-funziona.html">Come funziona</a></li>
+          <li><a href="come-funziona.html#fasi">Le cinque fasi</a></li>
+          <li><a href="casi.html">Casi seguiti</a></li>
+          <li><a href="crypto.html">Truffe cripto</a></li>
+          <li><a href="chi-siamo.html">Chi siamo</a></li>
+          <li><a href="onorari.html">Onorari</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Cosa non facciamo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Prima di iniziare</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Ti chiedono altri soldi?</a></li>
+          <li><a href="supporto.html#segnalare">Dove segnalare</a></li>
+          <li><a href="supporto.html#documenti">Documenti da conservare</a></li>
+          <li><a href="supporto.html#faq">Domande frequenti</a></li>
+          <li><a href="login.html">La mia pratica</a></li>
+          <li><a href="supporto.html#contatti">Contatti</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="termini.html">Termini e condizioni</a></li>
+          <li><a href="cookie.html">Cookie policy</a></li>
+          <li><a href="note-legali.html">Note legali</a></li>
+          <li><a href="privacy.html#reclami">Reclami</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Avvertenza necessaria.</strong> Traccia svolge attività di
+        analisi tecnica e documentale e di assistenza nella ricostruzione dei
+        flussi finanziari. <strong>Non siamo un avvocato, uno studio legale, un
+        istituto di credito, una società di recupero crediti autorizzata ex
+        art. 115 TULPS né un intermediario finanziario.</strong> Non possiamo
+        garantire il recupero delle somme: l'esito dipende da fattori che non
+        controlliamo, come la tracciabilità dei fondi, la collaborazione degli
+        istituti coinvolti e i tempi della giustizia. Nessun operatore può
+        promettere un rimborso garantito: se qualcuno lo fa, è una truffa nella
+        truffa.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+        «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+        software di accesso remoto o di comunicare codici OTP e chiavi private.
+        Ogni richiesta di questo tipo va segnalata subito a
+        <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
+          Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
+          Iscrizione Albo delle Banche n. 5573 ·
+          Iscritta nei registri e vigilata da Banca d'Italia e CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Tutti i diritti riservati.
+          P.IVA 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Note legali</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="cookie.html">Cookie</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/main.js?v=20261031b" defer></script>
+  <script src="assets/js/market.js?v=20261031b" defer></script>
+  <script src="assets/js/premium.js?v=20261031b" defer></script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Casi seguiti — Traccia</title>
+  <meta name="description" content="Casi reali trattati dal nostro ufficio analisi, con esiti diversi: fondi tracciati, recuperi parziali e pratiche chiuse senza esito. Pubblichiamo anche quelle.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it/casi.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Casi seguiti — Traccia">
+  <meta property="og:description" content="Casi reali trattati dal nostro ufficio analisi, con esiti diversi: fondi tracciati, recuperi parziali e pratiche chiuse senza esito. Pubblichiamo anche quelle.">
+  <meta property="og:url" content="https://traccia.it/casi.html">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261031b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261031b">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261031b" defer></script>
+  <script src="assets/js/api.js?v=20261031b" defer></script>
+  <script src="assets/js/session.js?v=20261031b" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Casi reali trattati dal nostro ufficio analisi, con esiti diversi: fondi tracciati, recuperi parziali e pratiche chiuse senza esito. Pubblichiamo anche quelle.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="come-funziona.html">Come funziona</a></li>
+        <li><a class="nav-link is-active" data-nav="casi" href="casi.html" aria-current="page">Casi seguiti</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="crypto.html">Truffe cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="chi-siamo.html">Chi siamo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
+          <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="app.html">La mia pratica</a>
+            <a class="nav-user__link nav-user__link--admin" href="admin.html" data-auth-admin hidden>Console admin</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+  <main id="main">
+    <section class="page-head page-head--media grain">
+  <div class="page-head--media__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/network-nodes-800.webp 800w, assets/img/network-nodes-1400.webp 1400w" sizes="100vw">
+      <img src="assets/img/network-nodes-1400.jpg" srcset="assets/img/network-nodes-800.jpg 800w, assets/img/network-nodes-1400.jpg 1400w"
+           sizes="100vw" alt="" width="1400" height="788" loading="lazy" decoding="async">
+    </picture>
+  </div>
+  <div class="container">
+    <div class="page-head__inner">
+      <div>
+        <span class="eyebrow">Casi</span>
+        <h1 class="h1 balance" style="margin-top:.75rem">Anche i casi che sono finiti male.</h1>
+        <p class="lead mt-3" style="max-width:60ch">Un sito di recupero fondi che pubblica solo successi sta facendo
+      marketing, non statistica. Qui ci sono i tre esiti possibili: tracciato,
+      parziale, chiuso senza esito.</p>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="metric-band-wrap">
+  <div class="container">
+    <div class="metric-band">
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="38.4" data-decimals="1" data-suffix=" Mln €">38,4 Mln €</span></span>
+        <span class="metric-band__label">somme di cui abbiamo ricostruito il percorso</span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="9.7" data-decimals="1" data-suffix=" Mln €">9,7 Mln €</span></span>
+        <span class="metric-band__label">somme rientrate ai segnalanti</span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="612">612</span></span>
+        <span class="metric-band__label">perizie tecniche consegnate</span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="31" data-suffix=" %">31 %</span></span>
+        <span class="metric-band__label">pratiche chiuse senza costi, in fase 2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="stat-strip">
+      <div class="stat-card">
+        <span class="stat-card__label">Casi analizzati</span>
+        <span class="stat-card__value"><span data-count="1840">0</span></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Pratiche accettate</span>
+        <span class="stat-card__value"><span data-count="462">0</span></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Chiuse in fase 2, senza costi</span>
+        <span class="stat-card__value"><span data-count="31" data-suffix=" %">0</span></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Perizie consegnate</span>
+        <span class="stat-card__value"><span data-count="612">0</span></span>
+      </div>
+    </div>
+    <p class="xs muted mt-3" style="max-width:74ch">
+      Il 31 % delle pratiche si chiude nella fase di ricostruzione perché non
+      resta nulla su cui agire: in quei casi non chiediamo il contributo. È il
+      dato che ci interessa di più, perché è quello che nessuno pubblica.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ SINTESI ESITI ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Sintesi</span>
+        <h2 class="h2 balance mt-2">Quattro casi, quattro esiti diversi.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        La colonna che conta è l'ultima: cosa è successo davvero. Nessuno di
+        questi casi si è chiuso con una promessa.
+      </p>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rif.</th><th>Schema</th><th class="num">Importo</th>
+            <th>Tracciabilità</th><th class="num">Rientrato</th><th>Esito</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">T-2418</td>
+            <td>Finto broker di CFD</td>
+            <td class="num">38.400 €</td>
+            <td><span class="pill pill--active">2 punti di aggancio</span></td>
+            <td class="num">—</td>
+            <td>Azione civile in corso</td>
+          </tr>
+          <tr>
+            <td class="mono">T-1972</td>
+            <td>Trading sociale</td>
+            <td class="num">12.400 €</td>
+            <td><span class="pill pill--pending">1 conto ancora acceso</span></td>
+            <td class="num"><strong>4.100 €</strong></td>
+            <td>Recupero parziale, chiuso</td>
+          </tr>
+          <tr>
+            <td class="mono">T-2301</td>
+            <td>Falsa piattaforma di staking</td>
+            <td class="num">22.000 €</td>
+            <td><span class="pill pill--active">2 indirizzi attivi</span></td>
+            <td class="num">—</td>
+            <td>Congelamento richiesto</td>
+          </tr>
+          <tr>
+            <td class="mono">T-2033</td>
+            <td>Finto recupero fondi</td>
+            <td class="num">6.900 €</td>
+            <td><span class="pill pill--denied">Nessuna traccia</span></td>
+            <td class="num">0 €</td>
+            <td>Chiuso in fase 2, 0 € di onorari</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="xs muted mt-3">
+      Il trattino indica che al momento della pubblicazione nessuna somma è
+      ancora rientrata: la pratica è aperta. Non pubblichiamo previsioni.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ CASI ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="text-center mx-auto mb-4" style="max-width:620px" data-reveal="up">
+      <span class="eyebrow">In dettaglio</span>
+      <h2 class="h2 balance mt-2">Come si è arrivati all'esito.</h2>
+    </div>
+    <div class="cases" data-reveal-group="casi">
+
+      <article class="case reveal">
+        <header class="case__head">
+          <span class="pill pill--active">Tracciato</span>
+          <span class="case__ref">T-2418 · 2026</span>
+        </header>
+        <h2 class="h3">Finto broker di CFD, 38.400 €</h2>
+        <dl class="case__facts">
+          <div><dt>Come è iniziata</dt><dd>Annuncio sponsorizzato su un social, poi contatto su WhatsApp con una «consulente» che mostrava rendimenti costanti del 3 % al mese.</dd></div>
+          <div><dt>Meccanismo</dt><dd>Quattro bonifici verso due IBAN di società estere, convertiti in USDT su un exchange intermediario.</dd></div>
+          <div><dt>Esito dell'analisi</dt><dd>Due punti di aggancio: un exchange con identificazione completa dei clienti e un conto acceso presso un istituto UE.</dd></div>
+          <div><dt>Dove siamo arrivati</dt><dd>Perizia in 9 giorni, richiesta di conservazione dati, pratica passata a un legale per l'azione civile. Il giudizio è ancora in corso.</dd></div>
+        </dl>
+      </article>
+
+      <article class="case reveal">
+        <header class="case__head">
+          <span class="pill pill--pending">Parziale</span>
+          <span class="case__ref">T-1972 · 2025</span>
+        </header>
+        <h2 class="h3">Trading sociale, 12.400 € — rientrati circa 4.100 €</h2>
+        <dl class="case__facts">
+          <div><dt>Come è iniziata</dt><dd>Gruppo Telegram «segnale» con screenshot di guadagni e un finto conto demo che sembrava reale.</dd></div>
+          <div><dt>Meccanismo</dt><dd>Bonifici verso un conto italiano acceso da una società di comodo, poi prelievi in contanti allo sportello.</dd></div>
+          <div><dt>Esito dell'analisi</dt><dd>Una parte del denaro era ancora sul conto al momento della segnalazione: bloccata su richiesta dell'istituto, rientrata dopo la procedura.</dd></div>
+          <div><dt>Dove siamo arrivati</dt><dd>Circa un terzo recuperato. Il resto era già stato prelevato in contanti e non è più tracciabile. Abbiamo chiuso la pratica dicendo che non c'era altro da fare.</dd></div>
+        </dl>
+      </article>
+
+      <article class="case reveal">
+        <header class="case__head">
+          <span class="pill pill--denied">Nessuna traccia</span>
+          <span class="case__ref">T-2033 · 2025</span>
+        </header>
+        <h2 class="h3">Finto servizio di recupero, 6.900 €</h2>
+        <dl class="case__facts">
+          <div><dt>Come è iniziata</dt><dd>Il cliente aveva già perso denaro su una piattaforma falsa. Poi è stato ricontattato da un «recupero crediti» che gli chiedeva 1.200 € di anticipo per liberare i fondi.</dd></div>
+          <div><dt>Meccanismo</dt><dd>Pagamento in cripto verso un wallet personale, spostato immediatamente attraverso un servizio di mixing.</dd></div>
+          <div><dt>Esito dell'analisi</dt><dd>Nessun punto di aggancio. I fondi sono usciti dal perimetro tracciabile prima che il caso arrivasse a noi.</dd></div>
+          <div><dt>Dove siamo arrivati</dt><dd>Pratica chiusa in fase 2 senza chiedere il contributo. Abbiamo fornito al cliente la documentazione per la denuncia e i contatti per la segnalazione.</dd></div>
+        </dl>
+      </article>
+
+      <article class="case reveal">
+        <header class="case__head">
+          <span class="pill pill--active">Tracciato</span>
+          <span class="case__ref">T-2301 · 2025</span>
+        </header>
+        <h2 class="h3">Falsa piattaforma di staking, 22.000 €</h2>
+        <dl class="case__facts">
+          <div><dt>Come è iniziata</dt><dd>Una piattaforma con dominio registrato tre mesi prima, che prometteva il 18 % annuo su stablecoin e mostrava un team inventato.</dd></div>
+          <div><dt>Meccanismo</dt><dd>Depositi in ETH e USDT verso indirizzi generati per singolo cliente, poi consolidati in tre wallet di raggruppamento.</dd></div>
+          <div><dt>Esito dell'analisi</dt><dd>I wallet di raggruppamento risultavano collegati a un exchange con obblighi identificativi. Due indirizzi ancora attivi al momento dell'analisi.</dd></div>
+          <div><dt>Dove siamo arrivati</dt><dd>Perizia consegnata, segnalazione all'OCLAFP e alla Polizia Postale, richiesta di congelamento inoltrata tramite il legale. Esito pendente.</dd></div>
+        </dl>
+      </article>
+
+    </div>
+
+    <p class="disclaimer mt-5">
+      <strong>Nota sui dati.</strong> I casi sono pubblicati in forma anonima,
+      con importi arrotondati e riferimenti interni. Non pubblichiamo nomi di
+      persone, società o istituti coinvolti, né dettagli che possano
+      identificarli. «Tracciato» significa che esistono soggetti identificabili
+      su cui agire: non significa che il denaro sia stato recuperato.
+    </p>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div class="cta-band__inner">
+        <div>
+          <span class="eyebrow">Se ti riconosci</span>
+          <h2 class="h2 balance mt-2">Il tuo caso può finire in tutte e tre le colonne.</h2>
+          <p class="lead mt-2" style="max-width:50ch">
+            L'unica cosa che possiamo garantirti è che la valutazione iniziale è
+            gratuita e che, se non c'è nulla da fare, te lo diremo senza
+            chiederti denaro.
+          </p>
+        </div>
+        <div class="cta-band__actions">
+          <a class="btn btn--accent btn--lg" href="login.html#registrati">Racconta il tuo caso</a>
+          <a class="btn btn--ghost btn--lg" href="come-funziona.html">Come lavoriamo</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Analisi forense delle truffe finanziarie online. Ricostruiamo il percorso dei tuoi soldi quando una
+          piattaforma di investimento non ti restituisce più il capitale.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servizio</h4>
+        <ul>
+          <li><a href="come-funziona.html">Come funziona</a></li>
+          <li><a href="come-funziona.html#fasi">Le cinque fasi</a></li>
+          <li><a href="casi.html">Casi seguiti</a></li>
+          <li><a href="crypto.html">Truffe cripto</a></li>
+          <li><a href="chi-siamo.html">Chi siamo</a></li>
+          <li><a href="onorari.html">Onorari</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Cosa non facciamo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Prima di iniziare</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Ti chiedono altri soldi?</a></li>
+          <li><a href="supporto.html#segnalare">Dove segnalare</a></li>
+          <li><a href="supporto.html#documenti">Documenti da conservare</a></li>
+          <li><a href="supporto.html#faq">Domande frequenti</a></li>
+          <li><a href="login.html">La mia pratica</a></li>
+          <li><a href="supporto.html#contatti">Contatti</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="termini.html">Termini e condizioni</a></li>
+          <li><a href="cookie.html">Cookie policy</a></li>
+          <li><a href="note-legali.html">Note legali</a></li>
+          <li><a href="privacy.html#reclami">Reclami</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Avvertenza necessaria.</strong> Traccia svolge attività di
+        analisi tecnica e documentale e di assistenza nella ricostruzione dei
+        flussi finanziari. <strong>Non siamo un avvocato, uno studio legale, un
+        istituto di credito, una società di recupero crediti autorizzata ex
+        art. 115 TULPS né un intermediario finanziario.</strong> Non possiamo
+        garantire il recupero delle somme: l'esito dipende da fattori che non
+        controlliamo, come la tracciabilità dei fondi, la collaborazione degli
+        istituti coinvolti e i tempi della giustizia. Nessun operatore può
+        promettere un rimborso garantito: se qualcuno lo fa, è una truffa nella
+        truffa.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+        «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+        software di accesso remoto o di comunicare codici OTP e chiavi private.
+        Ogni richiesta di questo tipo va segnalata subito a
+        <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
+          Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
+          Iscrizione Albo delle Banche n. 5573 ·
+          Iscritta nei registri e vigilata da Banca d'Italia e CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Tutti i diritti riservati.
+          P.IVA 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Note legali</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="cookie.html">Cookie</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/main.js?v=20261031b" defer></script>
+  <script src="assets/js/market.js?v=20261031b" defer></script>
+  <script src="assets/js/premium.js?v=20261031b" defer></script>
+</body>
+</html>

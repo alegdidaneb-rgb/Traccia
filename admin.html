@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Console analisti — Traccia</title>
+  <meta name="description" content="Approvazione di account e operazioni, gestione ruoli e audit log.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://traccia.it/admin.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Console analisti — Traccia">
+  <meta property="og:description" content="Approvazione di account e operazioni, gestione ruoli e audit log.">
+  <meta property="og:url" content="https://traccia.it/admin.html">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261031b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261031b">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261031b" defer></script>
+  <script src="assets/js/api.js?v=20261031b" defer></script>
+  <script src="assets/js/session.js?v=20261031b" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Approvazione di account e operazioni, gestione ruoli e audit log.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="is-admin">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="come-funziona.html">Come funziona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="casi.html">Casi seguiti</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="crypto.html">Truffe cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="chi-siamo.html">Chi siamo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
+          <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="app.html">La mia pratica</a>
+            <a class="nav-user__link nav-user__link--admin" href="admin.html" data-auth-admin hidden>Console admin</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+  <main id="main">
+<div class="app-shell">
+  <aside class="app-side">
+    <span class="app-side__label">Amministrazione</span>
+    <a href="#richieste" class="is-active" data-tab="richieste">
+      Richieste account <span class="chip__count" data-count-accounts></span>
+    </a>
+    <a href="#operazioni" data-tab="operazioni">
+      Richieste <span class="chip__count" data-count-operations></span>
+    </a>
+    <a href="#clienti" data-tab="clienti">Tutte le pratiche</a>
+    <a href="#wallet" data-tab="wallet">
+      Indirizzi da verificare <span class="chip__count" data-count-wallets></span>
+    </a>
+    <a href="#verifiche" data-tab="verifiche">Verifiche</a>
+    <a href="#audit" data-tab="audit">Registro attività</a>
+    <div class="app-side__foot">
+      <div class="user-mini">
+        <span class="user-mini__avatar" data-user-initials>—</span>
+        <div>
+          <strong data-user-name>Caricamento…</strong>
+          <span data-user-role>&nbsp;</span>
+        </div>
+      </div>
+      <a href="app.html">La mia pratica</a>
+      <a href="#" data-logout>Esci</a>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <div class="app-head">
+      <div>
+        <h1>Console analisti</h1>
+        <p class="small muted mt-1" data-admin-scope>&nbsp;</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--ghost btn--sm" data-refresh type="button">Aggiorna</button>
+      </div>
+    </div>
+
+    <div class="summary-grid summary-grid--5" id="overview">
+      <div class="summary-card summary-card--alert">
+        <div class="summary-card__value" data-kpi-accounts>—</div>
+        <div class="summary-card__label">Segnalazioni da prendere in carico</div>
+      </div>
+      <div class="summary-card summary-card--alert">
+        <div class="summary-card__value" data-kpi-operations>—</div>
+        <div class="summary-card__label">Richieste in attesa</div>
+      </div>
+      <div class="summary-card summary-card--alert">
+        <div class="summary-card__value" data-kpi-wallets>—</div>
+        <div class="summary-card__label">Indirizzi da verificare</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__value" data-kpi-active>—</div>
+        <div class="summary-card__label">Pratiche attive</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__value" data-kpi-balance>—</div>
+        <div class="summary-card__label">Importo complessivo segnalato</div>
+      </div>
+    </div>
+
+    <!-- pending accounts -->
+    <section class="panel mt-3" id="richieste">
+      <div class="panel__head">
+        <h2>Nuove segnalazioni in attesa</h2>
+        <div class="btn-row" style="margin-inline-start:auto">
+          <button class="btn btn--accent btn--sm" data-new-account type="button">
+            + Nuova pratica
+          </button>
+        </div>
+        <div class="filters" data-account-filters>
+          <button class="chip is-active" data-filter="pending" type="button">In attesa</button>
+          <button class="chip" data-filter="active" type="button">Attivi</button>
+          <button class="chip" data-filter="denied" type="button">Rifiutati</button>
+          <button class="chip" data-filter="suspended" type="button">Sospesi</button>
+          <button class="chip" data-filter="" type="button">Tutti</button>
+        </div>
+      </div>
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="accounts-table">
+          <thead>
+            <tr>
+              <th>Segnalante</th><th>Ricevuta</th><th>Verifica</th><th class="num">Importo segnalato</th>
+              <th class="num">Richieste</th><th>Stato</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="8" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- operations -->
+    <section class="panel mt-3" id="operazioni">
+      <div class="panel__head">
+        <h2>Richieste in coda</h2>
+        <div class="filters" data-op-filters>
+          <button class="chip is-active" data-filter="pending" type="button">In attesa</button>
+          <button class="chip" data-filter="approved" type="button">Approvate</button>
+          <button class="chip" data-filter="denied" type="button">Rifiutate</button>
+          <button class="chip" data-filter="" type="button">Tutte</button>
+        </div>
+      </div>
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="operations-table">
+          <thead>
+            <tr>
+              <th>Data</th><th>Segnalante</th><th>Tipo</th><th>Strumento</th>
+              <th class="num">Importo</th><th class="num">Eseguito</th>
+              <th>Stato</th><th>Nota</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="9" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- all accounts -->
+    <section class="panel mt-3" id="clienti">
+      <div class="panel__head">
+        <h2>Tutte le pratiche</h2>
+        <span class="xs muted">Il ruolo può essere modificato solo dall'account master.</span>
+      </div>
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="all-accounts-table">
+          <thead>
+            <tr>
+              <th>Segnalante</th><th>Email</th><th>IBAN</th><th>Ruolo</th><th>Stato</th>
+              <th class="num">Saldo</th><th class="num">Cripto</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- external wallets -->
+    <section class="panel mt-3" id="wallet">
+      <div class="panel__head">
+        <h2>Wallet esterni in attesa di verifica</h2>
+        <div class="filters" data-wallet-filters>
+          <button class="chip is-active" data-filter="pending" type="button">In attesa</button>
+          <button class="chip" data-filter="approved" type="button">Approvati</button>
+          <button class="chip" data-filter="denied" type="button">Rifiutati</button>
+          <button class="chip" data-filter="" type="button">Tutti</button>
+        </div>
+      </div>
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="wallets-table">
+          <thead>
+            <tr>
+              <th>Segnalante</th><th>Asset</th><th>Indirizzo</th><th>Rete</th>
+              <th>Richiesto</th><th>Stato</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="panel__body">
+        <p class="xs muted">
+          Un indirizzo deve essere verificato prima che il cliente possa
+          trasferirvi cripto. Il controllo vale per singolo indirizzo: se il
+          cliente ne indica uno diverso, serve una nuova approvazione.
+        </p>
+      </div>
+    </section>
+
+    <!-- limits + kyc -->
+    <section class="panel mt-3" id="limiti">
+      <div class="panel__head">
+        <h2>Soglie per livello di verifica</h2>
+        <div class="btn-row">
+          <button class="btn btn--ghost btn--sm" data-settings-reset type="button">Ripristina</button>
+          <button class="btn btn--accent btn--sm" data-settings-save type="button">Salva limiti</button>
+        </div>
+      </div>
+      <div class="panel__body">
+        <p class="small muted">
+          Valori in euro. <strong>0</strong> significa nessun limite.
+          Le modifiche valgono immediatamente per tutti i clienti del livello.
+        </p>
+        <form class="settings-form mt-3" id="settings-form" novalidate>
+          <div class="table-scroll">
+            <table class="data-table settings-table">
+              <thead>
+                <tr>
+                  <th>Operazione</th>
+                  <th class="num">Livello 1 — Base</th>
+                  <th class="num">Livello 2 — Avanzata</th>
+                  <th class="num">Livello 3 — Completa</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Depositi</th>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_deposit_l1"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_deposit_l2"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_deposit_l3"></td>
+                </tr>
+                <tr>
+                  <th scope="row">Prelievi</th>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_withdrawal_l1"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_withdrawal_l2"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_withdrawal_l3"></td>
+                </tr>
+                <tr>
+                  <th scope="row">Acquisti</th>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_buy_l1"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_buy_l2"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_buy_l3"></td>
+                </tr>
+                <tr>
+                  <th scope="row">Vendite</th>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_sell_l1"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_sell_l2"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="daily_sell_l3"></td>
+                </tr>
+                <tr>
+                  <th scope="row">Trasferimento cripto<br><span class="xs muted">valore max per operazione</span></th>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="crypto_transfer_max_eur_l1"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="crypto_transfer_max_eur_l2"></td>
+                  <td><input class="input-num" type="number" min="0" step="50" data-setting="crypto_transfer_max_eur_l3"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="settings-toggles mt-3">
+            <label class="switch">
+              <input type="checkbox" data-setting-bool="crypto_transfer_enabled">
+              <span>Trasferimenti verso wallet esterni attivi</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" data-setting-bool="wallet_requires_approval">
+              <span>Ogni nuovo indirizzo richiede approvazione manuale</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" data-setting-bool="wallet_requires_signature">
+              <span>Richiedi la firma di verifica (prova di proprietà)</span>
+            </label>
+          </div>
+          <p class="xs muted mt-2">
+            Livelli: <strong>1</strong> documento d'identità ·
+            <strong>2</strong> residenza e fonte dei fondi ·
+            <strong>3</strong> verifica rafforzata. Il livello si assegna dalla
+            tabella account.
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <!-- audit -->
+    <section class="panel mt-3" id="audit">
+      <div class="panel__head">
+        <h2>Registro attività</h2>
+        <span class="xs muted">Ultime 40 azioni, append-only</span>
+      </div>
+      <div class="panel__body panel__body--flush">
+        <div class="audit-list" data-audit><div class="empty-state">Caricamento…</div></div>
+      </div>
+    </section>
+
+    <!-- registrazione manuale di un cliente -->
+    <div class="modal-backdrop" data-new-account-modal hidden>
+      <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="new-account-title">
+        <h3 id="new-account-title">Apri una pratica per un segnalante</h3>
+        <p>L'account viene creato subito da te: nessuna attesa di approvazione,
+           salvo che tu scelga lo stato «In attesa».</p>
+
+        <form class="form mt-3" id="new-account-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="na-name">Nome e cognome</label>
+              <input id="na-name" name="name" type="text" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="na-email">Email</label>
+              <input id="na-email" name="email" type="email" autocomplete="off" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="na-password">Password</label>
+              <input id="na-password" name="password" type="text" autocomplete="new-password"
+                     placeholder="Lascia vuoto per generarla">
+              <span class="field__hint">Minimo 8 caratteri. Se vuota, la genero io.</span>
+            </div>
+            <div class="field">
+              <label for="na-balance">Saldo iniziale (€)</label>
+              <input id="na-balance" name="balance_eur" type="number" min="0" step="0.01"
+                     value="0" inputmode="decimal">
+              <span class="field__hint">Registrato come deposito manuale nell'audit.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="na-kyc">Livello di verifica</label>
+              <select id="na-kyc" name="kyc_level">
+                <option value="1">Livello 1 — documento d'identità</option>
+                <option value="2" selected>Livello 2 — residenza e fonte dei fondi</option>
+                <option value="3">Livello 3 — verifica rafforzata</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="na-status">Stato iniziale</label>
+              <select id="na-status" name="status">
+                <option value="active" selected>Attivo — può accedere subito</option>
+                <option value="pending">In attesa — da approvare</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" data-master-only>
+            <label for="na-role">Ruolo</label>
+            <select id="na-role" name="role">
+              <option value="user" selected>Cliente</option>
+              <option value="admin">Amministratore</option>
+            </select>
+            <span class="field__hint">Solo l'account master può creare amministratori.</span>
+          </div>
+
+          <div class="field">
+            <label for="na-note">Nota interna (opzionale)</label>
+            <input id="na-note" name="note" type="text" autocomplete="off"
+                   placeholder="Es. segnalante seguito da…">
+          </div>
+
+          <p class="form__note" data-na-error hidden></p>
+
+          <div class="btn-row" style="justify-content:flex-end">
+            <button class="btn btn--ghost" type="button" data-na-cancel>Annulla</button>
+            <button class="btn btn--accent" type="submit">Crea account</button>
+          </div>
+        </form>
+
+        <!-- esito con credenziali -->
+        <div class="credentials-box" data-na-result hidden>
+          <h4>Account creato</h4>
+          <p class="small" data-na-summary></p>
+          <dl class="credentials-list">
+            <dt>Email</dt><dd data-na-email class="mono"></dd>
+            <dt>Password</dt><dd data-na-password class="mono"></dd>
+            <dt>IBAN</dt><dd data-na-iban class="mono"></dd>
+          </dl>
+          <p class="xs muted" data-na-generated-note></p>
+          <div class="btn-row">
+            <button class="btn btn--ghost btn--sm" type="button" data-na-copy>Copia credenziali</button>
+            <button class="btn btn--accent btn--sm" type="button" data-na-close>Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="disclaimer mt-4">
+      Ogni decisione è registrata nel registro attività con l'operatore che l'ha
+      presa. L'account master non può essere rifiutato, sospeso o privato del
+      ruolo.
+    </p>
+  </div>
+</div>
+
+<script src="assets/js/ui.js?v=20261031b" defer></script>
+<script src="assets/js/admin.js?v=20261031b" defer></script>
+</main>
+
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Analisi forense delle truffe finanziarie online. Ricostruiamo il percorso dei tuoi soldi quando una
+          piattaforma di investimento non ti restituisce più il capitale.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servizio</h4>
+        <ul>
+          <li><a href="come-funziona.html">Come funziona</a></li>
+          <li><a href="come-funziona.html#fasi">Le cinque fasi</a></li>
+          <li><a href="casi.html">Casi seguiti</a></li>
+          <li><a href="crypto.html">Truffe cripto</a></li>
+          <li><a href="chi-siamo.html">Chi siamo</a></li>
+          <li><a href="onorari.html">Onorari</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Cosa non facciamo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Prima di iniziare</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Ti chiedono altri soldi?</a></li>
+          <li><a href="supporto.html#segnalare">Dove segnalare</a></li>
+          <li><a href="supporto.html#documenti">Documenti da conservare</a></li>
+          <li><a href="supporto.html#faq">Domande frequenti</a></li>
+          <li><a href="login.html">La mia pratica</a></li>
+          <li><a href="supporto.html#contatti">Contatti</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="termini.html">Termini e condizioni</a></li>
+          <li><a href="cookie.html">Cookie policy</a></li>
+          <li><a href="note-legali.html">Note legali</a></li>
+          <li><a href="privacy.html#reclami">Reclami</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Avvertenza necessaria.</strong> Traccia svolge attività di
+        analisi tecnica e documentale e di assistenza nella ricostruzione dei
+        flussi finanziari. <strong>Non siamo un avvocato, uno studio legale, un
+        istituto di credito, una società di recupero crediti autorizzata ex
+        art. 115 TULPS né un intermediario finanziario.</strong> Non possiamo
+        garantire il recupero delle somme: l'esito dipende da fattori che non
+        controlliamo, come la tracciabilità dei fondi, la collaborazione degli
+        istituti coinvolti e i tempi della giustizia. Nessun operatore può
+        promettere un rimborso garantito: se qualcuno lo fa, è una truffa nella
+        truffa.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+        «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+        software di accesso remoto o di comunicare codici OTP e chiavi private.
+        Ogni richiesta di questo tipo va segnalata subito a
+        <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
+          Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
+          Iscrizione Albo delle Banche n. 5573 ·
+          Iscritta nei registri e vigilata da Banca d'Italia e CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Tutti i diritti riservati.
+          P.IVA 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Note legali</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="cookie.html">Cookie</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/main.js?v=20261031b" defer></script>
+  <script src="assets/js/market.js?v=20261031b" defer></script>
+  <script src="assets/js/premium.js?v=20261031b" defer></script>
+</body>
+</html>
