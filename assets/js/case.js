@@ -29,14 +29,6 @@
       .join("");
   }
 
-  function store(operation, key, value) {
-    try {
-      if (operation === "get") return window.localStorage.getItem(key) || "";
-      if (operation === "set") return window.localStorage.setItem(key, value);
-      return window.localStorage.removeItem(key);
-    } catch (e) { return ""; }
-  }
-
   function readUser() {
     return (window.api && api.cachedUser) ? api.cachedUser() : null;
   }
