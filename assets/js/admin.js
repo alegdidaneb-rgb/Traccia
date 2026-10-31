@@ -94,7 +94,7 @@
   function renderAllAccounts() {
     if (!state.allAccounts.length) {
       L.allAccountsBody.innerHTML =
-        '<tr><td colspan="8" class="empty-state">Nessun account.</td></tr>';
+        '<tr><td colspan="9" class="empty-state">Nessun account.</td></tr>';
       return;
     }
     L.allAccountsBody.innerHTML = state.allAccounts.map(function (user) {
@@ -111,6 +111,13 @@
         '<td class="xs mono">' + (user.iban_formatted
           ? ui.esc(user.iban_formatted)
           : '<span class="muted">—</span>') + "</td>" +
+        /* il contratto si genera da solo: qui interessa solo se è accettato */
+        "<td>" + (!user.contract_number
+          ? '<span class="pill pill--pending">da generare</span>'
+          : '<span class="xs mono">' + ui.esc(user.contract_number) + "</span> " +
+            (user.contract_status === "accepted"
+              ? '<span class="pill pill--active">accettato</span>'
+              : '<span class="pill pill--pending">da accettare</span>')) + "</td>" +
         "<td>" + (user.is_master
           ? '<span class="pill pill--master">Master</span>'
           : user.role === "admin"

@@ -4,6 +4,10 @@
 (function () {
   "use strict";
 
+  /* dati di sessione noti alla pagina: `me` porta anche `read_only`,
+     che vale true quando un analista apre la pratica di un cliente */
+  var state = { me: null };
+
   var PHASES = [
     { short: "01 · Raccolta", name: "Raccolta", desc: "Documenti e colloquio iniziale acquisiti." },
     { short: "02 · Ricostruzione", name: "Ricostruzione", desc: "Flussi e indirizzi ricostruiti." },
@@ -339,6 +343,89 @@
     });
   }
 
+  /* ------------------------------------------------------- contratto -- */
+  /* La barra con "Accetta" compare solo se il contratto è ancora da
+     accettare. `read_only` arriva da `auth_me`: quando un analista apre la
+     pratica di un cliente la sessione è di sola lettura e l'accettazione,
+     che è un atto del cliente, non deve essere possibile. */
+  function syncContractBar(contract) {
+    var accept = document.querySelector("[data-contract-accept]");
+    if (!accept) return;
+    var readOnly = !!(state.me && state.me.read_only);
+    var accepted = !!(contract && contract.status === "accepted");
+    accept.hidden = readOnly || accepted;
+  }
+
+  function renderContract() {
+    var host = document.querySelector("[data-contract-host]");
+    if (!host) return Promise.resolve(null);
+
+    return api.contract().then(function (res) {
+      var c = res && res.contract;
+      if (!c || !window.TracciaContract) {
+        host.innerHTML = '<p class="empty-state">Contratto non disponibile.</p>';
+        return null;
+      }
+      host.innerHTML = window.TracciaContract.render(c);
+
+      var numero = document.querySelector("[data-contract-number]");
+      if (numero) numero.textContent = c.number || "—";
+
+      var bar = document.querySelector("[data-contract-bar]");
+      if (bar) bar.hidden = false;
+
+      var stateEl = document.querySelector("[data-contract-state]");
+      if (stateEl) {
+        stateEl.textContent = c.status === "accepted"
+          ? "Accettato il " + window.TracciaContract.data(c.accepted_at)
+          : "In attesa di accettazione";
+      }
+
+      var accept = document.querySelector("[data-contract-accept]");
+      if (accept) {
+        /* `onclick` e non `addEventListener`: il render si ripete dopo
+           l'accettazione e i gestori non devono accumularsi. */
+        accept.onclick = function () {
+          accept.disabled = true;
+          accept.textContent = "Attendi…";
+          api.acceptContract().then(function () {
+            if (window.ui && ui.toast) ui.toast("Contratto accettato.", "success");
+            return renderContract();
+          }).catch(function (err) {
+            accept.disabled = false;
+            accept.textContent = "Accetta il contratto";
+            if (window.ui && ui.toast) ui.toast(err.message, "error");
+          });
+        };
+      }
+
+      syncContractBar(c);
+      return c;
+    }).catch(function (err) {
+      host.innerHTML = '<p class="empty-state">' +
+        (window.ui && ui.esc ? ui.esc(err.message) : "Contratto non disponibile.") + "</p>";
+      return null;
+    });
+  }
+
+  function bindContractPrint() {
+    var btn = document.querySelector("[data-contract-print]");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      /* il contratto è annidato in .appv2__col: senza marcare la colonna la
+         regola di stampa nasconderebbe anche il contenitore */
+      var section = document.getElementById("contratto");
+      var col = section && section.parentElement;
+      if (col) col.classList.add("is-print-host");
+      document.body.classList.add("is-printing");
+      window.print();
+      window.setTimeout(function () {
+        document.body.classList.remove("is-printing");
+        if (col) col.classList.remove("is-print-host");
+      }, 600);
+    });
+  }
+
   function load() {
     api.dashboard()
       .then(renderDashboard)
@@ -353,6 +440,7 @@
 
   function boot() {
     if (!guardSession()) return;
+    bindContractPrint();
 
     bindTabs();
     bindRefresh(load);
@@ -365,7 +453,14 @@
     var ref = caseRef();
     copyRef(ref);
 
-    load();
+    api.me().then(function (me) {
+      state.me = me;
+    }).catch(function () {
+      /* se la sessione non è valida ci pensa `load()` a rimandare al login */
+    }).then(function () {
+      load();
+      return renderContract();
+    });
   }
 
   if (document.readyState === "loading") {

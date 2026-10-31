@@ -100,6 +100,16 @@ La chiave `service_role` non deve mai finire nel repository.
 | `0002_auth.sql` | hash token, login/registrazione, helper |
 | `0003_client_api.sql` | listino, dashboard, operazioni, documenti, wallet |
 | `0004_admin_api.sql` | console analisti, audit |
+| `0005_contact.sql` | modulo contatti |
+| `0006_holdings.sql` | controvalore cripto per cliente |
+| `0008_public_wrappers.sql` | **wrapper in `public` (indispensabile)** |
+| `0010_contracts.sql` | contratto di incarico generato in automatico |
+
+Le funzioni devono essere richiamabili da `/rest/v1/rpc/<nome>`, quindi ognuna
+ha un wrapper `security definer` in `public` (migrazione `0008` e, per le
+funzioni nuove, `0010`). Senza wrapper la risposta è
+`Could not find the function ... in the schema cache`: sembra mancare una
+funzione, in realtà non è raggiungibile l'API.
 
 Per riapplicarle su un progetto nuovo: incolla il contenuto di ciascun file in
 SQL Editor (o `supabase db push` con la CLI) e poi crea il primo amministratore
@@ -132,7 +142,55 @@ set password_hash = extensions.crypt('NuovaPassword', extensions.gen_salt('bf', 
 where email = 'master@traccia.it';
 ```
 
-### 5. Registrarità
+### 5. Cosa può fare un analista
+
+Dalla console, la pratica di un cliente si apre con un clic, senza conoscerne
+la password: `admin_view_client` emette una sessione di **sola lettura** che
+scade dopo 2 ore e lascia traccia (`client_view`) nel registro attività.
+L'analista vede tutto ciò che vede il cliente — documenti, operazioni,
+contratto — ma non può scrivere: ogni funzione di modifica passa da
+`need_write_user` e risponde `42501`.
+
+### 5-bis. Il contratto di incarico
+
+Ogni cliente ha **un contratto generato automaticamente**, senza che nessuno
+debba prepararlo a mano:
+
+| Momento | Cosa succede |
+|---|---|
+| registrazione dal sito | `auth_register` crea l'account e chiama `ensure_contract` |
+| account creato da un analista | `admin_create_account` fa lo stesso |
+| clienti già esistenti | il ciclo finale di `0010` li copre tutti |
+
+Il contratto è in italiano e regola **servizi** (le cinque fasi, con
+l'obbligazione di mezzi e i limiti espliciti) e **pagamenti** (quota di apertura
+di 190 €, quota di successo del 12 % sulle sole somme incassate, pagamento
+esclusivamente a mezzo bonifico sull'IBAN dedicato).
+
+- Intestazione: **ERSEL SPA**, P.IVA 06900230018, PEC `traccia@pec.it`,
+  sede legale in Piazza Solferino, 11 - 10121 Torino (TO).
+- Numero progressivo: `TRC-<anno>-<numero>`. Non si riusa.
+- Le condizioni sono salvate come **fotografia** (`traccia.contracts.snapshot`):
+  cambiare tariffe o limiti in `settings` non riscrive i contratti già emessi.
+  Per applicare condizioni nuove serve un contratto nuovo, di versione successiva.
+- Il cliente lo legge e lo accetta dalla voce **Contratto** dell'area riservata.
+  L'accettazione è registrata in `audit` (`contract_accepted`) e non è ripetibile.
+- Un analista che apre la pratica in sola lettura **vede** il contratto ma non
+  può accettarlo al posto del cliente: `accept_contract` passa da
+  `need_write_user`, che risponde `42501`.
+- Dalla console, la tabella *Tutti gli account* mostra numero e stato
+  (`accettato` / `da accettare`).
+
+Per correggere la sede legale su un contratto già emesso si riscrive lo
+snapshot, annotando la modifica nel registro attività:
+
+```sql
+update traccia.contracts
+set snapshot = jsonb_set(snapshot, '{provider,address}', '"..."')
+where number = 'TRC-2026-0003';
+```
+
+### 6. Registrarità
 
 `traccia.audit` è append-only e registra ogni azione amministrativa con
 l'operatore che l'ha eseguita: approvazioni, rifiuti, sospensioni, cambi di
