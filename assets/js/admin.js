@@ -35,6 +35,8 @@
     kpiWallets: document.querySelector("[data-kpi-wallets]"),
     walletsBody: document.querySelector("#wallets-table tbody"),
     settingsForm: document.querySelector("#settings-form"),
+    messages: document.querySelector("[data-messages]"),
+    messagesCount: document.querySelector("[data-messages-count]"),
     scope: document.querySelector("[data-admin-scope]")
   };
 
@@ -208,6 +210,61 @@
     });
   }
 
+  /* ---------------------------------------------------------- messaggi -- */
+  function renderMessages(data) {
+    var rows = (data && data.messages) || [];
+    if (!L.messages) return;
+    if (L.messagesCount) {
+      L.messagesCount.textContent = data && data.new_count
+        ? data.new_count + " da leggere"
+        : "nessuna nuova";
+    }
+    if (!rows.length) {
+      L.messages.innerHTML = '<div class="empty-state">Nessuna richiesta dal sito.</div>';
+      return;
+    }
+    L.messages.innerHTML = rows.map(function (m) {
+      var pill = m.status === "new" ? "pill--pending"
+               : m.status === "read" ? "pill--active" : "pill--muted";
+      var cuando = ui.when(m.created_at);
+      return '<div class="msg-item' + (m.status === "new" ? " msg-item--new" : "") + '">' +
+        '<div class="msg-item__head">' +
+          "<b>" + ui.esc(m.name) + "</b>" +
+          '<a class="xs" href="mailto:' + ui.esc(m.email) + '">' + ui.esc(m.email) + "</a>" +
+          '<span class="pill ' + pill + '">' +
+            (m.status === "new" ? "Nuova" : m.status === "read" ? "Letta" : "Chiusa") + "</span>" +
+          "<time>" + cuando + "</time>" +
+        "</div>" +
+        '<p class="msg-item__body">' + ui.esc(m.message) + "</p>" +
+        '<div class="msg-item__foot">' +
+          (m.phone ? '<span class="xs muted">' + ui.esc(m.phone) + "</span>" : "") +
+          (m.amount_eur ? '<span class="xs muted">Importo dichiarato: ' +
+            ui.money(m.amount_eur) + "</span>" : "") +
+          (m.status !== "read" ? '<button class="btn btn--ghost btn--sm" type="button" ' +
+            'data-msg-read="' + ui.esc(m.id) + '">Segna come letta</button>' : "") +
+          (m.status !== "closed" ? '<button class="btn btn--ghost btn--sm" type="button" ' +
+            'data-msg-close="' + ui.esc(m.id) + '">Chiudi</button>' : "") +
+        "</div>" +
+      "</div>";
+    }).join("");
+
+    L.messages.querySelectorAll("[data-msg-read], [data-msg-close]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var id = button.getAttribute("data-msg-read") || button.getAttribute("data-msg-close");
+        var next = button.hasAttribute("data-msg-read") ? "read" : "closed";
+        button.disabled = true;
+        api.messageStatus(id, next)
+          .then(function () { return loadMessages(); })
+          .catch(function (err) { ui.toast(err.message, "error"); button.disabled = false; });
+      });
+    });
+  }
+
+  function loadMessages() {
+    return api.messages().then(renderMessages)
+      .catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
   function loadSettings() {
     return api.settings().then(function (data) {
       state.settings = data.settings;
@@ -281,7 +338,7 @@
   function refresh() {
     return Promise.all([
       loadOverview(), loadAccounts(), loadAllAccounts(), loadOperations(),
-      loadWallets(), loadSettings()
+      loadWallets(), loadSettings(), loadMessages()
     ]);
   }
 
