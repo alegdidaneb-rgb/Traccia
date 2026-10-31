@@ -1858,3 +1858,41 @@ body.is-area .appv2 { min-height: calc(100vh - 62px); }
   flex: none;
 }
 .net-status[data-kind="error"]::before { background: #d2604f; }
+
+/* --------------------------------------------------------------------------
+   §33 · richieste dal sito (console analisti)
+   -------------------------------------------------------------------------- */
+.msg-list { display: flex; flex-direction: column; }
+.msg-item {
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.msg-item:last-child { border-bottom: 0; }
+.msg-item--new { background: var(--accent-wash); }
+.msg-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+.msg-item__head b { font-weight: 600; }
+.msg-item__head time {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.msg-item__body {
+  margin: 0 0 0.7rem;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 70ch;
+}
+.msg-item__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.pill--muted { background: var(--line-soft); color: var(--muted); }
