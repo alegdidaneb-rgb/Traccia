@@ -118,7 +118,9 @@
             : '<span class="xs muted">Cliente</span>') + "</td>" +
         "<td>" + ui.pill(user.status) + "</td>" +
         '<td class="num">' + ui.money(user.balance_eur) + "</td>" +
-        '<td class="num">' + ui.money(user.holdings_value) + "</td>" +
+        '<td class="num">' + (user.holdings_value
+          ? ui.money(user.holdings_value)
+          : '<span class="xs muted">—</span>') + "</td>" +
         '<td class="data-table__actions">' + roleBtn + "</td>" +
         "</tr>";
     }).join("");
@@ -137,7 +139,7 @@
           '" data-action="approve" type="button">Approva</button>' +
           '<button class="btn btn--deny btn--sm" data-op="' + op.id +
           '" data-action="deny" type="button">Rifiuta</button>'
-        : '<span class="xs muted">' + (op.decision_note || "—") + "</span>";
+        : '<span class="xs muted">' + ui.esc(op.decision_note || "—") + "</span>";
       var executed = op.price_eur
         ? ui.money(op.price_eur) + ' <span class="xs muted">× ' +
           ui.num(op.quantity, 6) + "</span>"
