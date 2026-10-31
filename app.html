@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>La mia pratica — Traccia</title>
+  <meta name="description" content="Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://traccia.it/app.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="La mia pratica — Traccia">
+  <meta property="og:description" content="Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.">
+  <meta property="og:url" content="https://traccia.it/app.html">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261031b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261031b">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261031b" defer></script>
+  <script src="assets/js/api.js?v=20261031b" defer></script>
+  <script src="assets/js/session.js?v=20261031b" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="is-app is-area">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <header class="appbar">
+  <div class="appbar__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark" aria-hidden="true">T</span>
+      <span>Traccia</span>
+      <span class="appbar__sep" aria-hidden="true"></span>
+      <span class="appbar__section">La mia pratica</span>
+    </a>
+
+    <div class="appbar__right" data-auth-slot>
+      <a class="appbar__link" href="supporto.html">Aiuto</a>
+      <a class="appbar__link" href="index.html">Sito</a>
+      <button class="nav-user__exit" type="button" data-logout data-auth-member>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Esci
+      </button>
+    </div>
+  </div>
+</header>
+
+
+  <main id="main">
+<div class="appv2">
+
+  <!-- ===================== barra dell'area ===================== -->
+  <div class="appv2__bar">
+    <div class="appv2__bar-inner">
+      <nav class="appv2__tabs" aria-label="Sezioni della pratica">
+        <a class="appv2__tab is-active" href="#panoramica" data-tab="panoramica">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.8" y="1.8" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1.8" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="1.8" y="9" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/></svg>
+          Panoramica
+        </a>
+        <a class="appv2__tab" href="#pratica" data-tab="pratica">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Pratica
+        </a>
+        <a class="appv2__tab" href="#documenti" data-tab="documenti">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.8 2v4.2H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Documenti
+        </a>
+        <a class="appv2__tab" href="#cronologia" data-tab="cronologia">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 8a5.6 5.6 0 105.6-5.6c-1.8 0-3.4.9-4.4 2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.2 2.6v2.4h2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5.6V8l1.8 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Cronologia
+        </a>
+        <a class="appv2__tab" href="#onorari" data-tab="onorari">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.9v12.2M11 4.6c0-1.1-1.3-1.9-3-1.9s-3 .8-3 1.9c0 2.7 6 1.4 6 4.1 0 1.1-1.3 1.9-3 1.9s-3-.8-3-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Onorari
+        </a>
+      </nav>
+
+      <label class="appv2__search">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.2" cy="7.2" r="4.6" stroke="currentColor" stroke-width="1.4"/><path d="M10.7 10.7L13.8 13.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Cerca nella pratica" aria-label="Cerca nella pratica" data-search>
+        <kbd>⌘K</kbd>
+      </label>
+
+      <button class="appv2__icon-btn" type="button" aria-label="Notifiche" data-notify>
+        <span class="appv2__dot" aria-hidden="true"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6.4a4 4 0 118 0c0 2.4.7 3.5 1.3 4.1H2.7c.6-.6 1.3-1.7 1.3-4.1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.4 12.6a1.7 1.7 0 003.2 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+
+      <span class="appv2__whoami">
+        <span class="appv2__whoami-name" data-user-name>—</span>
+        <span class="appv2__avatar" data-user-initials aria-hidden="true">—</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="appv2__wrap">
+
+    <!-- ===================== intestazione ===================== -->
+    <div class="appv2__head" id="panoramica">
+      <div class="appv2__head-row">
+        <div>
+          <h1>Ciao, <span data-user-first>cliente</span>.</h1>
+          <p data-user-status-line>&nbsp;</p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn--ghost btn--sm" data-refresh type="button">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.4 8a5.4 5.4 0 11-1.6-3.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.6 2.2v2.6h-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Aggiorna
+          </button>
+          <a class="btn btn--accent btn--sm" href="#carica" data-open-op="deposit">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Carica un documento
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="appv2__grid">
+
+      <!-- ===================== colonna principale ===================== -->
+      <div class="appv2__col">
+
+        <!-- KPI -->
+        <div class="kpi" aria-label="Riepilogo della pratica">
+          <div class="kpi__cell">
+            <span class="kpi__label">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Fase attuale
+            </span>
+            <span class="kpi__value" data-stat-phase>—</span>
+            <span class="kpi__hint">di 5 fasi del percorso</span>
+          </div>
+
+          <div class="kpi__cell kpi__cell--accent">
+            <span class="kpi__label">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 11.6c1.6-2.6 2.9-4 4.3-4.2 1.4-.2 2.2 1 3.4.8 1.2-.2 1.9-1.4 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.6" cy="6.2" r="1.4" fill="currentColor"/></svg>
+              Importo segnalato
+            </span>
+            <span class="kpi__value" data-stat-amount>—</span>
+            <span class="kpi__spark" aria-hidden="true">
+              <svg viewBox="0 0 120 26" preserveAspectRatio="none"><path d="M1 20 L18 16 L34 18 L52 10 L70 13 L88 6 L104 8 L119 3"/></svg>
+            </span>
+          </div>
+
+          <div class="kpi__cell">
+            <span class="kpi__label">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              Documenti ricevuti
+            </span>
+            <span class="kpi__value"><span data-stat-docs>—</span></span>
+            <span class="kpi__hint" data-docs-missing>2 da integrare</span>
+          </div>
+
+          <div class="kpi__cell">
+            <span class="kpi__label">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.2" width="12" height="10.4" rx="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.6h12M5.2 9.6h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Aggiornata il
+            </span>
+            <span class="kpi__value" data-stat-updated>—</span>
+            <span class="kpi__hint">dall'ufficio analisi</span>
+          </div>
+        </div>
+
+        <!-- stato della pratica -->
+        <section class="pnl" id="pratica">
+          <div class="pnl__head">
+            <h2>Stato della pratica</h2>
+            <span class="pill pill--active" data-phase-pill>In corso</span>
+          </div>
+          <div class="pnl__body">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.6rem">
+              <span class="small" style="font-weight:600">Fase <span data-phase-index>03</span> di 05 · <span data-phase-name>Perizia</span></span>
+              <span class="xs muted">Avanzamento <b class="num" data-phase-pct>60%</b></span>
+            </div>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60" aria-label="Avanzamento della pratica" data-progress>
+              <span class="progress__fill" style="--p:.6"></span>
+            </div>
+
+            <ul class="tl mt-4" data-phase-track>
+              <li class="tl__item tl__item--done">
+                <span class="tl__dot" aria-hidden="true">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div class="tl__main"><b>01 · Raccolta</b><span>Documenti e colloquio iniziale acquisiti.</span></div>
+                <span class="tl__when">12 mar</span>
+              </li>
+              <li class="tl__item tl__item--done">
+                <span class="tl__dot" aria-hidden="true">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div class="tl__main"><b>02 · Ricostruzione</b><span>Flussi e indirizzi ricostruiti, 2 punti di aggancio.</span></div>
+                <span class="tl__when">24 mar</span>
+              </li>
+              <li class="tl__item tl__item--current">
+                <span class="tl__dot" aria-hidden="true"></span>
+                <div class="tl__main"><b>03 · Perizia</b><span>Redazione del documento tecnico. Consegna prevista entro 10 giorni lavorativi.</span></div>
+                <span class="tl__when">in corso</span>
+              </li>
+              <li class="tl__item">
+                <span class="tl__dot" aria-hidden="true"></span>
+                <div class="tl__main"><b>04 · Denunce</b><span>Predisposizione degli atti per la denuncia.</span></div>
+                <span class="tl__when">—</span>
+              </li>
+              <li class="tl__item">
+                <span class="tl__dot" aria-hidden="true"></span>
+                <div class="tl__main"><b>05 · Legale</b><span>Passaggio all'avvocato che assiste il recupero.</span></div>
+                <span class="tl__when">—</span>
+              </li>
+            </ul>
+          </div>
+          <div class="pnl__foot">
+            <span>Ultimo aggiornamento il <b data-stat-updated>—</b></span>
+            <a class="link-arrow" href="mailto:assistenza@traccia.it">Chiedi un aggiornamento</a>
+          </div>
+        </section>
+
+        <!-- documenti -->
+        <section class="pnl" id="documenti">
+          <div class="pnl__head">
+            <h2>Documenti della pratica</h2>
+            <span class="chip"><span data-docs-count>2</span> / 4 file</span>
+          </div>
+          <ul class="vault" id="docs-table">
+            <li class="vault__item">
+              <span class="vault__ico" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="vault__main">
+                <b>Estratto conto</b>
+                <span>PDF · verificato il 12 mar</span>
+              </div>
+              <span class="vault__act"><span class="pill pill--active">Ricevuto</span></span>
+            </li>
+            <li class="vault__item">
+              <span class="vault__ico" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="vault__main">
+                <b>Ricevute dei bonifici</b>
+                <span>PDF · verificato il 12 mar</span>
+              </div>
+              <span class="vault__act"><span class="pill pill--active">Ricevuto</span></span>
+            </li>
+            <li class="vault__item vault__item--missing">
+              <span class="vault__ico" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>
+              </span>
+              <div class="vault__main">
+                <b>Screenshot della piattaforma</b>
+                <span>Serve per documentare l'interfaccia del broker</span>
+              </div>
+              <span class="vault__act"><span class="pill pill--pending">Da integrare</span></span>
+            </li>
+            <li class="vault__item vault__item--missing">
+              <span class="vault__ico" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>
+              </span>
+              <div class="vault__main">
+                <b>Conversazioni con il venditore</b>
+                <span>Email, chat o messaggi con il «consulente»</span>
+              </div>
+              <span class="vault__act"><span class="pill pill--pending">Da integrare</span></span>
+            </li>
+          </ul>
+          <div class="pnl__foot">
+            <span>Non eliminare gli originali: servono anche al legale.</span>
+            <a class="link-arrow" href="#carica">Aggiungi un file</a>
+          </div>
+        </section>
+
+        <!-- carica documento -->
+        <section class="pnl" id="carica">
+          <div class="pnl__head">
+            <h2>Carica un documento</h2>
+            <span class="chip">Simulazione</span>
+          </div>
+          <form class="form pnl__body" id="op-form" novalidate>
+            <div class="dropzone" data-dropzone>
+              <span class="dropzone__ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </span>
+              <b>Trascina qui un file, o scegli dal computer</b>
+              <span>PDF, JPG o PNG · massimo 10 MB</span>
+            </div>
+
+            <div class="form-row mt-3" style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem">
+              <div class="field">
+                <label for="op-type">Tipo di documento</label>
+                <select id="op-type" name="type">
+                  <option value="estratto">Estratto conto</option>
+                  <option value="bonifico">Ricevuta di bonifico</option>
+                  <option value="screenshot">Screenshot della piattaforma</option>
+                  <option value="chat">Conversazione o email</option>
+                  <option value="hash">Hash di una transazione</option>
+                  <option value="altro">Altro</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="op-note">Note per l'analista</label>
+                <input id="op-note" name="note" type="text" placeholder="Facoltativo" autocomplete="off">
+              </div>
+            </div>
+
+            <p class="field__hint mt-2">Non inserire password, codici OTP o chiavi private. Nessun file lascia il browser in questa demo.</p>
+            <p class="form__note" data-form-error hidden></p>
+
+            <div class="btn-row mt-3">
+              <button class="btn btn--accent" type="submit">Registra il documento</button>
+              <button class="btn btn--ghost" type="reset">Annulla</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- cronologia -->
+        <section class="pnl" id="cronologia">
+          <div class="pnl__head">
+            <h2>Cronologia della pratica</h2>
+            <button class="btn btn--ghost btn--sm" data-refresh type="button">Aggiorna</button>
+          </div>
+          <div class="pnl__body">
+            <ul class="feed" id="ops-table">
+              <li class="feed__item">
+                <span class="feed__dot feed__dot--on" aria-hidden="true"></span>
+                <div><b>Perizia in redazione.</b> Analisi dei flussi completata, stesura del documento in corso.<span class="feed__when">oggi · 09:12</span></div>
+              </li>
+              <li class="feed__item">
+                <span class="feed__dot" aria-hidden="true"></span>
+                <div><b>Documenti verificati.</b> Estratti conto e ricevute acquisiti al fascicolo.<span class="feed__when">24 mar · 16:40</span></div>
+              </li>
+              <li class="feed__item">
+                <span class="feed__dot" aria-hidden="true"></span>
+                <div><b>Ricostruzione conclusa.</b> Individuati 2 punti di aggancio su exchange con KYC.<span class="feed__when">22 mar · 11:05</span></div>
+              </li>
+              <li class="feed__item">
+                <span class="feed__dot" aria-hidden="true"></span>
+                <div><b>Colloquio iniziale.</b> Raccolta del racconto e prima valutazione di ammissibilità.<span class="feed__when">12 mar · 10:30</span></div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- onorari -->
+        <section class="pnl" id="onorari">
+          <div class="pnl__head">
+            <h2>Onorari della pratica</h2>
+            <a class="link-arrow xs" href="onorari.html">Come sono calcolati</a>
+          </div>
+          <div class="pnl__body">
+            <div class="summary-grid">
+              <div class="summary-card">
+                <span class="summary-card__label">Contributo di avvio</span>
+                <span class="summary-card__value">€ 190,00</span>
+                <span class="xs muted">Una volta sola, IVA inclusa</span>
+              </div>
+              <div class="summary-card">
+                <span class="summary-card__label">Percentuale concordata</span>
+                <span class="summary-card__value">12 %</span>
+                <span class="xs muted">Solo sulle somme recuperate</span>
+              </div>
+              <div class="summary-card">
+                <span class="summary-card__label">Somme recuperate</span>
+                <span class="summary-card__value">€ 0,00</span>
+                <span class="xs muted">Nessuna percentuale maturata</span>
+              </div>
+            </div>
+            <p class="disclaimer mt-3">
+              I pagamenti si effettuano esclusivamente con bonifico verso
+              l'IBAN indicato nel contratto, intestato a ERSEL SPA.
+              <strong>Non accettiamo pagamenti in criptovaluta.</strong>
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===================== colonna laterale ===================== -->
+      <aside class="appv2__col" aria-label="Riferimenti della pratica">
+
+        <section class="pnl">
+          <div class="pnl__head"><h2>Il tuo referente</h2></div>
+          <div class="pnl__body">
+            <div class="who">
+              <span class="who__avatar" aria-hidden="true">MB</span>
+              <div>
+                <b>Marta Bellini</b>
+                <span>Direzione analisi forense</span>
+              </div>
+            </div>
+            <div class="btn-row mt-3">
+              <a class="btn btn--ghost btn--sm" href="mailto:assistenza@traccia.it">Scrivi</a>
+              <a class="btn btn--ghost btn--sm" href="supporto.html#contatti">Supporto</a>
+            </div>
+            <p class="xs muted mt-3" style="margin-top:.9rem">
+              Risponde entro 48 ore lavorative. Per urgenze indica «urgente»
+              nell'oggetto.
+            </p>
+          </div>
+        </section>
+
+        <section class="pnl">
+          <div class="pnl__head"><h2>Riferimento pratica</h2></div>
+          <div class="pnl__body">
+            <div class="ref-box" style="padding:.85rem 1rem">
+              <span class="ref-box__value mono" data-case-ref>—</span>
+              <button class="btn btn--ghost btn--sm" type="button" data-copy-ref>Copia</button>
+            </div>
+            <p class="xs muted mt-2" style="margin-top:.75rem">
+              Identifica il tuo fascicolo in ogni comunicazione con banca,
+              legale o autorità.
+            </p>
+          </div>
+        </section>
+
+        <section class="pnl">
+          <div class="pnl__head"><h2>Azioni rapide</h2></div>
+          <div class="pnl__body">
+            <div class="quick">
+              <a class="quick__btn" href="#carica">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Carica documento
+              </a>
+              <a class="quick__btn" href="mailto:assistenza@traccia.it">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.8" y="3.4" width="12.4" height="9.2" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2.4 4.6L8 8.8l5.6-4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Chiedi aggiornamento
+              </a>
+              <a class="quick__btn" href="#documenti">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.6v8.4M4.6 7.6L8 11l3.4-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Scarica documenti
+              </a>
+              <a class="quick__btn" href="onorari.html">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.2v11.6M11 4.8c0-1.1-1.3-1.9-3-1.9s-3 .8-3 1.9c0 2.7 6 1.4 6 4.1 0 1.1-1.3 1.9-3 1.9s-3-.8-3-1.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Onorari
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="pnl" style="background:var(--accent-wash);border-color:transparent">
+          <div class="pnl__body">
+            <p class="small" style="line-height:1.6">
+              <strong>Promemoria.</strong> Non ti chiederemo mai la seed phrase
+              del wallet, le credenziali bancarie o di installare software di
+              accesso remoto. Se ricevi una richiesta del genere a nome
+              Traccia, inoltratela a
+              <a href="mailto:assistenza@traccia.it" style="font-weight:600;text-decoration:underline">assistenza@traccia.it</a>
+              e non rispondere.
+            </p>
+          </div>
+        </section>
+
+        <section class="pnl" id="portafoglio">
+          <div class="pnl__head"><h2>I miei dati</h2></div>
+          <div class="pnl__body">
+            <div class="settings-table">
+              <div class="settings-table__row">
+                <span>Email</span>
+                <b data-user-email>&nbsp;</b>
+              </div>
+              <div class="settings-table__row">
+                <span>Riferimento</span>
+                <b class="mono" data-case-ref>—</b>
+              </div>
+              <div class="settings-table__row">
+                <span>Stato</span>
+                <b data-user-status-line>&nbsp;</b>
+              </div>
+            </div>
+            <p class="xs muted mt-3" style="margin-top:.85rem">
+              Per modificare i dati o chiedere la cancellazione scrivi a
+              <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+</main>
+
+  <!-- il footer pubblico resta, ma senza competere con l'area riservata -->
+<footer class="appfoot">
+  <div class="appfoot__inner">
+    <div class="appfoot__brand">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+      <p>Area riservata · ERSEL SPA — Piazza Solferino 11, Torino</p>
+    </div>
+    <nav class="appfoot__links" aria-label="Collegamenti utili">
+      <a href="supporto.html">Supporto</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="cookie.html">Cookie</a>
+      <a href="note-legali.html">Note legali</a>
+      <a href="#" data-logout>Esci</a>
+    </nav>
+    <p class="appfoot__note">
+      <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+      «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+      software di accesso remoto o di comunicare codici OTP e chiavi private.
+      Ogni richiesta di questo tipo va segnalata a
+      <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+    </p>
+  </div>
+</footer>>
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/ui.js?v=20261031b" defer></script>
+  <script src="assets/js/case.js?v=20261031b" defer></script>
+  <script src="assets/js/main.js?v=20261031b" defer></script>
+  <script src="assets/js/market.js?v=20261031b" defer></script>
+  <script src="assets/js/premium.js?v=20261031b" defer></script>
+</body>
+</html>

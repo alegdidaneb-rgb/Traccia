@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /app.html
+Disallow: /admin.html
+
+Sitemap: https://traccia.it/sitemap.xml

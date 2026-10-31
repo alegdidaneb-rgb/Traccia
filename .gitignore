@@ -1,0 +1,12 @@
+# dipendenze e build locali
+node_modules/
+.vercel/
+.DS_Store
+
+# non deve MAI finire nel repository
+.env
+.env.*
+*.pem
+
+# il pacchetto sorgente originale
+traccia-sito.zip

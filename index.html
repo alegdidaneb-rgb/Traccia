@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Traccia — Indagini forensi su truffe finanziarie e criptovalute</title>
+  <meta name="description" content="Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it/">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Traccia — Indagini forensi su truffe finanziarie e criptovalute">
+  <meta property="og:description" content="Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.">
+  <meta property="og:url" content="https://traccia.it/">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261031b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261031b">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261031b" defer></script>
+  <script src="assets/js/api.js?v=20261031b" defer></script>
+  <script src="assets/js/session.js?v=20261031b" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="come-funziona.html">Come funziona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="casi.html">Casi seguiti</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="crypto.html">Truffe cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="chi-siamo.html">Chi siamo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
+          <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="app.html">La mia pratica</a>
+            <a class="nav-user__link nav-user__link--admin" href="admin.html" data-auth-admin hidden>Console admin</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+  <main id="main">
+    <!-- ============================ HERO ============================ -->
+<section class="hero hero--cinema grain">
+  <div class="hero--cinema__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/hero-trace-900.webp 900w, assets/img/hero-trace-1600.webp 1600w" sizes="100vw">
+      <img src="assets/img/hero-trace-1600.jpg"
+           srcset="assets/img/hero-trace-900.jpg 900w, assets/img/hero-trace-1600.jpg 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" fetchpriority="high" decoding="async">
+    </picture>
+  </div>
+
+  <div class="container container--wide">
+    <div class="hero__inner">
+      <div>
+        <div class="hero__badge hero__badge--glass" data-reveal="up" data-reveal-delay="60">
+          <b>Prima valutazione gratuita</b>
+          <span>Risposta in 48 ore lavorative</span>
+        </div>
+
+        <h1 class="display hero__title hero__title--svc balance" data-reveal="fade" data-reveal-delay="140">
+          <span class="mask-line"><span>Dove finiscono</span></span><br>
+          <span class="mask-line"><span>i soldi delle truffe</span></span><br>
+          <span class="mask-line"><span><em>online.</em></span></span>
+        </h1>
+
+        <p class="lead mt-3" style="max-width:50ch" data-reveal="up" data-reveal-delay="240">
+          Indagini forensi su frodi finanziarie e criptovalute: ricostruiamo il
+          percorso dei fondi, individuiamo i soggetti identificabili e
+          produciamo <strong>perizie tecniche utilizzabili in sede civile e
+          penale</strong>.
+        </p>
+
+        <div class="btn-row mt-4" data-reveal="up" data-reveal-delay="330">
+          <a class="btn btn--accent btn--lg" href="login.html#registrati" data-magnetic>Richiedi una valutazione</a>
+          <a class="btn btn--glass btn--lg" href="casi.html">Casi e risultati</a>
+        </div>
+
+        <p class="small mt-4" style="max-width:56ch;color:rgba(255,255,255,.5)" data-reveal="up" data-reveal-delay="420">
+          Contributo di avvio € 190 IVA inclusa · 12% sulle somme
+          effettivamente recuperate · nessun costo quando la perizia esclude
+          ogni strada percorribile.
+        </p>
+      </div>
+
+      <!-- pannello "tracciamento" in vetro sopra la fotografia -->
+      <div class="device-wrap trace-wrap" data-reveal="scale" data-reveal-delay="240">
+        <div class="trace-card glass" aria-hidden="true">
+          <div class="trace-card__head">
+            <span class="trace-card__label">Percorso dei fondi</span>
+            <span class="trace-card__chip">Caso T-2418</span>
+          </div>
+
+          <ol class="trace-path">
+            <li class="trace-path__step trace-path__step--ok">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Bonifico 14.900 €</b>
+                <em>Conto di origine · 12 mar</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--ok">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Exchange intermediario</b>
+                <em>Wallet caldo · 13 mar</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--warn">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>3 wallet successivi</b>
+                <em>Raggruppamento · 14–19 mar</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--stop">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Exchange con KYC</b>
+                <em>Qui si può agire · 21 mar</em>
+              </span>
+            </li>
+          </ol>
+
+          <div class="trace-card__foot">
+            <span>Punti di aggancio individuati</span>
+            <b>2</b>
+          </div>
+        </div>
+
+        <div class="device-chip device-chip--b">
+          <span class="device-chip__dot"></span>
+          Perizia in 10 giorni
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ BANDA NUMERICA ============================ -->
+<section class="metric-band-wrap" aria-label="I nostri numeri">
+  <div class="container container--wide">
+   <div class="metric-band">
+    <div class="metric-band__cell">
+      <span class="metric-band__value"><span data-count="38.4" data-decimals="1" data-suffix=" Mln €">38,4 Mln €</span></span>
+      <span class="metric-band__label">somme di cui abbiamo ricostruito il percorso</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value"><span data-count="1840">1.840</span></span>
+      <span class="metric-band__label">casi analizzati dal nostro ufficio</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value"><span data-count="612">612</span></span>
+      <span class="metric-band__label">perizie tecniche consegnate e firmate</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value"><span data-count="27" data-suffix=" %">27 %</span></span>
+      <span class="metric-band__label">casi in cui restava un punto di aggancio</span>
+    </div>
+   </div>
+  </div>
+</section>
+<div class="container container--wide">
+  <p class="metric-band__note">
+    Dati sull'attività dell'ufficio analisi. «Punto di aggancio» significa che
+    una parte dei fondi risultava ancora riconducibile a un soggetto
+    identificabile: non equivale a somme recuperate né a una previsione di esito.
+  </p>
+</div>
+
+<!-- ============================ AVVISO ============================ -->
+<section class="alert-band">
+  <div class="container">
+    <div class="alert-band__inner">
+      <span class="alert-band__icon" aria-hidden="true">!</span>
+      <p>
+        <strong>Se ti stanno chiedendo altri soldi per «sbloccare» il prelievo,
+        non pagare.</strong> È la fase due della stessa truffa. Nessun operatore
+        serio chiede un anticipo, un anticipo fiscale o le chiavi del tuo wallet.
+        <a href="supporto.html#mai-pagare">Cosa fare adesso →</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ METODO / FOTOGRAFIA ============================ -->
+<section class="section section--tight">
+  <div class="container">
+    <div class="split split--editorial">
+      <figure class="figure" style="margin:0">
+        <div class="frame frame--wide" data-reveal="up">
+          <picture>
+            <source type="image/webp" srcset="assets/img/network-nodes-800.webp 800w, assets/img/network-nodes-1400.webp 1400w" sizes="(max-width: 900px) 100vw, 55vw">
+            <img src="assets/img/network-nodes-1400.jpg"
+                 srcset="assets/img/network-nodes-800.jpg 800w, assets/img/network-nodes-1400.jpg 1400w"
+                 sizes="(max-width: 900px) 100vw, 55vw"
+                 alt="Grafo di transazioni: nodi luminosi collegati da linee su fondo scuro"
+                 width="1400" height="788" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <figcaption>
+          Ogni trasferimento è un nodo. Il lavoro è capire quali nodi hanno un
+          nome dietro.
+        </figcaption>
+      </figure>
+
+      <div data-reveal="up" data-reveal-delay="120">
+        <span class="kicker">Il metodo</span>
+        <h2 class="h2 balance">Non esiste un pulsante<br>per riavere i soldi.<br><em>Esiste una sequenza.</em></h2>
+        <p class="lead mt-3">
+          Cinque passaggi, sempre nello stesso ordine. Se il secondo non lascia
+          nulla su cui agire, ci fermiamo e non ti chiediamo il contributo:
+          succede in circa un caso su tre.
+        </p>
+        <dl class="mini-facts mt-4">
+          <div>
+            <dt>10 giorni</dt>
+            <dd>per la perizia tecnica firmata</dd>
+          </div>
+          <div>
+            <dt>48 ore</dt>
+            <dd>per la prima risposta lavorativa</dd>
+          </div>
+          <div>
+            <dt>1 su 3</dt>
+            <dd>pratiche chiuse senza costi, in fase 2</dd>
+          </div>
+        </dl>
+        <a class="link-arrow mt-4" href="come-funziona.html">
+          Le cinque fasi, in dettaglio
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SETTORI ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Ambiti di intervento</span>
+        <h2 class="h2 balance mt-2">Ogni truffa lascia una traccia diversa.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Il metodo è lo stesso; cambia dove si cerca. Lavoriamo sui cinque schemi
+        che vediamo più spesso, con strumenti e interlocutori diversi per
+        ciascuno.
+      </p>
+    </div>
+
+    <div class="sectors" data-reveal-group="settori">
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17l5-5 3.5 3.5L21 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6h6v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <b>Finti broker e piattaforme di trading</b>
+        <p>Siti clonati, «consulenti» via chat, rendimenti garantiti. Si parte dai bonifici verso IBAN esteri.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5v9M14.8 9.8c0-1.1-1.3-1.9-2.8-1.9s-2.8.8-2.8 1.9c0 2.7 5.6 1.4 5.6 4.1 0 1.1-1.3 1.9-2.8 1.9s-2.8-.8-2.8-1.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <b>Truffe con criptovalute</b>
+        <p>Falsi exchange, staking inesistente, wallet svuotati. Il registro pubblico è la nostra fonte principale.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7.5 2.9v5.6c0 4.3-3.1 8-7.5 9-4.4-1-7.5-4.7-7.5-9V5.9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <b>Finti recuperi fondi</b>
+        <p>Chi promette il rimborso dietro un anticipo. Spesso sono gli stessi autori della prima truffa.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 14.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <b>Frodi su pagamenti e carte</b>
+        <p>Addebiti non autorizzati, phishing bancario, chargeback da attivare entro termini stretti.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20V9.5M9.3 20V4M14.7 20v-7M20 20V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <b>Rendite e investimenti «alternativi»</b>
+        <p>Immobili, foreste, crediti, oro: promesse di rendimento fisso senza alcun prodotto sottostante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CASI RISOLTI ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Casi e risultati</span>
+        <h2 class="h2 balance mt-2">Cosa abbiamo ottenuto,<br>e cosa non abbiamo potuto ottenere.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Ogni caso si chiude in uno di tre modi: fondi tracciati e pratica
+        avviata, recupero parziale, oppure nessuna strada. Pubblichiamo tutti e
+        tre.
+      </p>
+    </div>
+
+    <div class="story-grid" data-reveal-group="casi">
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Tracciato · civile</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Diagramma del flusso dei fondi">
+            <defs>
+              <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0H0v20" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="320" height="180" fill="url(#grid1)"/>
+            <g fill="none" stroke="#c8f169" stroke-width="1.6" opacity=".9">
+              <path d="M28 90h44"/><path d="M96 90h52"/><path d="M172 90h56"/><path d="M252 90h40"/>
+            </g>
+            <g fill="#fff">
+              <circle cx="24" cy="90" r="5"/><circle cx="92" cy="90" r="5"/>
+              <circle cx="168" cy="90" r="5"/><circle cx="248" cy="90" r="5"/>
+            </g>
+            <g fill="#c8f169">
+              <circle cx="248" cy="90" r="8"/><circle cx="92" cy="90" r="7" opacity=".55"/>
+            </g>
+            <g fill="rgba(255,255,255,.5)" font-family="monospace" font-size="8">
+              <text x="14" y="112">conto</text><text x="80" y="112">exchange</text>
+              <text x="152" y="112">wallet</text><text x="232" y="112">KYC</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Finto broker di CFD</span>
+          <h3 class="story__title">38.400 € ricostruiti fino a un exchange con identificazione</h3>
+          <p class="story__text">
+            Quattro bonifici verso due società estere, convertiti in USDT. Due
+            punti di aggancio individuati; perizia consegnata in 9 giorni e
+            pratica passata al legale per l'azione civile.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>2</b><span>punti di aggancio</span></div>
+            <span class="pill pill--active">In corso</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Parziale</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Recupero parziale del capitale">
+            <rect width="320" height="180" fill="none"/>
+            <g stroke="rgba(255,255,255,.12)" stroke-width="1">
+              <path d="M40 140h240M40 100h240M40 60h240"/>
+            </g>
+            <rect x="72" y="52" width="46" height="88" fill="rgba(255,255,255,.16)"/>
+            <rect x="137" y="52" width="46" height="88" fill="rgba(255,255,255,.16)"/>
+            <rect x="202" y="98" width="46" height="42" fill="#c8f169"/>
+            <g fill="rgba(255,255,255,.55)" font-family="monospace" font-size="8">
+              <text x="72" y="154">versato</text><text x="137" y="154">uscito</text><text x="202" y="154">rientrato</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Trading sociale</span>
+          <h3 class="story__title">12.400 € persi, 4.100 € rientrati dopo il blocco del conto</h3>
+          <p class="story__text">
+            Parte del denaro era ancora su un conto acceso presso un istituto
+            italiano: bloccato su nostra segnalazione e restituito. Il resto era
+            già stato prelevato in contanti.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>33 %</b><span>capitale rientrato</span></div>
+            <span class="pill pill--pending">Chiuso</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Nessuna traccia</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Traccia interrotta">
+            <g fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6">
+              <path d="M24 110h48"/><path d="M96 110h48"/>
+            </g>
+            <g fill="none" stroke="#ff8fa3" stroke-width="1.6" stroke-dasharray="5 5">
+              <path d="M168 110h48"/>
+            </g>
+            <circle cx="24" cy="110" r="5" fill="#fff"/>
+            <circle cx="92" cy="110" r="5" fill="#fff"/>
+            <circle cx="164" cy="110" r="5" fill="#fff"/>
+            <g stroke="#ff8fa3" stroke-width="2" stroke-linecap="round">
+              <path d="M240 96l26 26M266 96l-26 26"/>
+            </g>
+            <g fill="rgba(255,255,255,.5)" font-family="monospace" font-size="8">
+              <text x="18" y="132">conto</text><text x="88" y="132">wallet</text>
+              <text x="146" y="132">mixer</text><text x="228" y="132">fine traccia</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Finto recupero fondi</span>
+          <h3 class="story__title">6.900 € usciti da un mixer: pratica chiusa senza costi</h3>
+          <p class="story__text">
+            Il cliente era già stato ricontattato da un secondo gruppo che
+            chiedeva un anticipo. I fondi non erano più tracciabili: nessun
+            punto di aggancio, nessun contributo richiesto.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>0 €</b><span>onorari applicati</span></div>
+            <span class="pill pill--denied">Chiuso in fase 2</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="mt-4">
+      <a class="link-arrow" href="casi.html">Tutti i casi seguiti e le nostre cifre →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ IL PROCESSO (banda scura) ============================ -->
+<section class="band-dark band-dark--process grain">
+  <div class="band-dark__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/process-desk-800.webp 800w, assets/img/process-desk-1400.webp 1400w" sizes="100vw">
+      <img src="assets/img/process-desk-1400.jpg"
+           srcset="assets/img/process-desk-800.jpg 800w, assets/img/process-desk-1400.jpg 1400w"
+           sizes="100vw" alt="" width="1400" height="933" loading="lazy" decoding="async">
+    </picture>
+  </div>
+
+  <div class="container">
+    <div class="band-dark__head" data-reveal="up">
+      <div>
+        <span class="kicker">Il percorso</span>
+        <h2 class="h2 balance">Dalla segnalazione alla perizia,<br><em>senza scorciatoie.</em></h2>
+      </div>
+      <p class="lead">
+        Ogni fase ha un output verificabile: un documento, un elenco di indirizzi,
+        un atto depositato. Se una fase non produce nulla, la pratica si ferma lì.
+      </p>
+    </div>
+
+    <ol class="flow flow--dark flow--two">
+      <li class="flow__step" data-reveal="up" data-reveal-delay="40">
+        <span class="flow__num" aria-hidden="true">01</span>
+        <div class="flow__body">
+          <h3>Raccolta</h3>
+          <p>Colloquio, documenti, estratto conto, ricevute dei bonifici. Serve a capire cosa è successo e quando.</p>
+          <div class="flow__meta"><span><b>1–3 giorni</b> dall'apertura</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="120">
+        <span class="flow__num" aria-hidden="true">02</span>
+        <div class="flow__body">
+          <h3>Ricostruzione</h3>
+          <p>Si seguono i flussi su bonifici e blockchain. È qui che si scopre se resta un punto di aggancio.</p>
+          <div class="flow__meta"><span><b>31%</b> si ferma qui, senza costi</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="200">
+        <span class="flow__num" aria-hidden="true">03</span>
+        <div class="flow__body">
+          <h3>Perizia</h3>
+          <p>Documento tecnico firmato, con fonti citate: hash, data, istituto, numero di operazione.</p>
+          <div class="flow__meta"><span><b>10 giorni</b> lavorativi</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="280">
+        <span class="flow__num" aria-hidden="true">04</span>
+        <div class="flow__body">
+          <h3>Denunce e legale</h3>
+          <p>Predisponiamo gli atti per la denuncia e li passiamo all'avvocato che assiste il recupero.</p>
+          <div class="flow__meta"><span><b>12%</b> solo su ciò che rientra</span></div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="band-dark__foot" data-reveal="up" data-reveal-delay="340">
+      <a class="btn btn--accent" href="come-funziona.html">Come funziona, fase per fase</a>
+      <a class="link-arrow" style="color:rgba(255,255,255,.75)" href="onorari.html">
+        Onorari e limiti
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PERCHÉ NOI ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Il metodo</span>
+        <h2 class="h2 balance mt-2">Perché una perizia vale più di una promessa.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Una promessa non si deposita in tribunale. Un documento tecnico,
+        datato e firmato, sì.
+      </p>
+    </div>
+
+    <div class="pillars pillars--4" data-reveal-group="pilastri">
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7.5 2.9v5.6c0 4.3-3.1 8-7.5 9-4.4-1-7.5-4.7-7.5-9V5.9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="h3">Analisi verificabile</h3>
+        <p>
+          Ogni passaggio della perizia cita la fonte: hash, data, istituto,
+          numero di operazione. Chiunque può ricontrollare, anche il legale
+          della controparte.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.8V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="h3">Tempi dichiarati</h3>
+        <p>
+          Dieci giorni lavorativi per la perizia, quarantotto ore per la prima
+          risposta. Se slittiamo, lo scriviamo nella pratica prima che ce lo
+          chiedi.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="h3">Esiti dichiarati</h3>
+        <p>
+          Il 31 % delle pratiche si chiude nella fase di ricostruzione e non
+          viene fatturato. Lo pubblichiamo perché è il dato che nessun
+          concorrente mostra.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".25"/><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="16" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
+        </div>
+        <h3 class="h3">Rete di professionisti</h3>
+        <p>
+          Lavoriamo con avvocati, consulenti tecnici e colleghi di altre
+          giurisdizioni. La perizia è scritta per essere usata da loro, non per
+          restare in un cassetto.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TEAM ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Il team</span>
+        <h2 class="h2 balance mt-2">Chi analizza il tuo caso.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Nove persone tra analisi blockchain, investigazione finanziaria e
+        gestione delle pratiche. Nessun venditore, nessun call center.
+        <a href="chi-siamo.html">Conosci il team →</a>
+      </p>
+    </div>
+
+    <figure class="figure team-photo" style="margin:0 0 2rem">
+      <div class="frame frame--wide" data-reveal="up">
+        <picture>
+          <source type="image/webp" srcset="assets/img/team-room-900.webp 900w, assets/img/team-room-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 1200px">
+          <img src="assets/img/team-room-1600.jpg"
+               srcset="assets/img/team-room-900.jpg 900w, assets/img/team-room-1600.jpg 1600w"
+               sizes="(max-width: 900px) 100vw, 1200px"
+               alt="Ufficio di analisi a Torino al tramonto: scrivanie, monitor con grafi di transazioni e la Mole sullo sfondo"
+               width="1600" height="1067" loading="lazy" decoding="async">
+        </picture>
+        <div class="frame__scrim frame__scrim--side" aria-hidden="true"></div>
+        <div class="frame__cap">
+          <span class="kicker">Torino · Piazza Solferino</span>
+          <h3 style="max-width:24ch">L'ufficio analisi, dove i fascicoli diventano perizie.</h3>
+        </div>
+      </div>
+    </figure>
+
+    <div class="team-grid" data-reveal-group="team">
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar">MB</span>
+          <div>
+            <div class="member__name">Marta Bellini</div>
+            <div class="member__role">Direzione analisi forense</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Quindici anni tra revisione contabile e contenzioso. Coordina le
+          perizie e firma i documenti destinati al giudice.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Perizie</span>
+          <span class="member__tag">Contenzioso</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar member__avatar--accent">AC</span>
+          <div>
+            <div class="member__name">Andrea Costa</div>
+            <div class="member__role">Blockchain intelligence</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Tracciamento di transazioni su Bitcoin, Ethereum e stablecoin.
+          Riconosce exchange, servizi di mixing e pattern di raggruppamento.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">On-chain</span>
+          <span class="member__tag">USDT</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar member__avatar--soft">SF</span>
+          <div>
+            <div class="member__name">Sara Ferrero</div>
+            <div class="member__role">Investigazione finanziaria</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Ex analista antifrode bancaria. Segue i flussi su bonifici, carte e
+          conti di appoggio, e le richieste agli istituti.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Bonifici</span>
+          <span class="member__tag">Chargeback</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar">GR</span>
+          <div>
+            <div class="member__name">Giulia Rinaldi</div>
+            <div class="member__role">Gestione pratiche</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Unico punto di contatto tra segnalante, analisti e legali. Tiene la
+          cronologia della pratica e le scadenze.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Pratiche</span>
+          <span class="member__tag">Segnalazioni</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REGISTRO / FIDUCIA ============================ -->
+<section class="section section--dark">
+  <div class="container">
+    <div class="split">
+      <div class="reveal reveal--left">
+        <span class="eyebrow">Trasparenza</span>
+        <h2 class="h2 balance mt-2">Quello che non facciamo<br>e che nessuno dovrebbe prometterti.</h2>
+        <p class="lead mt-3">
+          Il settore del «recupero fondi» è pieno di chi lucra sulla
+          disperazione. Questi sono i limiti che ci siamo dati, scritti nel
+          contratto e non solo nel sito.
+        </p>
+        <a class="btn btn--on-dark mt-4" href="onorari.html#cosa-non-facciamo">
+          Leggi i limiti del servizio
+        </a>
+      </div>
+
+      <div class="reveal reveal--right">
+        <ul class="no-list">
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Non garantiamo il recupero.</b> Chi lo garantisce sta vendendo una speranza, non un servizio.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Non chiediamo anticipi per «sbloccare» il rimborso.</b> Il contributo di avvio copre l'analisi, e si paga una volta sola.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Non chiediamo chiavi private, seed phrase o accesso da remoto</b> al tuo computer o al tuo home banking.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Non contattiamo noi gli hacker.</b> Non esistono «hacker etici» che recuperano wallet a pagamento: è una seconda truffa.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Non promettiamo tempi certi.</b> La giustizia italiana ha i suoi, e non li decidiamo noi.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="section section--soft" id="faq">
+  <div class="container container--narrow">
+    <div class="text-center" data-reveal="up">
+      <span class="eyebrow">Domande</span>
+      <h2 class="h2 balance mt-2">Le domande che ci fanno tutti.</h2>
+    </div>
+
+    <div class="faq mt-5" data-reveal-group="faq">
+      <details class="faq__item reveal">
+        <summary><span>Quanto costa provarci?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            La prima valutazione è gratuita: leggiamo la documentazione e ti
+            diciamo se il caso ha senso. Se decidiamo di procedere, il
+            contributo di avvio è € 190 IVA inclusa e copre l'analisi
+            e la perizia; il 12% si applica solo sulle somme
+            effettivamente recuperate. Se la perizia dice che non c'è nulla da
+            fare, non chiediamo altro.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Quanto tempo ci vuole?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            La perizia richiede in media dieci giorni lavorativi dalla consegna
+            completa dei documenti. Le fasi successive — denuncia, richieste
+            agli istituti, eventuale causa — si misurano in mesi o anni e non
+            dipendono da noi.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>È vero che le criptovalute sono irrecuperabili?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            No, ma è vero che spesso non resta nulla da seguire. Se i fondi
+            sono arrivati su un exchange che identifica i clienti, esiste un
+            soggetto a cui rivolgersi; se sono passati per un mixer o per
+            servizi senza controlli, la strada finisce. È la prima cosa che
+            verifichiamo.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Siete avvocati?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            No. Siamo analisti: produciamo perizie tecniche e assistiamo nella
+            preparazione delle segnalazioni. Gli atti legali li firma un
+            avvocato, il tuo o uno dei professionisti con cui collaboriamo. Ci
+            occupiamo del lato tecnico, non della difesa in giudizio.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Mi avete chiamato voi? Non ho mai chiesto nulla.</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Non facciamo chiamate a freddo né messaggi non richiesti. Se
+            qualcuno si presenta come nostro collaboratore senza che tu ci abbia
+            contattato, non lo è. Scrivici a
+            <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a> e segnalalo.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div class="cta-band__inner">
+        <div>
+          <span class="eyebrow">Primo passo</span>
+          <h2 class="h2 balance mt-2">Raccontaci com'è andata.<br>Ti diciamo se c'è una strada.</h2>
+          <p class="lead mt-2" style="max-width:52ch">
+            Cinque minuti per la prima segnalazione, risposta in
+            48 ore lavorative. Se il caso non è nostro, te lo diciamo subito e
+            non ti chiediamo niente.
+          </p>
+        </div>
+        <div class="cta-band__actions">
+          <a class="btn btn--accent btn--lg" href="login.html#registrati">Apri una segnalazione</a>
+          <a class="btn btn--ghost btn--lg" href="supporto.html#contatti">Parla con noi</a>
+          <p class="xs muted mt-2">
+            Non chiediamo mai chiavi private né accessi da remoto.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Analisi forense delle truffe finanziarie online. Ricostruiamo il percorso dei tuoi soldi quando una
+          piattaforma di investimento non ti restituisce più il capitale.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servizio</h4>
+        <ul>
+          <li><a href="come-funziona.html">Come funziona</a></li>
+          <li><a href="come-funziona.html#fasi">Le cinque fasi</a></li>
+          <li><a href="casi.html">Casi seguiti</a></li>
+          <li><a href="crypto.html">Truffe cripto</a></li>
+          <li><a href="chi-siamo.html">Chi siamo</a></li>
+          <li><a href="onorari.html">Onorari</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Cosa non facciamo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Prima di iniziare</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Ti chiedono altri soldi?</a></li>
+          <li><a href="supporto.html#segnalare">Dove segnalare</a></li>
+          <li><a href="supporto.html#documenti">Documenti da conservare</a></li>
+          <li><a href="supporto.html#faq">Domande frequenti</a></li>
+          <li><a href="login.html">La mia pratica</a></li>
+          <li><a href="supporto.html#contatti">Contatti</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="termini.html">Termini e condizioni</a></li>
+          <li><a href="cookie.html">Cookie policy</a></li>
+          <li><a href="note-legali.html">Note legali</a></li>
+          <li><a href="privacy.html#reclami">Reclami</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Avvertenza necessaria.</strong> Traccia svolge attività di
+        analisi tecnica e documentale e di assistenza nella ricostruzione dei
+        flussi finanziari. <strong>Non siamo un avvocato, uno studio legale, un
+        istituto di credito, una società di recupero crediti autorizzata ex
+        art. 115 TULPS né un intermediario finanziario.</strong> Non possiamo
+        garantire il recupero delle somme: l'esito dipende da fattori che non
+        controlliamo, come la tracciabilità dei fondi, la collaborazione degli
+        istituti coinvolti e i tempi della giustizia. Nessun operatore può
+        promettere un rimborso garantito: se qualcuno lo fa, è una truffa nella
+        truffa.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+        «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+        software di accesso remoto o di comunicare codici OTP e chiavi private.
+        Ogni richiesta di questo tipo va segnalata subito a
+        <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
+          Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
+          Iscrizione Albo delle Banche n. 5573 ·
+          Iscritta nei registri e vigilata da Banca d'Italia e CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Tutti i diritti riservati.
+          P.IVA 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Note legali</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="cookie.html">Cookie</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/main.js?v=20261031b" defer></script>
+  <script src="assets/js/market.js?v=20261031b" defer></script>
+  <script src="assets/js/premium.js?v=20261031b" defer></script>
+</body>
+</html>
