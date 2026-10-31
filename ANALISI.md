@@ -1,6 +1,12 @@
 # Analisi del repository `Traccia`
 
-**Data:** 31 ottobre 2026 · **Branch:** `arena/e73554a7-traccia` · **Commit analizzato:** `868ab15`
+**Data:** 31 ottobre 2026 · **Commit analizzato:** `868ab15` (stato iniziale)
+
+> **Nota:** questo documento fotografa il repository *prima* del lavoro di
+> rifacimento. I difetti descritti qui sotto — la modalità demo, il backend
+> Python inesistente, il sito non pubblicato — sono stati risolti: il sito è
+> ora su Vercel e usa un database Supabase. Per lo stato attuale vedi
+> `README-DEPLOY.md`.
 
 ---
 

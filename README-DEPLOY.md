@@ -8,12 +8,13 @@ URL puliti, header di sicurezza e cache lunga per CSS/JS.
 
 - 15 pagine HTML (home, come funziona, casi, cripto, chi siamo, onorari,
   supporto, login, area riservata, console analisti, 404, e le quattro legali)
-- `assets/css/style.css` e 9 file JS
+- `assets/css/premium.css` + `style.css` e 10 file JS
 - `robots.txt`, `sitemap.xml`, `404.html`
 - `vercel.json` con `cleanUrls: true` (quindi `/casi` funziona, oltre a `/casi.html`)
 
-Peso totale: ~490 KB. Nessuna build, nessuna dipendenza: Vercel serve i file così
-come sono.
+Peso totale: ~1,9 MB (foto e font sono locali). Nessuna build e nessuna
+dipendenza npm: Vercel serve i file così come sono. Il database è su Supabase,
+non serve alcun processo lato server.
 
 ---
 
@@ -109,6 +110,33 @@ Dopo aver cambiato dominio, aggiungi l'origine alle policy CSP in `vercel.json`
 (`connect-src ... https://mmjycpdfjlbckeefbtuq.supabase.co`) e, se attivi il
 redirect di autenticazione Supabase, imposta il Site URL in
 **Authentication → URL Configuration**.
+
+### 4. Account di prova
+
+Creati direttamente nel database. **Cambia o elimina queste password prima di
+condividere il link con chiunque.**
+
+| Ruolo | Email | Password |
+|---|---|---|
+| Analista master | `master@traccia.it` | `Master!2026` |
+| Analista | `ops@traccia.it` | `Ops!2026` |
+| Cliente attivo | `luca.bianchi@example.it` | `Demo!2026` |
+| Cliente in attesa | `giulia.rossi@example.it` | `Demo!2026` |
+| Cliente sospeso | `elena.ferrari@example.it` | `Demo!2026` |
+
+Per cambiare una password senza passare dall'interfaccia, da SQL Editor:
+
+```sql
+update traccia.users
+set password_hash = extensions.crypt('NuovaPassword', extensions.gen_salt('bf', 10))
+where email = 'master@traccia.it';
+```
+
+### 5. Registrarità
+
+`traccia.audit` è append-only e registra ogni azione amministrativa con
+l'operatore che l'ha eseguita: approvazioni, rifiuti, sospensioni, cambi di
+ruolo e di KYC, modifiche ai limiti. Non ci sono endpoint per cancellarla.
 
 ---
 
