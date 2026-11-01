@@ -132,6 +132,9 @@
     <a href="#wallet" data-tab="wallet">
       Indirizzi da verificare <span class="chip__count" data-count-wallets></span>
     </a>
+    <a href="#documenti" data-tab="documenti">
+      Documenti da valutare <span class="chip__count" data-count-documents></span>
+    </a>
     <a href="#verifiche" data-tab="verifiche">Verifiche</a>
     <a href="#audit" data-tab="audit">Registro attività</a>
     <div class="app-side__foot">
@@ -156,6 +159,17 @@
       <div class="btn-row">
         <button class="btn btn--ghost btn--sm" data-refresh type="button">Aggiorna</button>
       </div>
+    </div>
+
+    <!-- visibile solo quando si guarda la pratica di un cliente -->
+    <div class="readonly-banner" data-readonly-banner hidden>
+      <div>
+        <strong>Stai guardando la pratica di <span data-readonly-name>—</span></strong>
+        <p class="xs">Sola lettura: nessuna modifica viene registrata a nome del cliente.</p>
+      </div>
+      <button class="btn btn--ghost btn--sm" type="button" data-readonly-exit>
+        Torna alla console
+      </button>
     </div>
 
     <div class="summary-grid summary-grid--5" id="overview">
@@ -374,6 +388,37 @@
       </div>
     </section>
 
+    <!-- documenti caricati dai clienti, in attesa di una decisione -->
+    <section class="panel mt-3" id="documenti">
+      <div class="panel__head">
+        <h2>Documenti da valutare</h2>
+        <div class="filters" data-document-filters>
+          <button class="chip is-active" data-filter="pending" type="button">Da valutare</button>
+          <button class="chip" data-filter="received" type="button">Accettati</button>
+          <button class="chip" data-filter="rejected" type="button">Rifiutati</button>
+          <button class="chip" data-filter="" type="button">Tutti</button>
+        </div>
+      </div>
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="documents-table">
+          <thead>
+            <tr>
+              <th>Segnalante</th><th>Documento</th><th>Tipo</th>
+              <th>Caricato</th><th>Stato</th><th>Nota</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="panel__body">
+        <p class="xs muted">
+          Accettare un documento lo rende visibile al cliente come acquisito.
+          Rifiutarlo chiede al cliente di ricaricarlo: la nota che scrivi gli
+          arriva così com'è, quindi va scritta in italiano e senza dati sensibili.
+        </p>
+      </div>
+    </section>
+
     <!-- audit -->
     <section class="panel mt-3" id="verifiche">
       <div class="panel__head">
@@ -578,8 +623,9 @@
         <p>
           <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
           Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
-          Iscrizione Albo delle Banche n. 5573 ·
-          Iscritta nei registri e vigilata da Banca d'Italia e CONSOB.
+          Attività di analisi tecnica e documentale, non riservata a
+          intermediari autorizzati. Non siamo una banca né un intermediario
+          finanziario e non operiamo sotto la vigilanza di Banca d'Italia o CONSOB.
         </p>
       </div>
 

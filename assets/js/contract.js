@@ -43,10 +43,18 @@
     return d.getDate() + " " + MESI[d.getMonth()] + " " + d.getFullYear();
   }
 
-  /* zero non significa "illimitato": significa che quel livello non lo consente */
-  function limite(value) {
+  /* Zero è ambiguo: nel database significa "nessun limite", ma ai livelli
+     bassi lo stesso zero significa "non consentito". Chi chiama deve dire
+     quale dei due, perché il contratto non può sbagliare.
+       unlimited → il livello è verificato e non c'è tetto
+       numero > 0 → tetto giornaliero
+       numero = 0 e non illimitato → operazione non consentita a quel livello */
+  function limite(value, unlimited) {
+    if (unlimited) return "nessun limite giornaliero";
     var n = Number(value);
-    if (!isFinite(n)) return "non previsto";
+    if (value === null || value === undefined || value === "" || !isFinite(n)) {
+      return "non previsto";
+    }
     if (n <= 0) return "non consentito a questo livello";
     return euro(n) + " al giorno";
   }
@@ -75,6 +83,18 @@
     }).join("");
 
     var kyc = esc(KYC[Number(k.kyc_level)] || "non definita");
+
+    /* A verifica completa non ci sono tetti interni su nessuna operazione:
+       è una scelta di prodotto, ma va detta con precisione, perché "nessun
+       limite" riguarda ciò che dipende dal Prestatore, non ciò che dipende
+       dalla banca o dall'autorità. */
+    var notaIllimitato = l.unlimited
+      ? " A verifica completata il Prestatore non applica limiti giornalieri " +
+        "interni ad alcuna operazione, ivi compresi i trasferimenti in valuta " +
+        "virtuale. Restano fermi i controlli disposti dalla banca, dagli " +
+        "intermediari coinvolti o dall'Autorità, che il Prestatore non può " +
+        "disattendere né anticipare."
+      : "";
 
     return '' +
 '<article class="ctr" data-contract-doc>' +
@@ -203,16 +223,16 @@ accettato +
 "      <h2>10. Livello di verifica</h2>" +
 "      <p>Al momento della generazione il livello di verifica del Cliente è" +
 "      <b>" + kyc + "</b>" +
-      (l.unlimited ? ". A questo livello gli importi sotto indicati non hanno limite giornaliero" : "") +
 ". I limiti operativi applicati sono i seguenti e possono essere elevati solo a" +
 "      seguito di verifica. I trasferimenti in valuta virtuale richiedono il" +
-"      livello avanzato e non sono consentiti ai livelli inferiori.</p>" +
+"      livello avanzato e non sono consentiti ai livelli inferiori." +
+    notaIllimitato + "</p>" +
 '      <table class="ctr__table ctr__table--limits">' +
-"        <tr><th>Versamenti</th><td>" + esc(limite(l.daily_deposit)) + "</td></tr>" +
-"        <tr><th>Prelievi</th><td>" + esc(limite(l.daily_withdrawal)) + "</td></tr>" +
-"        <tr><th>Acquisti</th><td>" + esc(limite(l.daily_buy)) + "</td></tr>" +
-"        <tr><th>Vendite</th><td>" + esc(limite(l.daily_sell)) + "</td></tr>" +
-"        <tr><th>Trasferimenti crypto</th><td>" + esc(limite(l.crypto_transfer_max)) + "</td></tr>" +
+"        <tr><th>Versamenti</th><td>" + esc(limite(l.daily_deposit, l.unlimited)) + "</td></tr>" +
+"        <tr><th>Prelievi</th><td>" + esc(limite(l.daily_withdrawal, l.unlimited)) + "</td></tr>" +
+"        <tr><th>Acquisti</th><td>" + esc(limite(l.daily_buy, l.unlimited)) + "</td></tr>" +
+"        <tr><th>Vendite</th><td>" + esc(limite(l.daily_sell, l.unlimited)) + "</td></tr>" +
+"        <tr><th>Trasferimenti crypto</th><td>" + esc(limite(l.crypto_transfer_max, l.unlimited)) + "</td></tr>" +
 "      </table>" +
 "    </section>" +
 

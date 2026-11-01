@@ -160,6 +160,14 @@
     login: function (email, password) {
       return rpc("auth_login", { p_email: email, p_password: password })
         .then(function (data) {
+          /* Il server restituisce gli errori come dati, non come eccezioni:
+             un'eccezione annullerebbe la registrazione del tentativo fallito
+             e il freno ai tentativi non scatterebbe mai. */
+          if (data && data.ok === false) {
+            var err = new Error(data.error || "Accesso non riuscito.");
+            err.code = "LOGIN_REFUSED";
+            throw err;
+          }
           setToken(data.token);
           cacheUser(data.user);
           return data;
@@ -182,6 +190,12 @@
     me: function () {
       return call("auth_me").then(function (data) {
         cacheUser(data.user);
+        return data;
+      });
+    },
+    logoutAll: function () {
+      return call("auth_logout_all").then(function (data) {
+        setToken(""); cacheUser(null);
         return data;
       });
     },
@@ -279,6 +293,12 @@
       return call("admin_operation_action", { p_id: id, p_action: action, p_note: note || null });
     },
     adminWallets: function (status) { return call("admin_wallets", { p_status: status || null }); },
+    revokeSessions: function (id) { return call("admin_revoke_sessions", { p_id: id }); },
+    documents: function (status) { return call("admin_documents", { p_status: status || null }); },
+    documentAction: function (id, action, note) {
+      return call("admin_document_action", { p_id: id, p_action: action, p_note: note || null });
+    },
+    viewClient: function (id) { return call("admin_view_client", { p_user_id: id }); },
     walletAction: function (id, action, note) {
       return call("admin_wallet_action", { p_id: id, p_action: action, p_note: note || null });
     },

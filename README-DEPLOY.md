@@ -246,6 +246,71 @@ letti; un analista in sola lettura non può farlo al posto del cliente (`28000`)
 Disattivare l'avviso serve quando si corregge un errore di impostazione e non
 c'è nulla da comunicare.
 
+### 5-quinquies. Documenti da valutare
+
+I documenti caricati dai clienti finivano in una coda che nessuna schermata
+leggeva: restavano `pending` per sempre. Ora stanno nella console, sezione
+**Documenti da valutare**, con i filtri *Da valutare · Accettati · Rifiutati*.
+
+| Azione | Effetto sul database | Effetto per il cliente |
+|---|---|---|
+| Accetta | `status = 'received'`, `decided_by`, `decided_at` | il documento risulta acquisito |
+| Rifiuta | `status = 'rejected'` + `decision_note` | legge la nota e ricarica il documento |
+
+Il rifiuto **richiede** una nota: senza, la console si ferma. Una riga
+«rifiutato» senza spiegazione è peggio di nessuna risposta.
+
+Tutto passa da `admin_document_action`, che rifiuta (`22023`) un documento già
+valutato e registra `document_approve` / `document_deny` nel registro attività.
+
+### 5-sexies. Aprire la pratica di un cliente (sola lettura)
+
+Dalla tabella **Tutte le pratiche**, pulsante *Apri pratica*: si apre l'area
+riservata del cliente in una scheda nuova, con una striscia in alto che dice di
+chi è la pratica e come uscirne.
+
+Non è impersonificazione, e la differenza è nel database:
+
+| | |
+|---|---|
+| Sessione | `role = 'staff'`, `acting_user_id` = analista, durata **2 ore** |
+| Scritture | `need_write_user` le rifiuta tutte con `42501` |
+| Verificato | deposito e caricamento documento rifiutati con la sessione staff |
+| Registro | `client_view` con l'email del cliente e «accesso in sola lettura» |
+| Nell'area | i pannelli che scrivono sono nascosti (`body.is-staff-view`) |
+
+Nascondere i moduli è cortesia verso chi guarda; il divieto vero è nel
+database, quindi vale anche se qualcuno chiama l'API a mano.
+
+### 5-septies. Tentativi di accesso e chiusura delle sessioni
+
+| Aspetto | Comportamento |
+|---|---|
+| Freno | 5 password sbagliate in 15 minuti sulla stessa email → accesso bloccato |
+| Messaggio | «Troppi tentativi di accesso. Riprova tra qualche minuto.» |
+| Traccia | ogni tentativo in `traccia.login_attempts` (email, IP, esito) |
+| Pulizia | i tentativi più vecchi di 7 giorni vengono cancellati al login riuscito |
+| Password giusta su account sospeso | non conta come tentativo di intrusione |
+
+Dettaglio che conta: `auth_login` **non solleva eccezioni**. Se le sollevasse,
+la transazione verrebbe annullata e anche la registrazione del tentativo
+fallito sparirebbe: il contatore resterebbe a zero e il freno non
+scatterebbe mai. Gli errori tornano come dati — `{ok: false, error: "..."}` —
+e `api.login()` li trasforma in errore per la pagina.
+
+Le sessioni ora si chiudono davvero:
+
+| Da dove | Funzione | Effetto |
+|---|---|---|
+| Area cliente → *Sicurezza* → *Esci da tutti i dispositivi* | `auth_logout_all` | chiude tutte le sessioni dell'utente |
+| Console → *Tutte le pratiche* → *Chiudi sessioni* | `admin_revoke_sessions` | chiude le sessioni di quel cliente |
+| Uscita normale | `auth_logout` | chiude solo la sessione corrente |
+
+`auth_user` — il punto in cui ogni funzione autenticata verifica il gettone —
+ignora le sessioni con `revoked_at` valorizzato. La revoca vale quindi ovunque,
+non solo nella schermata che l'ha chiesta. Verificato: dopo `auth_logout_all`
+la stessa chiamata a `auth_me` risponde `28000`.
+
 ### 6. Registrarità
 
 `traccia.audit` è append-only e registra ogni azione amministrativa con
@@ -264,11 +329,19 @@ Sono affermazioni verificabili. Vanno sostituite con dati reali prima della
 pubblicazione, altrimenti il sito dichiara cose non vere — ed è esattamente il
 tipo di contenuto per cui un servizio di questo settore perde ogni credibilità.
 
+Le affermazioni non verificabili sono già state tolte: il footer non cita più
+l'Albo delle Banche né una vigilanza che non esercitiamo, `note-legali.html` §7
+dice cosa siamo e cosa non siamo, e gli importi inventati (9,7 Mln €,
+38,4 Mln €, 612 perizie, 1840 casi) sono stati sostituiti da un trattino.
+
 Punti da rivedere, in ordine di rischio:
 
 1. **Team** (`chi-siamo.html` e sezione team in home): nomi, ruoli, biografie
-2. **Risultati** (`casi.html`, banda numerica in home): importi e conteggi
-3. **Dati societari** nel footer: attualmente ERSEL SPA con Albo Banche n. 5573
-   e vigilanza Banca d'Italia e CONSOB — da confermare per questa attività
-4. **Recapiti**: `ciao@traccia.it`, `assistenza@traccia.it`, PEC, telefono
+2. **Risultati** (`casi.html`): i quattro casi con i loro importi
+3. **Recapiti**: `ciao@traccia.it`, `assistenza@traccia.it`, PEC, telefono
+   (`tel:+3901100000000` è ancora un segnaposto)
+4. **WhatsApp**: `assets/js/config.js` → `whatsapp: ""` nasconde il pulsante;
+   mettere il numero reale lo fa comparire ovunque
 5. **Onorari**: 190 € + 12% — da allineare al contratto reale
+6. **Contratto**: è stato scritto da chi scrive codice, non da un avvocato.
+   Va letto da un legale italiano prima che qualcuno lo firmi.
