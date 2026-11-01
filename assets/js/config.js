@@ -15,5 +15,14 @@ window.TRACCIA_CONFIG = {
   // chiave anon storica: usata come riserva se il gateway rifiuta la nuova
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tanljcGRmamxiY2tlZWZidHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzODMzNTQsImV4cCI6MjEwODk1OTM1NH0.KUEnvUGi2wsCHQh79BkcfZglqzMez57o2N58dSESWlI",
 
-  sessionDays: 30
+  sessionDays: 30,
+
+  /* Numero WhatsApp dell'assistenza, in formato internazionale senza spazi
+     né "+" (es. 393331234567). Lascialo vuoto per nascondere ovunque il
+     pulsante: nessun collegamento rotto finché il numero non è attivo. */
+  whatsapp: "",
+
+  /* Messaggio già scritto nella chat. `{pratica}` viene sostituito con il
+     codice della pratica quando il cliente ha una sessione aperta. */
+  whatsappText: "Buongiorno, vi scrivo dalla mia area riservata Traccia. Pratica {pratica}."
 };
