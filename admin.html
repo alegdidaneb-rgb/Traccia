@@ -24,10 +24,10 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261101b">
-  <link rel="stylesheet" href="assets/css/premium.css?v=20261101b">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101c" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101c" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261101c">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261101c">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/js/config.js?v=20261101b" defer></script>
-  <script src="assets/js/api.js?v=20261101b" defer></script>
-  <script src="assets/js/session.js?v=20261101b" defer></script>
+  <script src="assets/js/config.js?v=20261101c" defer></script>
+  <script src="assets/js/api.js?v=20261101c" defer></script>
+  <script src="assets/js/session.js?v=20261101c" defer></script>
 
   <script type="application/ld+json">
   {
@@ -133,6 +133,9 @@
     <a href="#clienti" data-tab="clienti">Tutte le pratiche</a>
     <a href="#wallet" data-tab="wallet">
       Indirizzi da verificare <span class="chip__count" data-count-wallets></span>
+    </a>
+    <a href="#banca" data-tab="banca">
+      Banca e pagamenti <span class="chip__count" data-count-banca></span>
     </a>
     <a href="#documenti" data-tab="documenti">
       Documenti da valutare <span class="chip__count" data-count-documents></span>
@@ -305,6 +308,178 @@
         </p>
       </div>
     </section>
+
+    <!-- banking rails: bonifici, mandati, addebiti, carte -->
+    <!-- Un bonifico fermo in coda è il denaro di un cliente che aspetta, e
+         una carta da attivare è un cliente che non può pagare. Due code che
+         vanno guardate ogni mattina: stanno qui, con i conteggi in alto. -->
+    <section class="panel mt-3" id="banca">
+      <div class="panel__head">
+        <h2>Banca e pagamenti</h2>
+        <div class="btn-row">
+          <button class="btn btn--ghost btn--sm" type="button" data-banca-entrata-apri>
+            Bonifico ricevuto
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" data-banca-interessi>
+            Matura interessi di oggi
+          </button>
+        </div>
+      </div>
+
+      <div class="panel__body">
+        <div class="summary-grid summary-grid--4" data-banca-kpi>
+          <div class="summary-card">
+            <span class="summary-card__label">Bonifici da inviare</span>
+            <div class="summary-card__value" data-banca-kpi-queued>—</div>
+          </div>
+          <div class="summary-card">
+            <span class="summary-card__label">In attesa dalla banca</span>
+            <div class="summary-card__value" data-banca-kpi-sent>—</div>
+          </div>
+          <div class="summary-card">
+            <span class="summary-card__label">Addebiti aperti</span>
+            <div class="summary-card__value" data-banca-kpi-debits>—</div>
+          </div>
+          <div class="summary-card">
+            <span class="summary-card__label">Carte da attivare</span>
+            <div class="summary-card__value" data-banca-kpi-cards>—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="bonifici-table">
+          <thead>
+            <tr>
+              <th>Riferimento</th><th>Segnalante</th><th>Beneficiario</th>
+              <th class="num">Importo</th><th>Schema</th><th>Stato</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="mandati-table">
+          <thead>
+            <tr>
+              <th>Mandato</th><th>Segnalante</th><th>Creditore</th><th>Schema</th>
+              <th>Stato</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="6" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="addebiti-table">
+          <thead>
+            <tr>
+              <th>Addebito</th><th>Segnalante</th><th>Creditore</th>
+              <th class="num">Importo</th><th>Scadenza</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="6" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="panel__body panel__body--flush table-scroll">
+        <table class="data-table" id="carte-table">
+          <thead>
+            <tr>
+              <th>Carta</th><th>Segnalante</th><th>Cifre</th>
+              <th class="num">Limite mensile</th><th>Scadenza</th><th>Stato</th><th></th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" class="empty-state">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="panel__body">
+        <p class="xs muted">
+          Il bonifico esce dal conto quando la banca conferma l'esecuzione, non
+          quando lo si invia: «inviato» e «eseguito» sono due stati diversi, e
+          solo il secondo scrive il movimento. Un bonifico respinto o restituito
+          libera i fondi che aveva impegnato.
+        </p>
+      </div>
+    </section>
+
+    <!-- modale: bonifico ricevuto -->
+    <div class="modal-backdrop" data-entrata-modal hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="entrata-title">
+        <h3 id="entrata-title">Registra un bonifico ricevuto</h3>
+        <p class="small muted">
+          Il movimento viene scritto subito: un accredito non aspetta
+          un'approvazione. Se il cliente l'aveva preannunciato, la richiesta
+          resta nella sua storia.
+        </p>
+        <form class="form mt-3" data-entrata-form novalidate>
+          <div class="field">
+            <label for="ent-cliente">Segnalante</label>
+            <select id="ent-cliente" name="userId" data-entrata-cliente required></select>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="ent-importo">Importo in euro</label>
+              <input id="ent-importo" name="importo" type="number" min="0.01" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="ent-valuta">Data valuta</label>
+              <input id="ent-valuta" name="valuta" type="date">
+            </div>
+          </div>
+          <div class="field">
+            <label for="ent-ordinante">Ordinante</label>
+            <input id="ent-ordinante" name="ordinante" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="ent-causale">Causale</label>
+            <input id="ent-causale" name="causale" type="text" autocomplete="off">
+          </div>
+          <p class="form__note" data-entrata-error hidden></p>
+          <div class="btn-row mt-3">
+            <button class="btn btn--accent" type="submit" data-entrata-submit>Registra il bonifico</button>
+            <button class="btn btn--ghost" type="button" data-entrata-cancel>Annulla</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- modale: esito bonifico -->
+    <div class="modal-backdrop" data-esito-modal hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="esito-title">
+        <h3 id="esito-title">Esito della banca</h3>
+        <p class="small muted" data-esito-intro></p>
+        <form class="form mt-3" data-esito-form novalidate>
+          <div class="field">
+            <label for="esito-scelta">Esito</label>
+            <select id="esito-scelta" name="esito">
+              <option value="executed">Eseguito — il denaro è uscito, scrivi il movimento</option>
+              <option value="rejected">Respinto — la banca non lo ha eseguito</option>
+              <option value="returned">Restituito — è tornato indietro dopo l'invio</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="esito-codice">Codice banca</label>
+              <input id="esito-codice" name="codice" type="text" autocomplete="off"
+                     placeholder="Es. AC04">
+            </div>
+            <div class="field">
+              <label for="esito-messaggio">Messaggio</label>
+              <input id="esito-messaggio" name="messaggio" type="text" autocomplete="off"
+                     placeholder="Es. conto del beneficiario chiuso">
+            </div>
+          </div>
+          <p class="form__note" data-esito-error hidden></p>
+          <div class="btn-row mt-3">
+            <button class="btn btn--accent" type="submit" data-esito-submit>Registra l'esito</button>
+            <button class="btn btn--ghost" type="button" data-esito-cancel>Annulla</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- limits + kyc -->
     <section class="panel mt-3" id="limiti">
@@ -543,8 +718,8 @@
   </div>
 </div>
 
-<script src="assets/js/ui.js?v=20261101b" defer></script>
-<script src="assets/js/admin.js?v=20261101b" defer></script>
+<script src="assets/js/ui.js?v=20261101c" defer></script>
+<script src="assets/js/admin.js?v=20261101c" defer></script>
 </main>
 
   <!-- shell:footer -->
@@ -662,9 +837,9 @@
 </div>
 
 
-  <script src="assets/js/main.js?v=20261101b" defer></script>
-  <script src="assets/js/market.js?v=20261101b" defer></script>
-  <script src="assets/js/premium.js?v=20261101b" defer></script>
+  <script src="assets/js/main.js?v=20261101c" defer></script>
+  <script src="assets/js/market.js?v=20261101c" defer></script>
+  <script src="assets/js/premium.js?v=20261101c" defer></script>
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
@@ -672,6 +847,6 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/js/whatsapp.js?v=20261101b" defer></script>
+  <script src="assets/js/whatsapp.js?v=20261101c" defer></script>
 </body>
 </html>
