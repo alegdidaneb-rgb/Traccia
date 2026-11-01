@@ -104,6 +104,7 @@ La chiave `service_role` non deve mai finire nel repository.
 | `0006_holdings.sql` | controvalore cripto per cliente |
 | `0008_public_wrappers.sql` | **wrapper in `public` (indispensabile)** |
 | `0010_contracts.sql` | contratto di incarico generato in automatico |
+| `0011_notifications_and_phase.sql` | cambio di fase e avvisi al cliente |
 
 Le funzioni devono essere richiamabili da `/rest/v1/rpc/<nome>`, quindi ognuna
 ha un wrapper `security definer` in `public` (migrazione `0008` e, per le
@@ -217,6 +218,33 @@ prevedibile per i falsi profili, ed è per questo che il piè di pagina di ogni
 pagina e la sezione contatti dichiarano che il numero è **solo** quello
 pubblicato, che non si scrive mai per primi e che non si chiede denaro in
 chat. Tenere quella frase anche dopo aver cambiato numero.
+
+### 5-quater. Spostare una pratica di fase
+
+Le cinque fasi — Raccolta, Ricostruzione, Perizia, Denunce, Legale — si
+cambiano dalla console, colonna **Fase** della tabella segnalazioni.
+
+| Aspetto | Comportamento |
+|---|---|
+| Chi può | solo gli analisti (`need_admin`); il cliente che ci prova riceve `42501` |
+| Verso | qualsiasi direzione: un caso può tornare da *Perizia* a *Ricostruzione* |
+| Registro | `phase_change` con `Raccolta → Perizia · nota` e l'operatore |
+| Nota | facoltativa, ma è quella che il cliente legge |
+| Avviso | attivo per impostazione predefinita, disattivabile con la casella accanto ai filtri |
+
+Spostare la fase aggiorna il cruscotto del cliente: percentuale di
+avanzamento e timeline. Se l'avviso è attivo, il cliente trova una voce nella
+campanella dell'area riservata:
+
+> **La pratica è passata alla fase 3 · Perizia**
+> Redazione del documento tecnico. *Relazione in corso.*
+
+Gli avvisi stanno in `traccia.notifications` (RLS attiva, nessun accesso
+diretto) e si leggono solo dalle funzioni. Aprire la campanella li segna come
+letti; un analista in sola lettura non può farlo al posto del cliente (`28000`).
+
+Disattivare l'avviso serve quando si corregge un errore di impostazione e non
+c'è nulla da comunicare.
 
 ### 6. Registrarità
 

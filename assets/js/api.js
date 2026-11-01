@@ -212,6 +212,11 @@
       });
     },
     /* --- contratto di incarico --- */
+    notifications: function () { return call("my_notifications", { p_limit: 20 }); },
+    readNotifications: function (id) {
+      return call("mark_notifications_read", { p_id: id || null });
+    },
+
     contract: function () { return call("my_contract"); },
     acceptContract: function () { return call("accept_contract"); },
 
@@ -261,6 +266,13 @@
     setRole: function (id, role) { return call("admin_set_role", { p_id: id, p_role: role }); },
     setKyc: function (id, level, note) {
       return call("admin_set_kyc", { p_id: id, p_level: level, p_note: note || null });
+    },
+    setPhase: function (id, phase, note, notify) {
+      return call("admin_set_phase", {
+        p_id: id, p_phase: phase,
+        p_note: note || null,
+        p_notify: notify !== false
+      });
     },
     operations: function (status) { return call("admin_operations", { p_status: status || null }); },
     operationAction: function (id, action, note) {
