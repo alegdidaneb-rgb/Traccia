@@ -175,16 +175,91 @@
     });
   }
 
+  /* ------------------------------------------------------- avvisi -- */
+  /* Gli avvisi arrivano dal database: quando un analista sposta la pratica
+     di fase, il cliente lo trova qui. La campanella mostra quanti sono
+     ancora da leggere; aprendola si segnano come letti. */
+  function renderNotifiche(lista, nonLette) {
+    var panel = document.querySelector("[data-notify-panel]");
+    var ul = document.querySelector("[data-notify-list]");
+    var count = document.querySelector("[data-notify-count]");
+    var dot = document.querySelector(".appv2__dot");
+    if (!ul) return;
+
+    if (count) {
+      count.textContent = nonLette > 9 ? "9+" : String(nonLette || "");
+      count.hidden = !nonLette;
+    }
+    if (dot) dot.hidden = !nonLette;
+
+    if (!lista || !lista.length) {
+      ul.innerHTML = '<li class="notif__item notif__item--empty">Nessun avviso.</li>';
+      return;
+    }
+
+    ul.innerHTML = lista.map(function (n) {
+      return '<li class="notif__item' + (n.read ? "" : " is-unread") + '">' +
+        '<span class="notif__dot" aria-hidden="true"></span>' +
+        "<div><b>" + ui.esc(n.title) + "</b>" +
+        (n.body ? "<p>" + ui.esc(n.body) + "</p>" : "") +
+        '<span class="notif__when">' + shortDate(n.created_at) + "</span></div></li>";
+    }).join("");
+    if (panel) panel.dataset.loaded = "1";
+  }
+
+  function caricaNotifiche() {
+    return api.notifications().then(function (res) {
+      renderNotifiche(res.notifications, res.unread);
+      return res;
+    }).catch(function () {
+      /* un errore sugli avvisi non deve bloccare la pratica */
+      return null;
+    });
+  }
+
   function bindNotify() {
     var button = document.querySelector("[data-notify]");
-    if (!button) return;
-    button.addEventListener("click", function () {
-      var dot = button.querySelector(".appv2__dot");
-      if (dot) dot.remove();
-      if (window.ui && ui.toast) {
-        ui.toast("Perizia in redazione: consegna prevista entro 10 giorni lavorativi.", "ok");
+    var panel = document.querySelector("[data-notify-panel]");
+    if (!button || !panel) return;
+
+    button.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var aperto = !panel.hidden;
+      panel.hidden = aperto;
+      button.setAttribute("aria-expanded", String(!aperto));
+      if (aperto) return;
+
+      /* aprendo si considerano letti: l'avviso ha fatto il suo lavoro */
+      var nonLette = Number((document.querySelector("[data-notify-count]") || {}).textContent || 0);
+      if (nonLette) {
+        api.readNotifications().then(caricaNotifiche).catch(function () {});
       }
     });
+
+    document.addEventListener("click", function (e) {
+      if (!panel.hidden && !e.target.closest(".notif")) {
+        panel.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !panel.hidden) {
+        panel.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    var all = document.querySelector("[data-notify-read-all]");
+    if (all) {
+      all.addEventListener("click", function (e) {
+        e.stopPropagation();
+        api.readNotifications().then(function () {
+          ui.toast("Avvisi segnati come letti.", "ok");
+          return caricaNotifiche();
+        }).catch(function (err) { ui.toast(err.message, "error"); });
+      });
+    }
   }
 
   /* ------------------------------------------------------------- upload -- */
@@ -427,6 +502,7 @@
   }
 
   function load() {
+    caricaNotifiche();
     api.dashboard()
       .then(renderDashboard)
       .catch(function (err) {
@@ -443,10 +519,10 @@
     bindContractPrint();
 
     bindTabs();
+    bindNotify();
     bindRefresh(load);
     bindDropzone();
     bindSearch();
-    bindNotify();
     bindForm();
 
     var copyRef = function (ref) { bindCopy(ref); };

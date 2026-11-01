@@ -50,7 +50,7 @@
     var list = state.accounts;
     if (!list.length) {
       L.accountsBody.innerHTML =
-        '<tr><td colspan="6" class="empty-state">Nessun account in questo stato.</td></tr>';
+        '<tr><td colspan="9" class="empty-state">Nessun account in questo stato.</td></tr>';
       return;
     }
     L.accountsBody.innerHTML = list.map(function (user) {
@@ -71,6 +71,19 @@
             user.id + '" data-action="suspend" type="button">Sospendi</button>');
         }
       }
+      var FASI = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
+      var fase = user.is_master
+        ? '<span class="xs muted">—</span>'
+        : '<select class="phase-select" data-phase="' + user.id +
+          '" data-previous="' + (Number(user.case_phase) || 1) +
+          '" aria-label="Fase della pratica">' +
+          FASI.map(function (nome, i) {
+            var n = i + 1;
+            return '<option value="' + n + '"' +
+              (Number(user.case_phase) === n ? " selected" : "") + ">" +
+              String(n).padStart(2, "0") + " · " + nome + "</option>";
+          }).join("") + "</select>";
+
       var kyc = user.is_master
         ? '<span class="xs muted">—</span>'
         : '<select class="kyc-select" data-kyc="' + user.id + '" aria-label="Livello di verifica">' +
@@ -83,6 +96,7 @@
         '<div class="xs muted">' + ui.esc(user.email) + "</div></td>" +
         "<td>" + ui.when(user.created_at) + "</td>" +
         "<td>" + kyc + "</td>" +
+        "<td>" + fase + "</td>" +
         '<td class="num">' + ui.money(user.balance_eur) + "</td>" +
         '<td class="num">' + user.operations_count + "</td>" +
         "<td>" + ui.pill(user.status, badgeFor(user)) + "</td>" +
@@ -440,6 +454,43 @@
     });
   }
 
+  /* La fase è ciò che il cliente vede sul cruscotto: cambiarla è una
+     comunicazione, non solo un dato. Per questo la nota è facoltativa ma
+     incoraggiata, e l'avviso al cliente è attivo per impostazione predefinita. */
+  function avvisaCliente() {
+    var box = document.getElementById("phase-notify");
+    return box ? box.checked : true;
+  }
+
+  function changePhase(id, phase, select) {
+    var FASI = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
+    var from = Number(select.dataset.previous || 1);
+
+    ui.ask({
+      title: "Portare la pratica alla fase " + phase + " · " + FASI[phase - 1] + "?",
+      message: "Il cliente vedrà la nuova fase nel suo cruscotto" +
+        (avvisaCliente() ? " e riceverà un avviso nell'area riservata." : "."),
+      prompt: "Nota per il cliente (facoltativa)",
+      confirm: "Sposta di fase"
+    }).then(function (note) {
+      if (note === null) {
+        if (select) select.value = String(from);
+        return;
+      }
+      return api.setPhase(id, phase, note, avvisaCliente()).then(function (res) {
+        if (res && res.changed === false) {
+          ui.toast("La pratica era già in questa fase.", "ok");
+        } else {
+          ui.toast("Pratica portata in fase " + phase + " · " + FASI[phase - 1] + ".", "ok");
+        }
+        return refresh();
+      });
+    }).catch(function (err) {
+      ui.toast(err.message, "error");
+      if (select) select.value = String(from);
+    });
+  }
+
   function collectSettings() {
     var out = {};
     document.querySelectorAll("[data-setting]").forEach(function (input) {
@@ -605,9 +656,13 @@
     });
 
     L.accountsBody.addEventListener("change", function (e) {
-      var select = e.target.closest("[data-kyc]");
-      if (!select) return;
-      changeKyc(select.getAttribute("data-kyc"), Number(select.value), select);
+      var kyc = e.target.closest("[data-kyc]");
+      if (kyc) {
+        changeKyc(kyc.getAttribute("data-kyc"), Number(kyc.value), kyc);
+        return;
+      }
+      var fase = e.target.closest("[data-phase]");
+      if (fase) changePhase(fase.getAttribute("data-phase"), Number(fase.value), fase);
     });
     L.accountsBody.addEventListener("focusin", function (e) {
       var select = e.target.closest("[data-kyc]");
