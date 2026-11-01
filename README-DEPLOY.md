@@ -190,6 +190,34 @@ set snapshot = jsonb_set(snapshot, '{provider,address}', '"..."')
 where number = 'TRC-2026-0003';
 ```
 
+### 5-ter. Il pulsante WhatsApp
+
+Il pulsante compare in **tutte le pagine** (fisso in basso a destra) e in
+forma estesa nella sezione contatti di `supporto.html`. Il destinatario è
+configurato in un solo posto, `assets/js/config.js`:
+
+```js
+whatsapp: "393331234567",   // formato internazionale, senza "+" né spazi
+whatsappText: "Buongiorno, vi scrivo dalla mia area riservata Traccia. Pratica {pratica}."
+```
+
+| Comportamento | Dettaglio |
+|---|---|
+| Numero assente | `whatsapp: ""` → il pulsante **non compare**, nessun link rotto |
+| Numero scritto male | `+39 333 123 4567` va bene: viene normalizzato in `393331234567` |
+| Messaggio | precompilato; se il cliente ha una sessione aperta include il codice pratica |
+| Senza pratica | la frase con il codice viene tolta, non lasciata vuota |
+| Nuova scheda | si apre WhatsApp con `rel="noopener"` |
+
+Il messaggio è solo un testo già scritto nel campo: il cliente può
+modificarlo prima di inviare e nessun dato viene inviato in automatico.
+
+**Avvertenza.** Un canale diretto come WhatsApp è anche un bersaglio
+prevedibile per i falsi profili, ed è per questo che il piè di pagina di ogni
+pagina e la sezione contatti dichiarano che il numero è **solo** quello
+pubblicato, che non si scrive mai per primi e che non si chiede denaro in
+chat. Tenere quella frase anche dopo aver cambiato numero.
+
 ### 6. Registrarità
 
 `traccia.audit` è append-only e registra ogni azione amministrativa con
