@@ -332,7 +332,11 @@
       return "<tr>" +
         "<td><strong>" + ui.esc(doc.user_name) + "</strong>" +
           '<div class="xs muted">' + ui.esc(doc.case_ref || doc.user_email) + "</div></td>" +
-        "<td>" + ui.esc(doc.label) + "</td>" +
+        "<td>" + ui.esc(doc.label) +
+          (doc.has_file
+            ? ' <button class="link-arrow xs" type="button" data-doc-file="' + doc.id +
+              '">Apri file</button>'
+            : ' <span class="xs muted">nessun file</span>') + "</td>" +
         '<td class="xs muted">' + ui.esc(documentKind(doc.kind)) + "</td>" +
         '<td class="xs muted">' + ui.when(doc.created_at) + "</td>" +
         "<td>" + ui.pill(doc.status) + "</td>" +
@@ -852,6 +856,19 @@
 
     if (L.documentsBody) {
       L.documentsBody.addEventListener("click", function (e) {
+        var apriFile = e.target.closest("[data-doc-file]");
+        if (apriFile) {
+          apriFile.disabled = true;
+          api.documentLink(apriFile.getAttribute("data-doc-file")).then(function (res) {
+            window.open(res.url, "_blank", "noopener");
+          }).catch(function (err) {
+            ui.toast(err.message || "File non disponibile.", "error");
+          }).then(function () {
+            apriFile.disabled = false;
+          });
+          return;
+        }
+
         var bottone = e.target.closest("[data-doc]");
         if (!bottone) return;
         documentAction(bottone.getAttribute("data-doc"), bottone.getAttribute("data-doc-action"));

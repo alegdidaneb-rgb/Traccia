@@ -17,6 +17,13 @@ window.TRACCIA_CONFIG = {
 
   sessionDays: 30,
 
+  /* Documenti: il file va su Supabase Storage, nella cartella del cliente.
+     Il limite è ripetuto nel database (10 MB, solo PDF/JPG/PNG): qui serve
+     solo per fermare il caricamento prima di consumare banda. */
+  storageBucket: "documenti",
+  uploadMaxBytes: 10 * 1024 * 1024,
+  uploadMime: ["application/pdf", "image/jpeg", "image/png"],
+
   /* Numero WhatsApp dell'assistenza, in formato internazionale senza spazi
      né "+" (es. 393331234567). Lascialo vuoto per nascondere ovunque il
      pulsante: nessun collegamento rotto finché il numero non è attivo. */

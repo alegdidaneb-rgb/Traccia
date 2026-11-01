@@ -218,6 +218,97 @@
     },
     cancelOperation: function (id) { return call("cancel_operation", { p_id: id }); },
     documents: function () { return call("my_documents"); },
+    /* --- file dei documenti -------------------------------------------- */
+    /* Il file va direttamente su Storage (l'API di Storage non passa dalle
+       RPC), poi `attach_document_file` verifica che il percorso sia davvero
+       nella cartella di quel cliente e di quel documento. */
+    uploadDocument: function (payload) {
+      var file = payload.file;
+      if (!file) return Promise.reject(new Error("Nessun file selezionato."));
+      var max = CFG.uploadMaxBytes || 10485760;
+      var ammessi = CFG.uploadMime || ["application/pdf", "image/jpeg", "image/png"];
+      if (ammessi.indexOf(file.type) === -1) {
+        return Promise.reject(new Error("Formato non ammesso: servono PDF, JPG o PNG."));
+      }
+      if (file.size > max) {
+        return Promise.reject(new Error("Il file supera i 10 MB. Comprimi il PDF o scatta una foto più leggera."));
+      }
+
+      return call("add_document", {
+        p_label: payload.label,
+        p_kind: payload.kind || "altro",
+        p_note: payload.note || null
+      }).then(function (res) {
+        var id = res.document.id;
+        var utente = cachedUser();
+        if (!utente || !utente.id) throw new Error("Sessione non valida: accedi di nuovo.");
+        var nome = String(file.name || "documento").replace(/[^\w.\- ]+/g, "_").slice(-80);
+        var percorso = utente.id + "/" + id + "/" + nome;
+        var bucket = CFG.storageBucket || "documenti";
+
+        return fetch(BASE + "/storage/v1/object/" + bucket + "/" + percorso, {
+          method: "POST",
+          headers: {
+            "apikey": KEY,
+            "Authorization": "Bearer " + (token() || KEY),
+            "Content-Type": file.type,
+            "x-upsert": "false",
+            "cache-control": "max-age=3600"
+          },
+          body: file
+        }).then(function (r) {
+          if (!r.ok) {
+            return r.text().then(function (t) {
+              var msg = "Caricamento non riuscito.";
+              try { msg = JSON.parse(t).message || msg; } catch (e) {}
+              var err = new Error(msg);
+              err.code = "UPLOAD";
+              throw err;
+            });
+          }
+          return call("attach_document_file", {
+            p_id: id,
+            p_path: percorso,
+            p_name: file.name,
+            p_mime: file.type,
+            p_size: file.size
+          }).then(function (att) {
+            return { document: res.document, file: att };
+          });
+        });
+      });
+    },
+
+    /* link temporaneo: non esiste un URL pubblico per i documenti */
+    documentLink: function (id) {
+      return call("document_link", { p_id: id, p_secondi: 600 }).then(function (dati) {
+        var bucket = CFG.storageBucket || "documenti";
+        return fetch(BASE + "/storage/v1/object/sign/" + bucket + "/" + dati.path, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": KEY,
+            "Authorization": "Bearer " + (token() || KEY)
+          },
+          body: JSON.stringify({ expiresIn: dati.expires_in || 600 })
+        }).then(function (r) {
+          return r.text().then(function (t) {
+            var body = null;
+            try { body = JSON.parse(t); } catch (e) {}
+            if (!r.ok) {
+              var err = new Error((body && body.message) || "Link non disponibile.");
+              err.code = "LINK";
+              throw err;
+            }
+            var firma = body && (body.signedURL || body.signedUrl);
+            if (!firma) throw new Error("Link non disponibile.");
+            if (firma.charAt(0) === "/") firma = BASE + "/storage/v1" + firma;
+            return Object.assign({}, dati, { url: firma });
+          });
+        });
+      });
+    },
+
     addDocument: function (payload) {
       return call("add_document", {
         p_label: payload.label,

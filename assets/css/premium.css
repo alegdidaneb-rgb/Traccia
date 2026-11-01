@@ -2445,3 +2445,77 @@ body.is-staff-view #sicurezza { display: none !important; }
   .appv2__staff { align-items: flex-start; }
   #documents-table .data-table__actions .btn + .btn { margin: 0.35rem 0 0; }
 }
+
+/* ============================================================================
+   §38 · caricamento dei documenti
+   ---------------------------------------------------------------------------
+   Un riquadro che si può davvero cliccare, una barra che dice a che punto è
+   il caricamento, e uno stato «caricato» che resta visibile quando la barra
+   sparisce. Il file grande è il caso normale (un PDF di movimenti bancari),
+   quindi il caricamento deve durare il tempo che serve senza che la pagina
+   sembri bloccata.
+   ========================================================================= */
+
+.dropzone { position: relative; cursor: pointer; }
+.dropzone__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.dropzone__input:focus-visible + .dropzone__ico {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.dropzone:hover,
+.dropzone.is-over {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+}
+/* il nome del file scelto prende il posto dell'invito, e deve poter andare
+   a capo: i nomi dei PDF bancari sono lunghissimi */
+.dropzone [data-dropzone-label] {
+  display: block;
+  max-width: 46ch;
+  overflow-wrap: anywhere;
+}
+.dropzone.is-over { border-style: dashed; }
+
+.upload-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+.upload-progress[hidden] { display: none; }
+.upload-progress__bar {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(10, 10, 13, 0.08);
+  overflow: hidden;
+}
+.upload-progress__bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.upload-progress [data-upload-status] { color: var(--muted, #5a5a62); }
+
+/* il rifiuto di un documento deve leggersi come un problema, non come
+   un'etichetta qualsiasi */
+.vault__item--missing .vault__main span { color: #8f2626; }
+#docs-table .vault__act { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.chip--secure {
+  background: var(--accent-wash);
+  color: var(--accent);
+  border-color: transparent;
+}
