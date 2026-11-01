@@ -18,6 +18,37 @@ non serve alcun processo lato server.
 
 ---
 
+## Intestazione e piè di pagina: un solo posto
+
+L'intestazione e il piè di pagina non stanno più dentro le quattordici pagine
+come copie separate: stanno in `partials/` (`header.html`, `footer.html`,
+`area-bar.html`) e uno script li cuce dentro le pagine.
+
+```bash
+python3 tools/build_shell.py          # riscrive le pagine dai partials
+python3 tools/build_shell.py --check  # esce 1 se una pagina è disallineata
+```
+
+Dentro la pagina resta **HTML vero**, tra due marcatori:
+
+```html
+<!-- shell:header -->
+...
+<!-- /shell:header -->
+```
+
+Quindi il sito resta statico: nessun `fetch`, nessun JavaScript in più, nessun
+lampo di pagina vuota al caricamento. La voce di menu attiva (`is-active` e
+`aria-current="page"`) la decide lo script dal nome del file, non si scrive più
+a mano.
+
+**Regola pratica:** un ritocco all'header o al footer si fa in `partials/` e si
+rilancia lo script. Modificare l'header dentro una singola pagina funziona fino
+alla build successiva, che lo sovrascrive.
+
+Per bloccare le regressioni, `python3 tools/build_shell.py --check` va eseguito
+prima di ogni pubblicazione: se qualcuno ha toccato una pagina a mano, lo dice.
+
 ## Opzione A — drag & drop (2 minuti, nessun comando)
 
 1. Vai su <https://vercel.com/new>
