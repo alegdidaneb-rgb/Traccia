@@ -20,6 +20,10 @@
     Array.prototype.forEach.call(document.querySelectorAll(selector), fn);
   }
 
+  function arrayEach(selector, fn) {
+    Array.prototype.forEach.call(document.querySelectorAll(selector), fn);
+  }
+
   function set(name, value) {
     each("[data-" + name + "]", function (node) { node.textContent = value; });
   }
@@ -408,10 +412,20 @@
   }
 
   /* ------------------------------------------------------------ helpers -- */
+  /* Formattazione esplicita, non `Intl`: alcuni runtime (e la build Node di
+     questo progetto, compilata senza ICU) restituiscono «1234,50 €» senza il
+     separatore delle migliaia. Su un estratto conto 1234 e 1.234 devono
+     leggersi diversi a colpo d'occhio. */
   function euro(value) {
-    return new Intl.NumberFormat("it-IT", {
-      style: "currency", currency: "EUR", minimumFractionDigits: 2
-    }).format(Number(value) || 0);
+    var n = Number(value);
+    if (isNaN(n)) n = 0;
+    var negativo = n < 0;
+    var assoluto = Math.abs(n);
+    var intero = Math.floor(assoluto).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    var cent = Math.round((assoluto - Math.floor(assoluto)) * 100);
+    if (cent === 100) { cent = 0; intero = (Math.floor(assoluto) + 1).toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+    return (negativo ? "-" : "") + intero + "," + String(cent).padStart(2, "0") + " €";
   }
 
   function shortDate(epoch) {
@@ -597,6 +611,314 @@
     });
   }
 
+
+  /* ------------------------------------------------------------- conto -- */
+  /* Un conto si legge così: quanto è disponibile adesso, quanto è già
+     impegnato, e cosa è successo. Il numero grande è il disponibile, non il
+     saldo: è quello su cui il cliente può contare. Il resto è storia. */
+  var contoState = { dati: null, movimenti: [] };
+
+  function dataBreve(iso) {
+    if (!iso) return "—";
+    var mesi = ["gen", "feb", "mar", "apr", "mag", "giu",
+                "lug", "ago", "set", "ott", "nov", "dic"];
+    var p = String(iso).slice(0, 10).split("-");
+    if (p.length !== 3) return String(iso);
+    return Number(p[2]) + " " + mesi[Number(p[1]) - 1] + " " + p[0];
+  }
+
+  function etichettaMovimento(kind) {
+    return {
+      deposit: "Versamento",
+      withdrawal: "Prelievo",
+      buy: "Acquisto cripto",
+      sell: "Vendita cripto",
+      transfer_out: "Trasferimento",
+      fee: "Spese",
+      adjustment: "Rettifica",
+      reversal: "Storno"
+    }[kind] || kind;
+  }
+
+  function renderConto(dati) {
+    contoState.dati = dati;
+    set("conto-disponibile", euro(dati.disponibile));
+    set("conto-saldo", euro(dati.saldo));
+    set("conto-prenotato", euro(dati.prenotato));
+
+    var pill = document.querySelector("[data-iban-pill]");
+    var valore = document.querySelector("[data-iban-value]");
+    var holder = document.querySelector("[data-iban-holder]");
+    var hint = document.querySelector("[data-iban-hint]");
+
+    if (dati.iban) {
+      if (valore) valore.textContent = dati.iban_formatted;
+      if (holder) holder.textContent = dati.iban_holder || "";
+      if (pill) {
+        pill.hidden = false;
+        pill.textContent = dati.iban_verified ? "Verificato" : "Da verificare";
+        pill.className = "pill " + (dati.iban_verified ? "pill--active" : "pill--pending");
+      }
+      if (hint) hint.textContent = dati.iban_verified
+        ? "Coordinate confermate dall'analista."
+        : "Le coordinate sono state salvate. L'analista le verifica prima del primo prelievo.";
+    }
+
+    var lista = document.querySelector("[data-movimenti]");
+    if (!lista) return;
+    if (!dati.movimenti || !dati.movimenti.length) {
+      lista.innerHTML = '<li class="empty-state">Nessun movimento sul conto.</li>';
+      return;
+    }
+    lista.innerHTML = "";
+    dati.movimenti.slice(0, 6).forEach(function (m) {
+      lista.appendChild(rigaMovimento(m));
+    });
+  }
+
+  function rigaMovimento(m) {
+    var item = document.createElement("li");
+    var entrata = Number(m.amount_eur) > 0;
+    item.className = "mov" + (entrata ? " mov--in" : " mov--out");
+    item.innerHTML =
+      '<span class="mov__sign" aria-hidden="true">' + (entrata ? "↓" : "↑") + "</span>" +
+      '<span class="mov__main"><b></b><span></span></span>' +
+      '<span class="mov__amount"></span>' +
+      '<span class="mov__balance"></span>';
+    item.querySelector("b").textContent = m.reference || etichettaMovimento(m.kind);
+    item.querySelector(".mov__main span").textContent =
+      etichettaMovimento(m.kind) + " · " + dataBreve(m.value_date);
+    item.querySelector(".mov__amount").textContent =
+      (entrata ? "+" : "") + euro(m.amount_eur);
+    item.querySelector(".mov__balance").textContent = "saldo " + euro(m.balance_after);
+    return item;
+  }
+
+  function caricaConto() {
+    return api.conto().then(renderConto).catch(function (err) {
+      if (err && err.code !== "28000" && window.ui && ui.toast) {
+        ui.toast(err.message || "Conto non disponibile.", "error");
+      }
+    });
+  }
+
+  /* ------------------------------------------------- versa / preleva -- */
+  function apriMovimento(tipo) {
+    var modale = document.querySelector("[data-move-modal]");
+    if (!modale) return;
+    var prelievo = tipo === "withdrawal";
+    var dati = contoState.dati || {};
+
+    modale.querySelector("[data-move-title]").textContent = prelievo ? "Preleva" : "Versa";
+    modale.querySelector("[data-move-intro]").textContent = prelievo
+      ? "Il prelievo va sul conto che hai indicato. Resta in attesa finché un analista non lo approva, e fino ad allora l'importo resta impegnato."
+      : "Un versamento si registra quando il bonifico arriva sul conto indicato dal contratto. Puoi prenotarlo qui e allegare la ricevuta.";
+    modale.querySelector("[data-move-submit]").textContent = prelievo ? "Richiedi il prelievo" : "Registra il versamento";
+    modale.querySelector("[data-move-hint]").textContent = prelievo
+      ? "Disponibile: " + euro(dati.disponibile || 0)
+      : "L'importo sarà accreditato dopo la verifica dell'analista.";
+    modale.querySelector("[data-move-file-field]").hidden = prelievo;
+
+    modale.setAttribute("data-tipo", tipo);
+    modale.hidden = false;
+    modale.querySelector("#move-amount").value = "";
+    modale.querySelector("#move-note").value = "";
+    var errore = modale.querySelector("[data-move-error]");
+    if (errore) errore.hidden = true;
+    setTimeout(function () { modale.querySelector("#move-amount").focus(); }, 30);
+  }
+
+  function chiudiMovimento() {
+    var modale = document.querySelector("[data-move-modal]");
+    if (modale) modale.hidden = true;
+  }
+
+  function inviaMovimento(event) {
+    event.preventDefault();
+    var modale = document.querySelector("[data-move-modal]");
+    var tipo = modale.getAttribute("data-tipo") || "deposit";
+    var importo = Number(modale.querySelector("#move-amount").value);
+    var nota = modale.querySelector("#move-note").value;
+    var errore = modale.querySelector("[data-move-error]");
+    var submit = modale.querySelector("[data-move-submit]");
+
+    if (!importo || importo <= 0) {
+      errore.hidden = false;
+      errore.textContent = "Indica un importo maggiore di zero.";
+      return;
+    }
+    /* Il controllo dei fondi è nel database: qui si evita solo di far
+       partire una richiesta che sappiamo già impossibile, così il cliente
+       legge subito perché. */
+    if (tipo === "withdrawal" && importo > Number((contoState.dati || {}).disponibile || 0)) {
+      errore.hidden = false;
+      errore.textContent = "Puoi prelevare al massimo " + euro((contoState.dati || {}).disponibile || 0) + ".";
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Invio…";
+    errore.hidden = true;
+
+    /* La ricevuta è facoltativa: se c'è, la allego alla pratica prima di
+       registrare il movimento, così l'analista che approva trova già il
+       documento senza doverlo chiedere. Se l'allegato fallisce, la richiesta
+       parte lo stesso: il denaro non deve dipendere dall'upload. */
+    var ricevuta = modale.querySelector("#move-file");
+    var file = ricevuta && ricevuta.files && ricevuta.files[0];
+    var allegato = file
+      ? api.uploadDocument({
+          file: file,
+          label: (tipo === "withdrawal" ? "Richiesta di prelievo" : "Ricevuta di versamento") +
+                 " · " + euro(importo),
+          kind: "bancario",
+          note: nota
+        }).catch(function () { return null; })
+      : Promise.resolve(null);
+
+    allegato.then(function () {
+      return api.createOperation({ type: tipo, amount_eur: importo, note: nota });
+    })
+      .then(function () {
+        chiudiMovimento();
+        if (window.ui && ui.toast) {
+          ui.toast(tipo === "withdrawal"
+            ? "Richiesta di prelievo inviata. Resta in attesa di approvazione."
+            : "Versamento registrato. L'importo sarà accreditato dopo la verifica.", "ok");
+        }
+        return Promise.all([caricaConto(), load ? load() : null]);
+      })
+      .catch(function (err) {
+        errore.hidden = false;
+        errore.textContent = err.message || "Operazione non riuscita.";
+      })
+      .then(function () {
+        submit.disabled = false;
+        submit.textContent = tipo === "withdrawal" ? "Richiedi il prelievo" : "Registra il versamento";
+      });
+  }
+
+  /* ---------------------------------------------------- estratto conto -- */
+  var RANGE = {
+    mese: [function (d) { return new Date(d.getFullYear(), d.getMonth(), 1); }, function (d) { return d; }],
+    trimestre: [function (d) { return new Date(d.getFullYear(), d.getMonth() - 2, 1); }, function (d) { return d; }],
+    anno: [function (d) { return new Date(d.getFullYear(), 0, 1); }, function (d) { return d; }],
+    tutto: [function () { return new Date(2000, 0, 1); }, function (d) { return d; }]
+  };
+
+  function iso(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  function caricaEstratto(intervallo) {
+    var oggi = new Date();
+    var scelta = RANGE[intervallo] || RANGE.mese;
+    var da = iso(scelta[0](oggi));
+    var a = iso(scelta[1](oggi));
+    var corpo = document.querySelector("[data-statement-body]");
+    var piede = document.querySelector("[data-statement-foot]");
+    corpo.innerHTML = '<tr><td colspan="5" class="empty-state">Caricamento…</td></tr>';
+
+    return api.estrattoConto(da, a).then(function (dati) {
+      if (!dati.movimenti.length) {
+        corpo.innerHTML = '<tr><td colspan="5" class="empty-state">Nessun movimento nel periodo.</td></tr>';
+      } else {
+        corpo.innerHTML = dati.movimenti.map(function (m) {
+          var entrata = Number(m.amount_eur) > 0;
+          return "<tr>" +
+            '<td class="xs mono">' + dataBreve(m.value_date) + "</td>" +
+            "<td>" + ui.esc(m.reference || etichettaMovimento(m.kind)) +
+              '<div class="xs muted">' + ui.esc(etichettaMovimento(m.kind)) + "</div></td>" +
+            '<td class="num">' + (entrata ? euro(m.amount_eur) : "") + "</td>" +
+            '<td class="num">' + (entrata ? "" : euro(m.amount_eur)) + "</td>" +
+            '<td class="num mono">' + euro(m.balance_after) + "</td>" +
+            "</tr>";
+        }).join("");
+      }
+      if (piede) {
+        piede.textContent = "Periodo " + dataBreve(dati.da) + " – " + dataBreve(dati.a) +
+          " · saldo del periodo " + euro(dati.saldo_periodo) +
+          " · saldo finale " + euro(dati.saldo_finale) +
+          (dati.conto ? " · conto " + dati.conto : "");
+      }
+    }).catch(function (err) {
+      corpo.innerHTML = '<tr><td colspan="5" class="empty-state">' +
+        ui.esc(err.message || "Estratto non disponibile.") + "</td></tr>";
+    });
+  }
+
+  function apriEstratto() {
+    var modale = document.querySelector("[data-statement-modal]");
+    if (!modale) return;
+    modale.hidden = false;
+    caricaEstratto("mese");
+  }
+
+  function bindConto() {
+    arrayEach("[data-move]", function (bottone) {
+      bottone.addEventListener("click", function () {
+        apriMovimento(bottone.getAttribute("data-move"));
+      });
+    });
+
+    var modale = document.querySelector("[data-move-modal]");
+    if (modale) {
+      modale.querySelector("[data-move-form]").addEventListener("submit", inviaMovimento);
+      modale.querySelector("[data-move-cancel]").addEventListener("click", chiudiMovimento);
+      modale.addEventListener("click", function (e) {
+        if (e.target === modale) chiudiMovimento();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modale.hidden) chiudiMovimento();
+      });
+    }
+
+    var moduloIban = document.querySelector("[data-iban-form]");
+    if (moduloIban) {
+      moduloIban.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var errore = moduloIban.querySelector("[data-iban-error]");
+        var iban = moduloIban.querySelector("#iban-value").value;
+        var holder = moduloIban.querySelector("#iban-holder").value;
+        var bottone = moduloIban.querySelector('button[type="submit"]');
+        bottone.disabled = true;
+        api.impostaIban(iban, holder).then(function () {
+          errore.hidden = true;
+          moduloIban.reset();
+          if (window.ui && ui.toast) ui.toast("Coordinate salvate. L'analista le verifica.", "ok");
+          return caricaConto();
+        }).catch(function (err) {
+          errore.hidden = false;
+          errore.textContent = err.message || "Coordinate non valide.";
+        }).then(function () { bottone.disabled = false; });
+      });
+    }
+
+    var estratto = document.querySelector("[data-estratto]");
+    if (estratto) estratto.addEventListener("click", apriEstratto);
+
+    var modaleEstratto = document.querySelector("[data-statement-modal]");
+    if (modaleEstratto) {
+      modaleEstratto.querySelector("[data-statement-close]").addEventListener("click", function () {
+        modaleEstratto.hidden = true;
+      });
+      modaleEstratto.querySelector("[data-statement-print]").addEventListener("click", function () {
+        window.print();
+      });
+      modaleEstratto.addEventListener("click", function (e) {
+        if (e.target === modaleEstratto) modaleEstratto.hidden = true;
+      });
+      arrayEach("[data-statement-range] .chip", function (chip) {
+        chip.addEventListener("click", function () {
+          arrayEach("[data-statement-range] .chip", function (c) { c.classList.remove("is-active"); });
+          chip.classList.add("is-active");
+          caricaEstratto(chip.getAttribute("data-range"));
+        });
+      });
+    }
+  }
+
   /* ------------------------------------------------------- contratto -- */
   /* La barra con "Accetta" compare solo se il contratto è ancora da
      accettare. `read_only` arriva da `auth_me`: quando un analista apre la
@@ -682,6 +1004,7 @@
 
   function load() {
     caricaNotifiche();
+    caricaConto();
     api.dashboard()
       .then(renderDashboard)
       .catch(function (err) {
@@ -704,6 +1027,7 @@
     bindSearch();
     bindForm();
     bindDocumenti();
+    bindConto();
     bindLogoutAll();
 
     var staff = staffView();

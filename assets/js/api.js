@@ -205,6 +205,15 @@
 
     /* --- area cliente --- */
     dashboard: function () { return call("me_dashboard"); },
+    /* --- conto --- */
+    conto: function () { return call("conto"); },
+    estrattoConto: function (da, a, limite) {
+      return call("estratto_conto", { p_da: da || null, p_a: a || null, p_limite: limite || 100 });
+    },
+    impostaIban: function (iban, intestatario) {
+      return call("imposta_iban", { p_iban: iban, p_intestatario: intestatario });
+    },
+    verificaIban: function (id) { return call("admin_verifica_iban", { p_id: id }); },
     limits: function () { return call("my_limits"); },
     crypto: function () { return rpc("market", {}); },
     myOperations: function (status) { return call("my_operations", { p_status: status || null }); },

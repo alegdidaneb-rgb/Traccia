@@ -139,7 +139,11 @@
         "<td><strong>" + ui.esc(user.name) + "</strong></td>" +
         '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
         '<td class="xs mono">' + (user.iban_formatted
-          ? ui.esc(user.iban_formatted)
+          ? ui.esc(user.iban_formatted) +
+            (user.iban_verified
+              ? ' <span class="pill pill--active">ok</span>'
+              : ' <button class="link-arrow xs" type="button" data-iban-verify="' +
+                user.id + '">verifica</button>')
           : '<span class="muted">—</span>') + "</td>" +
         /* il contratto si genera da solo: qui interessa solo se è accettato */
         "<td>" + (!user.contract_number
@@ -755,6 +759,19 @@
     });
 
     L.allAccountsBody.addEventListener("click", function (e) {
+      var verifica = e.target.closest("[data-iban-verify]");
+      if (verifica) {
+        verifica.disabled = true;
+        api.verificaIban(verifica.getAttribute("data-iban-verify")).then(function () {
+          ui.toast("Coordinate verificate.", "ok");
+          return loadAllAccounts();
+        }).catch(function (err) {
+          ui.toast(err.message, "error");
+          verifica.disabled = false;
+        });
+        return;
+      }
+
       var apri = e.target.closest("[data-open]");
       if (apri) {
         openClient(apri.getAttribute("data-open"), apri.getAttribute("data-open-name"));

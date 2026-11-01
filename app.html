@@ -24,10 +24,10 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101a" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101a" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261101a">
-  <link rel="stylesheet" href="assets/css/premium.css?v=20261101a">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261101b">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261101b">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/js/config.js?v=20261101a" defer></script>
-  <script src="assets/js/api.js?v=20261101a" defer></script>
-  <script src="assets/js/session.js?v=20261101a" defer></script>
+  <script src="assets/js/config.js?v=20261101b" defer></script>
+  <script src="assets/js/api.js?v=20261101b" defer></script>
+  <script src="assets/js/session.js?v=20261101b" defer></script>
 
   <script type="application/ld+json">
   {
@@ -122,6 +122,10 @@
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           Pratica
         </a>
+        <a class="appv2__tab" href="#conto" data-tab="conto">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.9 5.2h12.2M2.6 12.6h10.8a1.4 1.4 0 001.4-1.4V4.6a1.4 1.4 0 00-1.4-1.4H2.6a1.4 1.4 0 00-1.4 1.4v6.6a1.4 1.4 0 001.4 1.4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10.9 9h1.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Conto
+        </a>
         <a class="appv2__tab" href="#documenti" data-tab="documenti">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.8 2v4.2H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
           Documenti
@@ -189,9 +193,9 @@
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.4 8a5.4 5.4 0 11-1.6-3.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.6 2.2v2.6h-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Aggiorna
           </button>
-          <a class="btn btn--accent btn--sm" href="#carica" data-open-op="deposit">
+          <a class="btn btn--accent btn--sm" href="#conto" data-move="deposit" data-staff-hide>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Carica un documento
+            Versa
           </a>
         </div>
       </div>
@@ -297,7 +301,82 @@
         </section>
 
         <!-- documenti -->
-        <section class="pnl" id="documenti">
+        <!-- ===================== conto ===================== -->
+        <section class="pnl" id="conto">
+          <div class="pnl__head">
+            <h2>Conto</h2>
+            <div class="btn-row">
+              <button class="btn btn--accent btn--sm" type="button" data-move="deposit" data-staff-hide>
+                Versa
+              </button>
+              <button class="btn btn--ghost btn--sm" type="button" data-move="withdrawal" data-staff-hide>
+                Preleva
+              </button>
+            </div>
+          </div>
+          <div class="pnl__body">
+
+            <div class="conto-grid">
+              <div class="conto-cell conto-cell--main">
+                <span class="conto-cell__label">Disponibile</span>
+                <span class="conto-cell__value" data-conto-disponibile>—</span>
+                <span class="conto-cell__hint">Puoi usarli subito</span>
+              </div>
+              <div class="conto-cell">
+                <span class="conto-cell__label">Saldo contabile</span>
+                <span class="conto-cell__value" data-conto-saldo>—</span>
+                <span class="conto-cell__hint">Somma dei movimenti</span>
+              </div>
+              <div class="conto-cell">
+                <span class="conto-cell__label">Impegnato</span>
+                <span class="conto-cell__value" data-conto-prenotato>—</span>
+                <span class="conto-cell__hint">Richieste in attesa di approvazione</span>
+              </div>
+            </div>
+
+            <!-- dove arrivano i versamenti -->
+            <div class="iban-box">
+              <div class="iban-box__head">
+                <b>Coordinate per i versamenti</b>
+                <span class="pill" data-iban-pill hidden>Da verificare</span>
+              </div>
+              <p class="mono iban-box__value" data-iban-value>Nessun IBAN indicato</p>
+              <p class="xs muted" data-iban-holder></p>
+              <p class="xs muted mt-2" data-iban-hint>
+                Indica un conto intestato a te: sarà la destinazione dei prelievi e
+                il conto da cui ci aspettiamo i versamenti.
+              </p>
+              <form class="iban-form" data-iban-form novalidate data-staff-hide>
+                <div class="field">
+                  <label for="iban-value">IBAN</label>
+                  <input id="iban-value" name="iban" type="text" autocomplete="off"
+                         inputmode="text" spellcheck="false" placeholder="IT60 X054 2811 1010 0000 0123 456">
+                </div>
+                <div class="field">
+                  <label for="iban-holder">Intestatario</label>
+                  <input id="iban-holder" name="holder" type="text" autocomplete="off"
+                         placeholder="Nome e cognome">
+                </div>
+                <button class="btn btn--ghost btn--sm" type="submit">Salva coordinate</button>
+                <p class="form__note" data-iban-error hidden></p>
+              </form>
+            </div>
+
+            <!-- movimenti -->
+            <div class="conto-mov-head">
+              <h3>Ultimi movimenti</h3>
+              <button class="link-arrow xs" type="button" data-estratto>
+                Estratto conto completo
+              </button>
+            </div>
+            <ul class="mov-list" data-movimenti>
+              <li class="empty-state">Nessun movimento.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ===================== documenti ===================== -->
+
           <div class="pnl__head">
             <h2>Documenti della pratica</h2>
             <span class="chip"><span data-docs-count>2</span> / 4 file</span>
@@ -512,7 +591,70 @@
         </section>
       </div>
 
-      <!-- ===================== colonna laterale ===================== -->
+      <!-- ===================== modale: versa / preleva ===================== -->
+  <div class="modal-backdrop" data-move-modal hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="move-title">
+      <h3 id="move-title" data-move-title>Versa</h3>
+      <p class="small muted" data-move-intro></p>
+      <form class="form mt-3" data-move-form novalidate>
+        <div class="field">
+          <label for="move-amount">Importo in euro</label>
+          <input id="move-amount" name="amount" type="number" min="0.01" step="0.01"
+                 inputmode="decimal" required placeholder="0,00">
+          <span class="field__hint" data-move-hint></span>
+        </div>
+        <div class="field" data-move-file-field hidden>
+          <label for="move-file">Ricevuta del bonifico (facoltativa)</label>
+          <input id="move-file" name="file" type="file"
+                 accept="application/pdf,image/jpeg,image/png">
+          <span class="field__hint">Se la alleghi, l'analista la trova già insieme alla richiesta.</span>
+        </div>
+        <div class="field">
+          <label for="move-note">Nota (facoltativa)</label>
+          <input id="move-note" name="note" type="text" autocomplete="off"
+                 placeholder="Es. bonifico del 12 novembre">
+        </div>
+        <p class="form__note" data-move-error hidden></p>
+        <div class="btn-row mt-3">
+          <button class="btn btn--accent" type="submit" data-move-submit>Conferma</button>
+          <button class="btn btn--ghost" type="button" data-move-cancel>Annulla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== modale: estratto conto ===================== -->
+  <div class="modal-backdrop" data-statement-modal hidden>
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="statement-title">
+      <h3 id="statement-title">Estratto conto</h3>
+      <div class="btn-row mt-2" data-statement-range>
+        <button class="chip is-active" type="button" data-range="mese">Questo mese</button>
+        <button class="chip" type="button" data-range="trimestre">Ultimi 3 mesi</button>
+        <button class="chip" type="button" data-range="anno">Quest'anno</button>
+        <button class="chip" type="button" data-range="tutto">Tutto</button>
+      </div>
+      <div class="table-scroll mt-3">
+        <table class="data-table statement-table">
+          <thead>
+            <tr>
+              <th>Data valuta</th><th>Causale</th><th class="num">Entrata</th>
+              <th class="num">Uscita</th><th class="num">Saldo</th>
+            </tr>
+          </thead>
+          <tbody data-statement-body>
+            <tr><td colspan="5" class="empty-state">Caricamento…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="xs muted mt-2" data-statement-foot></p>
+      <div class="btn-row mt-3">
+        <button class="btn btn--ghost btn--sm" type="button" data-statement-print>Stampa</button>
+        <button class="btn btn--ghost btn--sm" type="button" data-statement-close>Chiudi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== colonna laterale ===================== -->
       <aside class="appv2__col" aria-label="Riferimenti della pratica">
 
         <section class="pnl">
@@ -659,12 +801,12 @@
 </div>
 
 
-  <script src="assets/js/ui.js?v=20261101a" defer></script>
-  <script src="assets/js/contract.js?v=20261101a" defer></script>
-  <script src="assets/js/case.js?v=20261101a" defer></script>
-  <script src="assets/js/main.js?v=20261101a" defer></script>
-  <script src="assets/js/market.js?v=20261101a" defer></script>
-  <script src="assets/js/premium.js?v=20261101a" defer></script>
+  <script src="assets/js/ui.js?v=20261101b" defer></script>
+  <script src="assets/js/contract.js?v=20261101b" defer></script>
+  <script src="assets/js/case.js?v=20261101b" defer></script>
+  <script src="assets/js/main.js?v=20261101b" defer></script>
+  <script src="assets/js/market.js?v=20261101b" defer></script>
+  <script src="assets/js/premium.js?v=20261101b" defer></script>
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
@@ -672,6 +814,6 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/js/whatsapp.js?v=20261101a" defer></script>
+  <script src="assets/js/whatsapp.js?v=20261101b" defer></script>
 </body>
 </html>
