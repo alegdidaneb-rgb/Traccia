@@ -387,6 +387,44 @@ Due strade, in ordine di preferenza:
 Finché non si sceglie, il modulo mostra un errore chiaro («Caricamento non
 riuscito») invece di far finta di aver caricato.
 
+### 5-nonies. Il conto: versamenti, prelievi, estratto conto
+
+Prima esistevano richieste di versamento e prelievo senza un conto dietro: il
+saldo era un numero che l'analista poteva scrivere a mano, un prelievo non
+controllava se i soldi c'erano, e dell'operazione approvata restava solo una
+riga con lo stato.
+
+| Pezzo | Dove | Cosa fa |
+|---|---|---|
+| Movimento | `traccia.ledger_entries` | una riga per movimento, con data valuta e saldo dopo |
+| Saldo | `users.balance_eur` | somma dei movimenti, scritta **solo** da `registra_movimento` |
+| Impegnato | `users.reserved_eur` | quota bloccata da richieste in attesa |
+| Disponibile | calcolato | saldo − impegnato: è il numero grande dell'interfaccia |
+
+**Perché tre numeri e non uno.** Un prelievo in attesa non è ancora uscito, ma
+non è nemmeno spendibile: se il cliente ne chiede due da 300 con 400 sul conto,
+il secondo deve fermarsi. Con un solo numero il secondo passerebbe, e il
+problema si scoprirebbe al momento di pagare. Verificato: prenotato tutto il
+saldo, un secondo prelievo anche di 1 € viene rifiutato con «Disponibile
+insufficiente».
+
+**I movimenti non si modificano.** Un trigger rifiuta `UPDATE` e `DELETE` su
+`ledger_entries`: un errore si corregge con una riga di storno, che resta
+visibile. È la differenza fra un estratto conto e un foglio di calcolo.
+
+**Il prelievo richiede un IBAN intestato al cliente** (`imposta_iban`), che
+l'analista verifica dalla console (colonna IBAN → *verifica*). Con un saldo
+attivo l'IBAN non si cambia da soli: si passa dall'assistenza, perché cambiare
+la destinazione dei prelievi è esattamente ciò che farebbe un intruso.
+
+**Estratto conto**: `estratto_conto(token, da, a)` restituisce i movimenti del
+periodo con il saldo progressivo. La stampa è già impostata (solo il foglio,
+senza navigazione).
+
+Cosa **non** c'è, di proposito: bonifici SEPA, addebiti diretti, interessi,
+carta. Qui c'è la contabilità e il controllo dei fondi; i pagamenti veri
+passano dalla banca e dall'intermediario, e il contratto lo dice.
+
 ### 6. Registrarità
 
 `traccia.audit` è append-only e registra ogni azione amministrativa con
