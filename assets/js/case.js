@@ -284,40 +284,103 @@
     });
   }
 
+  /* ------------------------------------------------------- caricamento -- */
   function bindForm() {
     var form = document.getElementById("op-form");
     if (!form) return;
+    var input = document.getElementById("op-file");
+    var progress = form.querySelector("[data-upload-progress]");
+    var barra = form.querySelector("[data-upload-bar]");
+    var stato = form.querySelector("[data-upload-status]");
+    var etichetta = form.querySelector("[data-dropzone-label]");
+    var meta = form.querySelector("[data-dropzone-meta]");
+
+    function statoScrivi(testo) {
+      if (!stato) return;
+      stato.textContent = testo;
+    }
+
+    /* Il file viene scelto una volta sola: se l'utente ne trascina un altro,
+       il nome nel riquadro deve cambiare, altrimenti carica il file sbagliato
+       credendone di aver scelto un altro. */
+    function mostraFile(file) {
+      if (!file) return;
+      if (etichetta) etichetta.textContent = file.name;
+      if (meta) {
+        meta.textContent = (file.size / 1048576).toFixed(2).replace(".", ",") + " MB · pronto";
+      }
+    }
+
+    if (input) {
+      input.addEventListener("change", function () {
+        mostraFile(input.files && input.files[0]);
+      });
+    }
+
+    ["dragenter", "dragover"].forEach(function (nome) {
+      form.addEventListener(nome, function (e) { e.preventDefault(); });
+    });
+    form.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files.length && input) {
+        input.files = e.dataTransfer.files;
+        mostraFile(input.files[0]);
+      }
+    });
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      var note = form.querySelector("[data-form-error]");
-      var type = document.getElementById("op-type");
-      var noteInput = document.getElementById("op-note");
-      var label = type ? type.options[type.selectedIndex].textContent : "Documento";
+      var nota = form.querySelector("[data-form-error]");
+      var tipo = document.getElementById("op-type");
+      var notaInput = document.getElementById("op-note");
+      var etichettaTipo = tipo ? tipo.options[tipo.selectedIndex].textContent : "Documento";
       var submit = form.querySelector('button[type="submit"]');
+      var file = input && input.files && input.files[0];
 
-      if (submit) { submit.disabled = true; submit.textContent = "Registro…"; }
+      if (nota) nota.hidden = true;
 
-      api.addDocument({
-        label: label,
-        kind: type ? type.value : "altro",
-        note: noteInput ? noteInput.value : ""
+      if (!file) {
+        if (nota) {
+          nota.hidden = false;
+          nota.textContent = "Scegli un file da caricare: senza file la pratica non avanza.";
+        }
+        if (input) input.focus();
+        return;
+      }
+
+      if (submit) { submit.disabled = true; submit.textContent = "Caricamento…"; }
+      if (progress) progress.hidden = false;
+      if (barra) barra.style.width = "55%";
+      statoScrivi("Caricamento in corso…");
+
+      api.uploadDocument({
+        file: file,
+        label: etichettaTipo,
+        kind: tipo ? tipo.value : "altro",
+        note: notaInput ? notaInput.value : ""
       }).then(function (res) {
         var doc = res.document || {};
-        if (note) {
-          note.hidden = false;
-          note.textContent = "Documento registrato nella pratica. L'analista lo verifica appena possibile.";
+        if (barra) barra.style.width = "100%";
+        statoScrivi("Caricato. L'analista lo verifica appena possibile.");
+        if (nota) {
+          nota.hidden = false;
+          nota.textContent = "Documento caricato nella pratica. L'analista lo verifica appena possibile.";
         }
         prependDocument(doc);
         form.reset();
-        if (window.ui && ui.toast) ui.toast("Documento aggiunto alla pratica.", "ok");
+        if (etichetta) etichetta.textContent = "Trascina qui un file, o scegli dal computer";
+        if (meta) meta.textContent = "PDF, JPG o PNG · massimo 10 MB";
+        if (window.ui && ui.toast) ui.toast("Documento caricato.", "ok");
+        setTimeout(function () { if (progress) progress.hidden = true; }, 2500);
       }).catch(function (err) {
-        if (note) {
-          note.hidden = false;
-          note.textContent = err.message || "Non è stato possibile registrare il documento.";
+        if (barra) barra.style.width = "0";
+        if (progress) progress.hidden = true;
+        if (nota) {
+          nota.hidden = false;
+          nota.textContent = err.message || "Non è stato possibile caricare il documento.";
         }
       }).then(function () {
-        if (submit) { submit.disabled = false; submit.textContent = "Registra il documento"; }
+        if (submit) { submit.disabled = false; submit.textContent = "Carica il documento"; }
       });
     });
   }
@@ -462,29 +525,75 @@
     }
   }
 
+  /* Un documento può essere in uno di tre stati, e la differenza conta:
+     - `received`  → l'analista l'ha accettato
+     - `rejected`  → l'analista ha chiesto di ricaricarlo, con una nota
+     - `pending`   → caricato, in attesa di valutazione
+     La nota del rifiuto va mostrata: senza, il cliente sa che c'è un problema
+     ma non cosa correggere. */
+  function statoDocumento(doc) {
+    if (doc.status === "received") {
+      return { classe: "", pill: "pill--active", testo: "Acquisito",
+               sotto: "acquisito il " + shortDate(doc.created_at) };
+    }
+    if (doc.status === "rejected") {
+      return { classe: " vault__item--missing", pill: "pill--rejected", testo: "Da ricaricare",
+               sotto: doc.decision_note || "L'analista ha chiesto un nuovo documento." };
+    }
+    return { classe: "", pill: "pill--pending", testo: "In verifica",
+             sotto: doc.has_file ? "caricato il " + shortDate(doc.created_at) : "in attesa di caricamento" };
+  }
+
   function renderDocuments(docs) {
     var vault = document.getElementById("docs-table");
     if (!vault || !docs) return;
     vault.innerHTML = "";
     docs.forEach(function (doc) {
+      var stato = statoDocumento(doc);
       var item = document.createElement("li");
-      item.className = "vault__item" + (doc.status === "received" ? "" : " vault__item--missing");
-      var ok = doc.status === "received";
+      item.className = "vault__item" + stato.classe;
       item.innerHTML =
         '<span class="vault__ico" aria-hidden="true">' +
-        (ok
+        (doc.status === "received"
           ? '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>'
           : '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>') +
         "</span>" +
         '<div class="vault__main"><b></b><span></span></div>' +
-        '<span class="vault__act"><span class="pill ' +
-        (ok ? "pill--active" : "pill--pending") + '">' +
-        (ok ? "Ricevuto" : "Da integrare") + "</span></span>";
+        '<span class="vault__act">' +
+        (doc.has_file
+          ? '<button class="link-arrow xs" type="button" data-open-file="' + doc.id + '">Apri file</button> '
+          : "") +
+        '<span class="pill ' + stato.pill + '">' + stato.testo + "</span></span>";
       item.querySelector("b").textContent = doc.label;
-      item.querySelector(".vault__main span").textContent = ok
-        ? "acquisito il " + shortDate(doc.created_at)
-        : "in attesa di caricamento";
+      item.querySelector(".vault__main span").textContent = stato.sotto;
       vault.appendChild(item);
+    });
+  }
+
+  /* Il documento non ha un indirizzo pubblico: si chiede un link firmato che
+     scade dopo dieci minuti. Così un link incollato in una chat smette di
+     funzionare, e il registro attività sa chi l'ha aperto. */
+  function apriDocumento(id, bottone) {
+    var testo = bottone.textContent;
+    bottone.disabled = true;
+    bottone.textContent = "Apro…";
+    api.documentLink(id).then(function (res) {
+      window.open(res.url, "_blank", "noopener");
+    }).catch(function (err) {
+      if (window.ui && ui.toast) ui.toast(err.message || "File non disponibile.", "error");
+    }).then(function () {
+      bottone.disabled = false;
+      bottone.textContent = testo;
+    });
+  }
+
+  function bindDocumenti() {
+    var vault = document.getElementById("docs-table");
+    if (!vault) return;
+    vault.addEventListener("click", function (e) {
+      var bottone = e.target.closest("[data-open-file]");
+      if (!bottone) return;
+      apriDocumento(bottone.getAttribute("data-open-file"), bottone);
     });
   }
 
@@ -594,6 +703,7 @@
     bindDropzone();
     bindSearch();
     bindForm();
+    bindDocumenti();
     bindLogoutAll();
 
     var staff = staffView();

@@ -18,6 +18,37 @@ non serve alcun processo lato server.
 
 ---
 
+## Intestazione e piè di pagina: un solo posto
+
+L'intestazione e il piè di pagina non stanno più dentro le quattordici pagine
+come copie separate: stanno in `partials/` (`header.html`, `footer.html`,
+`area-bar.html`) e uno script li cuce dentro le pagine.
+
+```bash
+python3 tools/build_shell.py          # riscrive le pagine dai partials
+python3 tools/build_shell.py --check  # esce 1 se una pagina è disallineata
+```
+
+Dentro la pagina resta **HTML vero**, tra due marcatori:
+
+```html
+<!-- shell:header -->
+...
+<!-- /shell:header -->
+```
+
+Quindi il sito resta statico: nessun `fetch`, nessun JavaScript in più, nessun
+lampo di pagina vuota al caricamento. La voce di menu attiva (`is-active` e
+`aria-current="page"`) la decide lo script dal nome del file, non si scrive più
+a mano.
+
+**Regola pratica:** un ritocco all'header o al footer si fa in `partials/` e si
+rilancia lo script. Modificare l'header dentro una singola pagina funziona fino
+alla build successiva, che lo sovrascrive.
+
+Per bloccare le regressioni, `python3 tools/build_shell.py --check` va eseguito
+prima di ogni pubblicazione: se qualcuno ha toccato una pagina a mano, lo dice.
+
 ## Opzione A — drag & drop (2 minuti, nessun comando)
 
 1. Vai su <https://vercel.com/new>
@@ -310,6 +341,51 @@ Le sessioni ora si chiudono davvero:
 ignora le sessioni con `revoked_at` valorizzato. La revoca vale quindi ovunque,
 non solo nella schermata che l'ha chiesta. Verificato: dopo `auth_logout_all`
 la stessa chiamata a `auth_me` risponde `28000`.
+
+### 5-octies. Caricamento dei documenti
+
+Il file va su **Supabase Storage**, bucket `documenti`, in un percorso che
+contiene cliente e documento:
+
+```
+documenti/<user_id>/<document_id>/<nome-file>
+```
+
+Il database controlla che il percorso sia davvero quello (`attach_document_file`
+rifiuta `22023` se non inizia con `<user_id>/<document_id>/`): senza questo
+controllo, un cliente potrebbe far puntare la riga al file di un altro.
+
+| Aspetto | Valore |
+|---|---|
+| Bucket | `documenti`, **privato** |
+| Formati | PDF, JPG, PNG (controllati nel browser **e** nel database) |
+| Dimensione | massimo 10 MB |
+| Lettura | solo link firmato, valido 10 minuti, chiesto a `document_link` |
+| Sovrascrittura | non prevista: un documento caricato non si sostituisce |
+| Registro | `document_upload` e `document_link` con chi ha aperto cosa |
+
+Il cliente vede solo i propri file; l'analista li vede tutti. Ogni apertura
+lascia una riga nel registro attività, perché «chi ha guardato questo
+documento» è una domanda a cui dobbiamo saper rispondere.
+
+**Punto aperto, da leggere prima di andare in produzione.** Le policy su
+`storage.objects` usano `auth.uid()`, cioè una sessione Supabase Auth. Le
+sessioni di Traccia sono gettoni in `traccia.sessions`, non sessioni Supabase
+Auth: finché non si collega un `auth_id` a ogni utente (`traccia.users.auth_id`
+esiste già), il caricamento diretto dal browser viene rifiutato e va instradato
+su una Edge Function con la chiave di servizio.
+
+Due strade, in ordine di preferenza:
+
+1. **Edge Function `upload-documento`** (consigliata): riceve il file, verifica
+   il gettone `traccia`, carica con la chiave di servizio, chiama
+   `attach_document_file`. Unico modo per non lasciare file orfani quando una
+   riga viene rifiutata, perché il file e la riga si creano nello stesso punto.
+2. **Sessione Supabase Auth** per ogni cliente, con `auth_id` compilato: il
+   caricamento avviene direttamente dal browser e le policy qui sotto bastano.
+
+Finché non si sceglie, il modulo mostra un errore chiaro («Caricamento non
+riuscito») invece di far finta di aver caricato.
 
 ### 6. Registrarità
 

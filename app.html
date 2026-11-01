@@ -24,10 +24,10 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261031i" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261031i" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261031i">
-  <link rel="stylesheet" href="assets/css/premium.css?v=20261031i">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101a" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101a" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261101a">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261101a">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/js/config.js?v=20261031i" defer></script>
-  <script src="assets/js/api.js?v=20261031i" defer></script>
-  <script src="assets/js/session.js?v=20261031i" defer></script>
+  <script src="assets/js/config.js?v=20261101a" defer></script>
+  <script src="assets/js/api.js?v=20261101a" defer></script>
+  <script src="assets/js/session.js?v=20261101a" defer></script>
 
   <script type="application/ld+json">
   {
@@ -70,6 +70,7 @@
     <div class="scroll-progress" aria-hidden="true"></div>
   <a class="skip-link" href="#main">Vai al contenuto</a>
 
+  <!-- shell:header -->
   <header class="appbar">
   <div class="appbar__inner">
     <a class="brand" href="index.html">
@@ -92,6 +93,7 @@
     </div>
   </div>
 </header>
+  <!-- /shell:header -->
 
 
   <main id="main">
@@ -352,15 +354,22 @@
         <section class="pnl" id="carica">
           <div class="pnl__head">
             <h2>Carica un documento</h2>
-            <span class="chip">Simulazione</span>
+            <span class="chip chip--secure">Caricamento riservato</span>
           </div>
           <form class="form pnl__body" id="op-form" novalidate>
             <div class="dropzone" data-dropzone>
+              <input class="dropzone__input" type="file" id="op-file"
+                     accept="application/pdf,image/jpeg,image/png"
+                     aria-label="Scegli il file da caricare">
               <span class="dropzone__ico" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </span>
-              <b>Trascina qui un file, o scegli dal computer</b>
-              <span>PDF, JPG o PNG · massimo 10 MB</span>
+              <b data-dropzone-label>Trascina qui un file, o scegli dal computer</b>
+              <span data-dropzone-meta>PDF, JPG o PNG · massimo 10 MB</span>
+            </div>
+            <div class="upload-progress" data-upload-progress hidden>
+              <span class="upload-progress__bar"><i data-upload-bar></i></span>
+              <span class="xs" data-upload-status role="status" aria-live="polite"></span>
             </div>
 
             <div class="form-row mt-3" style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem">
@@ -381,7 +390,11 @@
               </div>
             </div>
 
-            <p class="field__hint mt-2">Non inserire password, codici OTP o chiavi private. Nessun file lascia il browser in questa demo.</p>
+            <p class="field__hint mt-2">
+              Non inserire password, codici OTP o chiavi private.
+              Il file viene caricato in modo riservato e resta visibile solo a te
+              e all'analista che segue la pratica.
+            </p>
             <p class="form__note" data-form-error hidden></p>
 
             <div class="btn-row mt-3">
@@ -646,12 +659,12 @@
 </div>
 
 
-  <script src="assets/js/ui.js?v=20261031i" defer></script>
-  <script src="assets/js/contract.js?v=20261031i" defer></script>
-  <script src="assets/js/case.js?v=20261031i" defer></script>
-  <script src="assets/js/main.js?v=20261031i" defer></script>
-  <script src="assets/js/market.js?v=20261031i" defer></script>
-  <script src="assets/js/premium.js?v=20261031i" defer></script>
+  <script src="assets/js/ui.js?v=20261101a" defer></script>
+  <script src="assets/js/contract.js?v=20261101a" defer></script>
+  <script src="assets/js/case.js?v=20261101a" defer></script>
+  <script src="assets/js/main.js?v=20261101a" defer></script>
+  <script src="assets/js/market.js?v=20261101a" defer></script>
+  <script src="assets/js/premium.js?v=20261101a" defer></script>
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
@@ -659,6 +672,6 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/js/whatsapp.js?v=20261031i" defer></script>
+  <script src="assets/js/whatsapp.js?v=20261101a" defer></script>
 </body>
 </html>
