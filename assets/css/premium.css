@@ -2365,3 +2365,83 @@ body.is-app .wa-fab { display: none; }
   .notif__panel { width: calc(100vw - 2rem); right: -0.5rem; }
   .filters__check { margin-left: 0; width: 100%; }
 }
+
+/* ============================================================================
+   §37 · documenti da valutare e accesso in sola lettura
+   ---------------------------------------------------------------------------
+   Due cose che devono vedersi subito e non confondersi con il resto:
+   il pannello in cui l'analista decide su un documento caricato, e la
+   striscia che dice «stai guardando la pratica di qualcun altro, in sola
+   lettura». La striscia è volutamente persistente: chi apre una pratica
+   altrui non deve poter dimenticare in che modalità si trova.
+   ========================================================================= */
+
+/* ------------------------------------------------- documenti da valutare -- */
+#documents-table td { vertical-align: top; }
+#documents-table .data-table__actions { white-space: nowrap; }
+#documents-table .data-table__actions .btn + .btn { margin-left: 0.35rem; }
+#documents-table .pill--received { background: var(--accent-wash); color: var(--accent); }
+#documents-table .pill--rejected {
+  background: rgba(170, 46, 46, 0.09);
+  color: #8f2626;
+}
+
+/* il contatore nella barra laterale si accende solo se c'è lavoro da fare */
+.chip__count.is-hot {
+  background: var(--accent-lime);
+  color: #12200a;
+  font-weight: 650;
+}
+
+/* --------------------------------------------- console: sola lettura ------ */
+.readonly-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-lime);
+  border-radius: 10px;
+  background: var(--accent-wash);
+}
+.readonly-banner[hidden] { display: none; }
+.readonly-banner strong { font-size: 0.95rem; }
+.readonly-banner p { margin: 0.15rem 0 0; color: var(--muted, #5a5a62); }
+
+/* --------------------------------------------- area cliente: sola lettura -- */
+.appv2__staff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0 auto 0.9rem;
+  max-width: 1220px;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-lime);
+  border-radius: 10px;
+  background: var(--accent-wash);
+  animation: staffIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.appv2__staff[hidden] { display: none; }
+.appv2__staff strong { font-size: 0.95rem; }
+.appv2__staff p { margin: 0.15rem 0 0; color: var(--muted, #5a5a62); }
+@keyframes staffIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* in sola lettura i riquadri che scrivono non devono restare raggiungibili */
+body.is-staff-view [data-staff-hide] { display: none !important; }
+body.is-staff-view #carica,
+body.is-staff-view #sicurezza { display: none !important; }
+
+@media (max-width: 720px) {
+  .readonly-banner,
+  .appv2__staff { align-items: flex-start; }
+  #documents-table .data-table__actions .btn + .btn { margin: 0.35rem 0 0; }
+}

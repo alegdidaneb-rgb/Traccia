@@ -263,6 +263,27 @@
   }
 
   /* ------------------------------------------------------------- upload -- */
+  function bindLogoutAll() {
+    var button = document.querySelector("[data-logout-all]");
+    if (!button) return;
+    button.addEventListener("click", function () {
+      var note = document.querySelector("[data-logout-all-msg]");
+      button.disabled = true;
+      api.logoutAll().then(function (res) {
+        var n = (res && res.closed) || 0;
+        if (note) {
+          note.textContent = n
+            ? "Sessioni chiuse: " + n + ". Ti stiamo portando al login."
+            : "Nessuna sessione aperta oltre a questa. Ti stiamo portando al login.";
+        }
+        setTimeout(function () { location.href = "login.html?uscita=1"; }, 1200);
+      }).catch(function (err) {
+        button.disabled = false;
+        if (note) note.textContent = err.message || "Non è stato possibile chiudere le sessioni.";
+      });
+    });
+  }
+
   function bindForm() {
     var form = document.getElementById("op-form");
     if (!form) return;
@@ -334,6 +355,55 @@
     if (!epoch) return "—";
     return new Intl.DateTimeFormat("it-IT", { day: "2-digit", month: "short" })
       .format(new Date(epoch * 1000));
+  }
+
+  /* ------------------------------------------------- sola lettura analista -- */
+  /* La console apre questa pagina con una sessione `staff`: gettone a parte,
+     durata di due ore, e il database rifiuta ogni scrittura (`need_write_user`).
+     Qui si nasconde tutto ciò che scrive, così il cliente non vede un modulo
+     che poi fallirebbe. Non è una protezione: la protezione è nel database. */
+  var STAFF_KEY = "traccia.staff_view";
+
+  function staffView() {
+    if (window.location.search.indexOf("staff=1") === -1) return null;
+    try {
+      var dati = JSON.parse(window.localStorage.getItem(STAFF_KEY) || "null");
+      if (!dati || !dati.token || (dati.scade && dati.scade < Date.now())) return null;
+      return dati;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function applyStaffView(dati) {
+    api.setToken(dati.token);
+    if (dati.user) api.cacheUser(dati.user);
+
+    document.body.classList.add("is-staff-view");
+
+    var banner = document.querySelector("[data-staff-banner]");
+    if (banner) {
+      banner.hidden = false;
+      var nome = banner.querySelector("[data-staff-name]");
+      if (nome) nome.textContent = dati.nome || (dati.user && dati.user.name) || "cliente";
+    }
+
+    /* niente scritture: via i moduli che scrivono */
+    ["#carica", "#sicurezza"].forEach(function (sel) {
+      var nodo = document.querySelector(sel);
+      if (nodo) nodo.hidden = true;
+    });
+    each("[data-staff-hide]", function (nodo) { nodo.hidden = true; });
+
+    var esci = document.querySelector("[data-staff-exit]");
+    if (esci) {
+      esci.addEventListener("click", function () {
+        try { window.localStorage.removeItem(STAFF_KEY); } catch (e) {}
+        api.setToken("");
+        api.cacheUser(null);
+        window.location.href = "admin.html#clienti";
+      });
+    }
   }
 
   function guardSession() {
@@ -524,6 +594,10 @@
     bindDropzone();
     bindSearch();
     bindForm();
+    bindLogoutAll();
+
+    var staff = staffView();
+    if (staff) applyStaffView(staff);
 
     var copyRef = function (ref) { bindCopy(ref); };
     var ref = caseRef();

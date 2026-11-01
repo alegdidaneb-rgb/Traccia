@@ -40,7 +40,10 @@
     withdrawal: "Prelievo",
     buy: "Acquisto",
     sell: "Vendita",
-    transfer_out: "Trasferimento"
+    transfer_out: "Trasferimento",
+    /* stati dei documenti caricati dal cliente */
+    received: "Acquisito",
+    rejected: "Da ricaricare"
   };
 
   function pill(status, extra) {

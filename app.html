@@ -97,6 +97,17 @@
   <main id="main">
 <div class="appv2">
 
+  <!-- visibile solo quando un analista apre la pratica in sola lettura -->
+  <div class="appv2__staff" data-staff-banner hidden>
+    <div>
+      <strong>Stai guardando la pratica di <span data-staff-name>—</span></strong>
+      <p class="xs">Accesso in sola lettura, valido due ore. Nessuna modifica viene registrata a nome del cliente.</p>
+    </div>
+    <button class="btn btn--ghost btn--sm" type="button" data-staff-exit>
+      Torna alla console
+    </button>
+  </div>
+
   <!-- ===================== barra dell'area ===================== -->
   <div class="appv2__bar">
     <div class="appv2__bar-inner">
@@ -120,6 +131,10 @@
         <a class="appv2__tab" href="#contratto" data-tab="contratto">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.6 8.5l1.2 1.2 2.9-3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Contratto
+        </a>
+        <a class="appv2__tab" href="#sicurezza" data-tab="sicurezza">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.9l5 1.7v4.1c0 3-2.1 5.1-5 6.4-2.9-1.3-5-3.4-5-6.4V3.6l5-1.7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.9 7.9l1.5 1.5 2.9-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Sicurezza
         </a>
         <a class="appv2__tab" href="#onorari" data-tab="onorari">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.9v12.2M11 4.6c0-1.1-1.3-1.9-3-1.9s-3 .8-3 1.9c0 2.7 6 1.4 6 4.1 0 1.1-1.3 1.9-3 1.9s-3-.8-3-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -433,6 +448,25 @@
         </section>
 
         <!-- onorari -->
+        <section class="pnl" id="sicurezza">
+          <div class="pnl__head"><h2>Sicurezza dell'accesso</h2></div>
+          <div class="pnl__body">
+            <p class="sm muted">
+              Chiudi tutte le sessioni aperte, su questo e su altri dispositivi.
+              Ti verrà chiesto di accedere di nuovo.
+            </p>
+            <div class="row gap-2 mt-3 wrap">
+              <button class="btn btn--ghost btn--sm" type="button" data-logout-all>
+                Esci da tutti i dispositivi
+              </button>
+              <a class="btn btn--ghost btn--sm" href="login.html#recupera" data-recover>
+                Non riconosci un accesso?
+              </a>
+            </div>
+            <p class="field__hint mt-3" data-logout-all-msg role="status" aria-live="polite"></p>
+          </div>
+        </section>
+
         <section class="pnl" id="onorari">
           <div class="pnl__head">
             <h2>Onorari della pratica</h2>
@@ -507,7 +541,7 @@
           <div class="pnl__head"><h2>Azioni rapide</h2></div>
           <div class="pnl__body">
             <div class="quick">
-              <a class="quick__btn" href="#carica">
+              <a class="quick__btn" href="#carica" data-staff-hide>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V2.6M4.6 6L8 2.6 11.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.4 10.6v1.8a1.4 1.4 0 001.4 1.4h8.4a1.4 1.4 0 001.4-1.4v-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Carica documento
               </a>

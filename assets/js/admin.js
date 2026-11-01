@@ -10,6 +10,8 @@
     operationFilter: "pending",
     walletFilter: "pending",
     wallets: [],
+    documents: [],
+    documentFilter: "pending",
     settings: null,
     defaults: null
   };
@@ -34,6 +36,11 @@
     countWallets: document.querySelector("[data-count-wallets]"),
     kpiWallets: document.querySelector("[data-kpi-wallets]"),
     walletsBody: document.querySelector("#wallets-table tbody"),
+    documentsBody: document.querySelector("#documents-table tbody"),
+    countDocuments: document.querySelector("[data-count-documents]"),
+    kpiDocuments: document.querySelector("[data-kpi-documents]"),
+    readonlyBanner: document.querySelector("[data-readonly-banner]"),
+    readonlyName: document.querySelector("[data-readonly-name]"),
     settingsForm: document.querySelector("#settings-form"),
     messages: document.querySelector("[data-messages]"),
     messagesCount: document.querySelector("[data-messages-count]"),
@@ -119,6 +126,15 @@
           '" data-next="' + nextRole + '" type="button">' +
           (nextRole === "admin" ? "Rendi admin" : "Revoca admin") + "</button>";
       }
+      /* chiusura forzata delle sessioni: serve quando un accesso è compromesso */
+      var killBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" data-kill="' + user.id +
+        '" type="button">Chiudi sessioni</button>';
+      var openBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" data-open="' + user.id +
+        '" data-open-name="' + ui.esc(user.name) +
+        '" type="button">Apri pratica</button>';
+
       return "<tr>" +
         "<td><strong>" + ui.esc(user.name) + "</strong></td>" +
         '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
@@ -142,7 +158,7 @@
         '<td class="num">' + (user.holdings_value
           ? ui.money(user.holdings_value)
           : '<span class="xs muted">—</span>') + "</td>" +
-        '<td class="data-table__actions">' + roleBtn + "</td>" +
+        '<td class="data-table__actions">' + openBtn + roleBtn + killBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -296,6 +312,110 @@
     });
   }
 
+  /* ------------------------------------------------------------ documenti -- */
+  function renderDocuments() {
+    if (!L.documentsBody) return;
+    var list = state.documents;
+    if (!list.length) {
+      L.documentsBody.innerHTML =
+        '<tr><td colspan="7" class="empty-state">Nessun documento in questo stato.</td></tr>';
+      return;
+    }
+    L.documentsBody.innerHTML = list.map(function (doc) {
+      var azioni = doc.status === "pending"
+        ? '<button class="btn btn--accent btn--sm" data-doc="' + doc.id +
+          '" data-doc-action="approve" type="button">Accetta</button>' +
+          '<button class="btn btn--ghost btn--sm" data-doc="' + doc.id +
+          '" data-doc-action="deny" type="button">Rifiuta</button>'
+        : '<span class="xs muted">' + ui.when(doc.decided_at) + "</span>";
+
+      return "<tr>" +
+        "<td><strong>" + ui.esc(doc.user_name) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(doc.case_ref || doc.user_email) + "</div></td>" +
+        "<td>" + ui.esc(doc.label) + "</td>" +
+        '<td class="xs muted">' + ui.esc(documentKind(doc.kind)) + "</td>" +
+        '<td class="xs muted">' + ui.when(doc.created_at) + "</td>" +
+        "<td>" + ui.pill(doc.status) + "</td>" +
+        '<td class="xs muted">' + ui.esc(doc.decision_note || doc.note || "—") + "</td>" +
+        '<td class="data-table__actions">' + azioni + "</td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  function documentKind(kind) {
+    var nomi = {
+      identita: "Documento d'identità",
+      residenza: "Prova di residenza",
+      reddito: "Documentazione reddituale",
+      bancario: "Estratto conto",
+      contratto: "Contratto",
+      altro: "Altro"
+    };
+    return nomi[kind] || kind || "Altro";
+  }
+
+  function loadDocuments() {
+    if (!L.documentsBody) return Promise.resolve();
+    return api.documents(state.documentFilter || undefined).then(function (data) {
+      state.documents = data.documents || [];
+      renderDocuments();
+      if (L.countDocuments) {
+        var pending = Number(data.pending_count) || 0;
+        L.countDocuments.textContent = pending ? String(pending) : "";
+        L.countDocuments.classList.toggle("is-hot", pending > 0);
+      }
+      if (L.kpiDocuments) L.kpiDocuments.textContent = String(data.pending_count || 0);
+    });
+  }
+
+  function documentAction(id, action) {
+    var rifiuto = action === "deny";
+    ui.ask({
+      title: rifiuto ? "Rifiutare questo documento?" : "Accettare questo documento?",
+      message: rifiuto
+        ? "Il cliente riceverà la tua nota e potrà caricare un nuovo documento."
+        : "Il documento risulterà acquisito nella pratica del cliente.",
+      prompt: rifiuto ? "Cosa deve correggere il cliente? (in italiano)" : "Nota interna (opzionale)",
+      confirm: rifiuto ? "Rifiuta" : "Accetta",
+      danger: rifiuto
+    }).then(function (note) {
+      if (note === null) return;
+      if (rifiuto && !note) {
+        ui.toast("Per rifiutare serve una nota: il cliente deve sapere cosa correggere.", "error");
+        return;
+      }
+      return api.documentAction(id, action, note).then(function () {
+        ui.toast(rifiuto ? "Documento da ricaricare." : "Documento acquisito.", "ok");
+        return loadDocuments();
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  /* ------------------------------------------------- sola lettura cliente -- */
+  /* Apre l'area del cliente in una scheda nuova con una sessione `staff`:
+     il database marca quella sessione come sola lettura e `need_write_user`
+     rifiuta ogni scrittura. Nessuna azione viene registrata a nome del
+     cliente, quindi non c'è impersonificazione. */
+  function openClient(id, nome) {
+    api.viewClient(id).then(function (data) {
+      var chiave = "traccia.staff_view";
+      try {
+        window.localStorage.setItem(chiave, JSON.stringify({
+          token: data.token,
+          user: data.user,
+          nome: nome || (data.user && data.user.name) || "",
+          scade: Date.now() + (data.expires_in || 7200) * 1000
+        }));
+      } catch (e) {
+        ui.toast("Il browser blocca la memoria locale: apri l'area del cliente senza schede anonime.", "error");
+        return;
+      }
+      var scheda = window.open("app.html?staff=1", "_blank", "noopener");
+      if (!scheda) ui.toast("Il browser ha bloccato la scheda: consentine l'apertura per questa console.", "error");
+      else ui.toast("Aperta la pratica di " + (nome || "cliente") + " in sola lettura.", "ok");
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
   /* --------------------------------------------------------------- audit -- */
   function renderAudit(rows) {
     if (!rows.length) {
@@ -361,7 +481,7 @@
   function refresh() {
     return Promise.all([
       loadOverview(), loadAccounts(), loadAllAccounts(), loadOperations(),
-      loadWallets(), loadSettings(), loadMessages()
+      loadWallets(), loadDocuments(), loadSettings(), loadMessages()
     ]);
   }
 
@@ -631,6 +751,28 @@
     });
 
     L.allAccountsBody.addEventListener("click", function (e) {
+      var apri = e.target.closest("[data-open]");
+      if (apri) {
+        openClient(apri.getAttribute("data-open"), apri.getAttribute("data-open-name"));
+        return;
+      }
+
+      var kill = e.target.closest("[data-kill]");
+      if (kill) {
+        ui.ask({
+          title: "Chiudere tutte le sessioni di questo account?",
+          message: "L'utente dovrà accedere di nuovo. L'azione viene registrata nel registro attività.",
+          confirm: "Chiudi sessioni",
+          danger: true
+        }).then(function (ok) {
+          if (ok === null) return;
+          return api.revokeSessions(kill.getAttribute("data-kill")).then(function (res) {
+            ui.toast("Sessioni chiuse: " + ((res && res.closed) || 0) + ".", "ok");
+          });
+        }).catch(function (err) { ui.toast(err.message, "error"); });
+        return;
+      }
+
       var button = e.target.closest("[data-role]");
       if (!button) return;
       var next = button.getAttribute("data-next");
@@ -707,6 +849,25 @@
         loadWallets().catch(function (err) { ui.toast(err.message, "error"); });
       });
     });
+
+    if (L.documentsBody) {
+      L.documentsBody.addEventListener("click", function (e) {
+        var bottone = e.target.closest("[data-doc]");
+        if (!bottone) return;
+        documentAction(bottone.getAttribute("data-doc"), bottone.getAttribute("data-doc-action"));
+      });
+
+      document.querySelectorAll("[data-document-filters] .chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          document.querySelectorAll("[data-document-filters] .chip").forEach(function (c) {
+            c.classList.remove("is-active");
+          });
+          chip.classList.add("is-active");
+          state.documentFilter = chip.getAttribute("data-filter");
+          loadDocuments().catch(function (err) { ui.toast(err.message, "error"); });
+        });
+      });
+    }
 
     document.querySelectorAll("[data-account-filters] .chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
