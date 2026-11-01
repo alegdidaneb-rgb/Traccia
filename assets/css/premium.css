@@ -2669,3 +2669,227 @@ body.is-staff-view #sicurezza { display: none !important; }
   .mov { grid-template-columns: 1.6rem 1fr auto; }
   .mov__balance { display: none; }
 }
+
+/* `pill--rejected` e `pill--muted` servono ai nuovi stati (respinto,
+   annullato, restituito): se mancano in style.css, li definiamo qui invece di
+   lasciare una pillola senza colore, che sembra un errore di caricamento. */
+.pill--rejected { color: var(--down, #b3261e); background: var(--down-wash, #fbeaea); }
+.pill--muted { color: var(--muted); background: var(--line-soft); }
+
+/* --------------------------------------------------------------------------
+   40. Bonifici, mandati, interessi, carta
+   -------------------------------------------------------------------------- */
+/* Quattro riquadri, non una pagina di tabelle: ognuno è un canale diverso e
+   un canale ha uno stato. Il bordo a sinistra colorato è l'unica cosa che
+   cambia quando lo stato cambia, così il colpo d'occhio funziona. */
+.rails {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.rail {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: #fff;
+  padding: 1.1rem 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.rail__head h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+}
+.rail > .xs { margin: 0; }
+
+.rail__list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rail-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0.65rem 0.75rem;
+  background: var(--bg-soft, #fbfbfd);
+}
+/* lo stato si legge dal bordo, non solo dalla pillola */
+.rail-item:has(.pill--active) { border-left-color: var(--up, #0a7a4a); }
+.rail-item:has(.pill--pending) { border-left-color: var(--warn, #a3660b); }
+.rail-item:has(.pill--rejected) { border-left-color: var(--down, #b3261e); }
+/* un annullato non deve sembrare un problema: è una scelta */
+.rail-item:has(.pill--muted) { border-left-color: var(--line); }
+
+.rail-item__main { min-width: 0; }
+.rail-item__main b {
+  display: block;
+  font-size: 0.88rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-item__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+.rail-item__amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* il mandato occupa due colonne: sotto ci stanno i suoi addebiti */
+.rail-item--stack { grid-template-columns: minmax(0, 1fr) auto; }
+.rail-item--stack .rail-sublist { grid-column: 1 / -1; }
+
+.rail-sublist {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0.4rem 0 0;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.rail-sublist li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.rail__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+.rail__rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px dashed var(--line);
+}
+.rail__rows > div:last-child { border-bottom: 0; }
+.rail__rows span { color: var(--muted); }
+.rail__rows b { font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------- carta -- */
+/* Una carta disegnata, non una riga di tabella: è l'oggetto che il cliente
+   deve riconoscere come suo, e deve poterla vedere bloccata. */
+.card-visual {
+  position: relative;
+  margin-top: 0.5rem;
+  border-radius: 14px;
+  padding: 0.95rem 1rem 0.8rem;
+  background: linear-gradient(135deg, #1d2233 0%, #2b3350 55%, #3c2f4a 100%);
+  color: #fff;
+  box-shadow: 0 12px 28px -18px rgba(20, 24, 40, 0.9);
+  overflow: hidden;
+  aspect-ratio: 1.6 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+/* bloccata: si spegne, e resta leggibile */
+.card-visual[data-card-status="blocked"] {
+  filter: grayscale(0.85) brightness(0.85);
+}
+.card-visual[data-card-status="blocked"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg, rgba(255, 255, 255, 0.09) 0 10px, transparent 10px 20px);
+  pointer-events: none;
+}
+.card-visual__top,
+.card-visual__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.card-visual__brand {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+.card-visual__num {
+  font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+  letter-spacing: 0.12em;
+}
+.card-visual__foot {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+.card-visual .pill { background: rgba(255, 255, 255, 0.16); color: #fff; }
+
+/* ---------------------------------------------------------------- form -- */
+.appv2 .grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.appv2 .check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.84rem;
+  color: var(--ink, #1a1a20);
+  margin-top: 0.25rem;
+}
+.appv2 .check input { width: 1rem; height: 1rem; accent-color: var(--accent); }
+.appv2 .field textarea {
+  border-radius: var(--r-sm);
+  border-color: var(--line);
+  background: #fff;
+  min-height: 90px;
+}
+.appv2 .field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+  outline: none;
+}
+
+/* una coda con qualcosa dentro deve vedersi: un numero nero su quattro
+   riquadri uguali non dice dove guardare */
+.summary-card__value.is-alert { color: var(--warn); }
+
+@media (max-width: 860px) {
+  .rails { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .appv2 .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .rail-sublist li { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .card-visual { aspect-ratio: 1.55 / 1; }
+}

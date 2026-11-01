@@ -214,6 +214,64 @@
       return call("imposta_iban", { p_iban: iban, p_intestatario: intestatario });
     },
     verificaIban: function (id) { return call("admin_verifica_iban", { p_id: id }); },
+
+    /* --- bonifici, addebiti diretti, interessi, carta --- */
+    /* Le quattro cose che rendono un conto un conto: mandare denaro fuori
+       (bonifico SEPA), lasciare che qualcuno lo prelevi con un'autorizzazione
+       (addebito diretto), maturare interessi, e avere una carta da bloccare.
+       Qui c'è solo il passaggio dei parametri: i controlli sono nel database. */
+    banca: function () { return call("banca"); },
+    bonifico: function (dati) {
+      return call("bonifico_crea", {
+        p_iban: dati.iban,
+        p_beneficiario: dati.beneficiario,
+        p_importo: dati.importo,
+        p_causale: dati.causale || null,
+        p_purpose: dati.purpose || "OTHR",
+        p_istantaneo: !!dati.istantaneo,
+        p_data: dati.data || null
+      });
+    },
+    annullaBonifico: function (id) { return call("bonifico_annulla", { p_id: id }); },
+    mandato: function (dati) {
+      return call("mandato_crea", {
+        p_creditore: dati.creditore,
+        p_creditore_id: dati.creditoreId || null,
+        p_scheme: dati.scheme || "core"
+      });
+    },
+    revocaMandato: function (id) { return call("mandato_revoca", { p_id: id }); },
+    contestaAddebito: function (id, motivo) {
+      return call("addebito_contesta", { p_id: id, p_motivo: motivo });
+    },
+    richiediCarta: function (tetto) {
+      return call("carta_richiedi", { p_cap: tetto || null });
+    },
+    bloccaCarta: function (id, motivo, riattiva) {
+      return call("carta_blocca", { p_id: id, p_motivo: motivo || null, p_riattiva: !!riattiva });
+    },
+
+    /* --- canali di pagamento lato analista --- */
+    adminBanca: function () { return call("admin_banca"); },
+    inviaBonifico: function (id) { return call("admin_bonifico_invia", { p_id: id }); },
+    esitoBonifico: function (id, esito, codice, messaggio) {
+      return call("admin_bonifico_esito", {
+        p_id: id, p_esito: esito, p_codice: codice || null, p_messaggio: messaggio || null
+      });
+    },
+    bonificoEntrata: function (dati) {
+      return call("admin_bonifico_entrata", {
+        p_id: dati.userId, p_importo: dati.importo, p_ordinante: dati.ordinante || null,
+        p_valuta: dati.valuta || null, p_causale: dati.causale || null
+      });
+    },
+    addebitoCrea: function (mandatoId, importo, motivo) {
+      return call("admin_addebito_crea", { p_id: mandatoId, p_importo: importo, p_motivo: motivo || null });
+    },
+    addebitoEsito: function (id, esito) { return call("admin_addebito_esito", { p_id: id, p_esito: esito }); },
+    cartaAzione: function (id, azione) { return call("admin_carta_azione", { p_id: id, p_azione: azione }); },
+    maturaInteressi: function (giorno) { return call("matricola_interessi", { p_giorno: giorno || null }); },
+    accreditaInteressi: function (userId) { return call("accredita_interessi", { p_user: userId || null }); },
     limits: function () { return call("my_limits"); },
     crypto: function () { return rpc("market", {}); },
     myOperations: function (status) { return call("my_operations", { p_status: status || null }); },

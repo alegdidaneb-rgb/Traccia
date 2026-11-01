@@ -8,6 +8,7 @@
     operations: [],
     accountFilter: "pending",
     operationFilter: "pending",
+    banca: { bonifici: [], mandati: [], addebiti: [], carte: [], conteggi: {} },
     walletFilter: "pending",
     wallets: [],
     documents: [],
@@ -486,10 +487,377 @@
     });
   }
 
+  /* --------------------------------------------------------------- banca -- */
+  /* Tre code e una tabella: bonifici da mandare alla banca, mandati firmati,
+     addebiti da incassare, carte da attivare. Il conteggio in cima esiste
+     perché queste sono le cose che, se nessuno guarda, si fermano. */
+  function renderBanca(dati) {
+    state.banca = dati || {};
+    var c = (dati && dati.conteggi) || {};
+
+    var kp = {
+      "[data-banca-kpi-queued]": c.bonifici_da_inviare || 0,
+      "[data-banca-kpi-sent]": c.bonifici_inviati || 0,
+      "[data-banca-kpi-debits]": c.addebiti_aperti || 0,
+      "[data-banca-kpi-cards]": c.carte_da_attivare || 0
+    };
+    Object.keys(kp).forEach(function (sel) {
+      var nodo = document.querySelector(sel);
+      if (nodo) {
+        nodo.textContent = String(kp[sel]);
+        nodo.classList.toggle("is-alert", kp[sel] > 0);
+      }
+    });
+    var count = document.querySelector("[data-count-banca]");
+    if (count) {
+      var totale = (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0);
+      count.textContent = totale ? String(totale) : "";
+    }
+
+    renderBonifici(dati && dati.bonifici);
+    renderMandati(dati && dati.mandati);
+    renderAddebiti(dati && dati.addebiti);
+    renderCarte(dati && dati.carte);
+    popolaClientiEntrata();
+  }
+
+  function esitoBottoni(t) {
+    if (t.status === "queued") {
+      return '<button class="btn btn--approve btn--sm" data-bonifica="' +
+        ui.esc(t.id) + '" data-azione="invia" type="button">Invia alla banca</button>';
+    }
+    if (t.status === "sent") {
+      return '<button class="btn btn--ghost btn--sm" data-bonifica="' +
+        ui.esc(t.id) + '" data-azione="esito" type="button">Registra esito</button>';
+    }
+    return '<span class="xs muted">' + ui.esc(t.remittance || "—") + "</span>";
+  }
+
+  function renderBonifici(lista) {
+    var corpo = document.querySelector("#bonifici-table tbody");
+    if (!corpo) return;
+    if (!lista || !lista.length) {
+      corpo.innerHTML = '<tr><td colspan="7" class="empty-state">Nessun bonifico.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function (t) {
+      return "<tr>" +
+        '<td class="mono xs">' + ui.esc(t.reference) + "</td>" +
+        "<td><strong>" + ui.esc(t.user_name) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(t.user_email) + "</div></td>" +
+        "<td>" + ui.esc(t.beneficiary_name) +
+          '<div class="xs mono muted">' + ui.esc(t.beneficiary_iban) + "</div></td>" +
+        '<td class="num">' + ui.money(t.amount_eur) + "</td>" +
+        "<td>" + ui.esc(t.scheme === "sepa_instant" ? "Istantaneo" : "Ordinario") + "</td>" +
+        "<td>" + pillBanca(t.status) + "</td>" +
+        '<td class="data-table__actions">' + esitoBottoni(t) + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  function renderMandati(lista) {
+    var corpo = document.querySelector("#mandati-table tbody");
+    if (!corpo) return;
+    if (!lista || !lista.length) {
+      corpo.innerHTML = '<tr><td colspan="6" class="empty-state">Nessun mandato.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function (m) {
+      var azioni = m.status === "active"
+        ? '<button class="btn btn--ghost btn--sm" data-addebito="' + ui.esc(m.id) +
+          '" type="button">Presenta addebito</button>'
+        : '<span class="xs muted">revocato</span>';
+      return "<tr>" +
+        '<td class="mono xs">' + ui.esc(m.reference) + "</td>" +
+        "<td><strong>" + ui.esc(m.user_name) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(m.user_email) + "</div></td>" +
+        "<td>" + ui.esc(m.creditor_name) + "</td>" +
+        "<td>" + ui.esc(m.scheme === "b2b" ? "B2B" : "CORE") + "</td>" +
+        "<td>" + pillBanca(m.status) + "</td>" +
+        '<td class="data-table__actions">' + azioni + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  function renderAddebiti(lista) {
+    var corpo = document.querySelector("#addebiti-table tbody");
+    if (!corpo) return;
+    if (!lista || !lista.length) {
+      corpo.innerHTML = '<tr><td colspan="6" class="empty-state">Nessun addebito aperto.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function (b) {
+      return "<tr>" +
+        '<td class="mono xs">' + ui.esc(b.reference) + "</td>" +
+        "<td>" + ui.esc(b.user_name) + "</td>" +
+        "<td>" + ui.esc(b.creditor_name) + "</td>" +
+        '<td class="num">' + ui.money(b.amount_eur) + "</td>" +
+        "<td>" + ui.when(b.due_date) + "</td>" +
+        '<td class="data-table__actions">' +
+          '<button class="btn btn--approve btn--sm" data-addebito-esito="' + ui.esc(b.id) +
+            '" data-azione="collected" type="button">Incassa</button>' +
+          '<button class="btn btn--deny btn--sm" data-addebito-esito="' + ui.esc(b.id) +
+            '" data-azione="refused" type="button">Rifiuta</button>' +
+        "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  function renderCarte(lista) {
+    var corpo = document.querySelector("#carte-table tbody");
+    if (!corpo) return;
+    if (!lista || !lista.length) {
+      corpo.innerHTML = '<tr><td colspan="7" class="empty-state">Nessuna carta.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function (c) {
+      var azioni = "";
+      if (c.status === "pending") {
+        azioni = '<button class="btn btn--approve btn--sm" data-carta="' + ui.esc(c.id) +
+          '" data-azione="approve" type="button">Attiva</button>' +
+          '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
+          '" data-azione="deny" type="button">Rifiuta</button>';
+      } else if (c.status === "active") {
+        azioni = '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
+          '" data-azione="block" type="button">Blocca</button>';
+      }
+      return "<tr>" +
+        '<td class="mono xs">' + ui.esc(c.reference) + "</td>" +
+        "<td><strong>" + ui.esc(c.user_name) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(c.user_email) + "</div></td>" +
+        '<td class="mono">•••• ' + ui.esc(c.last4) + "</td>" +
+        '<td class="num">' + ui.money(c.monthly_cap_eur) + "</td>" +
+        "<td>" + ui.when(c.expires_on) + "</td>" +
+        "<td>" + pillBanca(c.status) + "</td>" +
+        '<td class="data-table__actions">' + azioni + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  /* Gli stati della banca non sono quelli delle operazioni: «inviato» qui
+     vuol dire «aspetta la banca», non «in attesa di un analista». */
+  var ETICHETTE_BANCA = {
+    queued: ["In coda", "pending"],
+    sent: ["Inviato", "pending"],
+    executed: ["Eseguito", "active"],
+    rejected: ["Respinto", "rejected"],
+    returned: ["Restituito", "rejected"],
+    cancelled: ["Annullato", "cancelled"],
+    active: ["Attivo", "active"],
+    revoked: ["Revocato", "cancelled"],
+    pending: ["In attesa", "pending"],
+    collected: ["Incassato", "active"],
+    refused: ["Rifiutato", "rejected"],
+    blocked: ["Bloccata", "rejected"]
+  };
+
+  function pillBanca(stato) {
+    var e = ETICHETTE_BANCA[stato] || [stato, "pending"];
+    return '<span class="pill pill--' + e[1] + '">' + ui.esc(e[0]) + "</span>";
+  }
+
+  function loadBanca() {
+    return api.adminBanca().then(renderBanca);
+  }
+
+  function popolaClientiEntrata() {
+    var sel = document.querySelector("[data-entrata-cliente]");
+    if (!sel || sel.options.length) return;
+    var clienti = (state.allAccounts || []).filter(function (u) { return u.role !== "admin"; });
+    sel.innerHTML = clienti.map(function (u) {
+      return '<option value="' + ui.esc(u.id) + '">' + ui.esc(u.name) + " — " +
+        ui.esc(u.email) + "</option>";
+    }).join("") || '<option value="">Nessun cliente</option>';
+  }
+
+  function apriEntrata() {
+    var modale = document.querySelector("[data-entrata-modal]");
+    if (!modale) return;
+    popolaClientiEntrata();
+    modale.querySelector("[data-entrata-form]").reset();
+    modale.querySelector("[data-entrata-error]").hidden = true;
+    var oggi = new Date().toISOString().slice(0, 10);
+    modale.querySelector("#ent-valuta").value = oggi;
+    modale.hidden = false;
+  }
+
+  function inviaEntrata(event) {
+    event.preventDefault();
+    var modale = document.querySelector("[data-entrata-modal]");
+    var errore = modale.querySelector("[data-entrata-error]");
+    var submit = modale.querySelector("[data-entrata-submit]");
+    var dati = {
+      userId: modale.querySelector("#ent-cliente").value,
+      importo: Number(modale.querySelector("#ent-importo").value),
+      valuta: modale.querySelector("#ent-valuta").value || null,
+      ordinante: modale.querySelector("#ent-ordinante").value.trim(),
+      causale: modale.querySelector("#ent-causale").value.trim()
+    };
+    if (!dati.userId || !dati.importo || dati.importo <= 0) {
+      errore.hidden = false;
+      errore.textContent = "Scegli il segnalante e un importo maggiore di zero.";
+      return;
+    }
+    submit.disabled = true;
+    api.bonificoEntrata(dati).then(function (res) {
+      modale.hidden = true;
+      ui.toast("Bonifico " + (res.reference || "") + " registrato: saldo " + ui.money(res.balance_after) + ".", "ok");
+      return refresh();
+    }).catch(function (err) {
+      errore.hidden = false;
+      errore.textContent = err.message || "Bonifico non registrato.";
+    }).then(function () { submit.disabled = false; });
+  }
+
+  var esitoState = { id: null };
+
+  function apriEsito(id) {
+    var modale = document.querySelector("[data-esito-modal]");
+    if (!modale) return;
+    var t = (state.banca && state.banca.bonifici || []).filter(function (x) {
+      return String(x.id) === String(id);
+    })[0];
+    esitoState.id = id;
+    var intro = modale.querySelector("[data-esito-intro]");
+    if (intro) {
+      intro.textContent = t
+        ? (t.reference + " · " + ui.money(t.amount_eur) + " a " + t.beneficiary_name +
+           " · " + t.beneficiary_iban)
+        : "";
+    }
+    modale.querySelector("[data-esito-form]").reset();
+    modale.querySelector("[data-esito-error]").hidden = true;
+    modale.hidden = false;
+  }
+
+  function inviaEsito(event) {
+    event.preventDefault();
+    var modale = document.querySelector("[data-esito-modal]");
+    var errore = modale.querySelector("[data-esito-error]");
+    var submit = modale.querySelector("[data-esito-submit]");
+    submit.disabled = true;
+    api.esitoBonifico(
+      esitoState.id,
+      modale.querySelector("#esito-scelta").value,
+      modale.querySelector("#esito-codice").value.trim(),
+      modale.querySelector("#esito-messaggio").value.trim()
+    ).then(function (res) {
+      modale.hidden = true;
+      ui.toast(res.status === "executed"
+        ? "Bonifico eseguito: movimento scritto."
+        : "Esito registrato: i fondi sono di nuovo disponibili.", "ok");
+      return refresh();
+    }).catch(function (err) {
+      errore.hidden = false;
+      errore.textContent = err.message || "Esito non registrato.";
+    }).then(function () { submit.disabled = false; });
+  }
+
+  function presentaAddebito(mandatoId) {
+    /* ui.ask è il dialogo già usato dalla console: un importo e un motivo */
+    ui.ask({
+      title: "Presentare un addebito?",
+      message: "L'importo viene addebitato al cliente con il mandato firmato.",
+      prompt: "Importo in euro",
+      confirm: "Presenta"
+    }).then(function (valore) {
+      var n = Number(String(valore || "").replace(",", "."));
+      if (!n || n <= 0) return;
+      return api.addebitoCrea(mandatoId, n, null).then(function (res) {
+        ui.toast("Addebito " + (res.reference || "") + " presentato.", "ok");
+        return refresh();
+      });
+    }).catch(function (err) {
+      if (err && err.message) ui.toast(err.message, "error");
+    });
+  }
+
+  function azioneBanca(id, azione) {
+    if (azione === "invia") {
+      api.inviaBonifico(id).then(function () {
+        ui.toast("Bonifico inviato alla banca.", "ok");
+        return refresh();
+      }).catch(function (err) { ui.toast(err.message, "error"); });
+    } else if (azione === "esito") {
+      apriEsito(id);
+    }
+  }
+
+  function azioneAddebito(id, esito) {
+    api.addebitoEsito(id, esito).then(function (res) {
+      ui.toast(res.status === "collected"
+        ? "Addebito incassato."
+        : "Addebito rifiutato" + (res.reason ? ": " + res.reason : "."), "ok");
+      return refresh();
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  function azioneCarta(id, azione) {
+    api.cartaAzione(id, azione).then(function (res) {
+      ui.toast("Carta: " + res.status + ".", "ok");
+      return refresh();
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  function maturaInteressi() {
+    api.maturaInteressi(null).then(function (res) {
+      ui.toast(res.message || ("Maturazioni scritte: " + res.accrued + " · " + ui.money(res.total_eur || 0)),
+        "ok");
+      return refresh();
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  function bindBanca() {
+    var nodo = document.querySelector("#banca");
+    if (!nodo) return;
+    nodo.addEventListener("click", function (e) {
+      var b;
+      if ((b = e.target.closest("[data-bonifica]"))) {
+        return azioneBanca(b.getAttribute("data-bonifica"), b.getAttribute("data-azione"));
+      }
+      if ((b = e.target.closest("[data-addebito-esito]"))) {
+        return azioneAddebito(b.getAttribute("data-addebito-esito"), b.getAttribute("data-azione"));
+      }
+      if ((b = e.target.closest("[data-addebito]"))) {
+        return presentaAddebito(b.getAttribute("data-addebito"));
+      }
+      if ((b = e.target.closest("[data-carta]"))) {
+        return azioneCarta(b.getAttribute("data-carta"), b.getAttribute("data-azione"));
+      }
+    });
+
+    var entrata = document.querySelector("[data-banca-entrata-apri]");
+    if (entrata) entrata.addEventListener("click", apriEntrata);
+    var interessi = document.querySelector("[data-banca-interessi]");
+    if (interessi) interessi.addEventListener("click", maturaInteressi);
+
+    var modaleEntrata = document.querySelector("[data-entrata-modal]");
+    if (modaleEntrata) {
+      modaleEntrata.querySelector("[data-entrata-form]").addEventListener("submit", inviaEntrata);
+      modaleEntrata.querySelector("[data-entrata-cancel]").addEventListener("click", function () {
+        modaleEntrata.hidden = true;
+      });
+      modaleEntrata.addEventListener("click", function (e) {
+        if (e.target === modaleEntrata) modaleEntrata.hidden = true;
+      });
+    }
+
+    var modaleEsito = document.querySelector("[data-esito-modal]");
+    if (modaleEsito) {
+      modaleEsito.querySelector("[data-esito-form]").addEventListener("submit", inviaEsito);
+      modaleEsito.querySelector("[data-esito-cancel]").addEventListener("click", function () {
+        modaleEsito.hidden = true;
+      });
+      modaleEsito.addEventListener("click", function (e) {
+        if (e.target === modaleEsito) modaleEsito.hidden = true;
+      });
+    }
+  }
+
   function refresh() {
     return Promise.all([
       loadOverview(), loadAccounts(), loadAllAccounts(), loadOperations(),
-      loadWallets(), loadDocuments(), loadSettings(), loadMessages()
+      loadWallets(), loadDocuments(), loadSettings(), loadMessages(), loadBanca()
     ]);
   }
 
@@ -924,6 +1292,8 @@
         loadOperations().catch(function (err) { ui.toast(err.message, "error"); });
       });
     });
+
+    bindBanca();
 
     document.querySelectorAll(".app-side a[data-tab]").forEach(function (link) {
       link.addEventListener("click", function () {

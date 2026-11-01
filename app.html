@@ -24,10 +24,10 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101b" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261101b">
-  <link rel="stylesheet" href="assets/css/premium.css?v=20261101b">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261101c" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261101c" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261101c">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261101c">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/js/config.js?v=20261101b" defer></script>
-  <script src="assets/js/api.js?v=20261101b" defer></script>
-  <script src="assets/js/session.js?v=20261101b" defer></script>
+  <script src="assets/js/config.js?v=20261101c" defer></script>
+  <script src="assets/js/api.js?v=20261101c" defer></script>
+  <script src="assets/js/session.js?v=20261101c" defer></script>
 
   <script type="application/ld+json">
   {
@@ -312,6 +312,9 @@
               <button class="btn btn--ghost btn--sm" type="button" data-move="withdrawal" data-staff-hide>
                 Preleva
               </button>
+              <button class="btn btn--ghost btn--sm" type="button" data-bonifico-apri data-staff-hide>
+                Bonifico
+              </button>
             </div>
           </div>
           <div class="pnl__body">
@@ -372,6 +375,98 @@
             <ul class="mov-list" data-movimenti>
               <li class="empty-state">Nessun movimento.</li>
             </ul>
+
+            <!-- ============ bonifici, addebiti, interessi, carta ============ -->
+            <!-- Il conto non serve solo a guardare il saldo: da qui il denaro
+                 esce (bonifico), qualcuno può prelevarlo con un'autorizzazione
+                 (addebito diretto), matura interessi, e c'è una carta da
+                 bloccare. Ogni riquadro dice lo stato, non solo l'esistenza. -->
+            <div class="rails" data-rails>
+
+              <section class="rail" data-rail="bonifici">
+                <header class="rail__head">
+                  <h3>Bonifici SEPA</h3>
+                  <button class="btn btn--ghost btn--sm" type="button" data-bonifico-apri data-staff-hide>
+                    Nuovo bonifico
+                  </button>
+                </header>
+                <p class="xs muted">
+                  Il bonifico parte dal tuo disponibile e resta impegnato finché la
+                  banca non lo esegue. Istantaneo: pochi secondi. Ordinario: entro il
+                  giorno lavorativo successivo.
+                </p>
+                <ul class="rail__list" data-bonifici>
+                  <li class="empty-state">Nessun bonifico disposto.</li>
+                </ul>
+              </section>
+
+              <section class="rail" data-rail="mandati">
+                <header class="rail__head">
+                  <h3>Addebiti diretti</h3>
+                  <button class="btn btn--ghost btn--sm" type="button" data-mandato-apri data-staff-hide>
+                    Autorizza un creditore
+                  </button>
+                </header>
+                <p class="xs muted">
+                  Firmando un mandato autorizzi un creditore a prelevare dal conto.
+                  Puoi revocarlo quando vuoi: gli addebiti non ancora incassati
+                  cadono con la revoca.
+                </p>
+                <ul class="rail__list" data-mandati>
+                  <li class="empty-state">Nessun mandato firmato.</li>
+                </ul>
+              </section>
+
+              <section class="rail" data-rail="interessi">
+                <header class="rail__head">
+                  <h3>Interessi</h3>
+                  <span class="pill" data-interessi-tasso>—</span>
+                </header>
+                <div class="rail__rows">
+                  <div><span>Tasso annuo</span><b data-interessi-tasso-testo>—</b></div>
+                  <div><span>Matura oggi</span><b data-interessi-giorno>—</b></div>
+                  <div><span>Da accreditare</span><b data-interessi-maturato>—</b></div>
+                  <div><span>Prossimo accredito</span><b data-interessi-prossimo>—</b></div>
+                </div>
+                <p class="xs muted" data-interessi-nota>
+                  Gli interessi maturano sulla giacenza e si accreditano in un
+                  movimento unico, non giorno per giorno.
+                </p>
+              </section>
+
+              <section class="rail" data-rail="carta">
+                <header class="rail__head">
+                  <h3>Carta</h3>
+                  <button class="btn btn--ghost btn--sm" type="button" data-carta-richiedi data-staff-hide>
+                    Richiedi
+                  </button>
+                </header>
+                <div class="card-visual" data-carta hidden>
+                  <div class="card-visual__top">
+                    <span class="card-visual__brand">Traccia</span>
+                    <span class="pill" data-carta-pill>—</span>
+                  </div>
+                  <div class="card-visual__num mono" data-carta-numero>•••• •••• •••• —</div>
+                  <div class="card-visual__foot">
+                    <span data-carta-reference>—</span>
+                    <span data-carta-scadenza>—</span>
+                  </div>
+                </div>
+                <p class="xs muted" data-carta-vuota>
+                  Nessuna carta. Si richiede dal livello di verifica avanzato, con
+                  coordinate del conto già verificate.
+                </p>
+                <div class="btn-row mt-2" data-carta-azioni hidden>
+                  <button class="btn btn--deny btn--sm" type="button" data-carta-blocca data-staff-hide>
+                    Blocca carta
+                  </button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-carta-sblocca data-staff-hide hidden>
+                    Riattiva
+                  </button>
+                </div>
+              </section>
+
+            </div>
           </div>
         </section>
 
@@ -623,6 +718,121 @@
     </div>
   </div>
 
+  <!-- ===================== modale: bonifico SEPA ===================== -->
+  <div class="modal-backdrop" data-bonifico-modal hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bon-title">
+      <h3 id="bon-title">Nuovo bonifico SEPA</h3>
+      <p class="small muted">
+        Il denaro esce dal conto solo quando la banca esegue il bonifico. Fino a
+        quel momento l'importo resta impegnato e puoi annullare la disposizione.
+      </p>
+      <form class="form mt-3" data-bonifico-form novalidate>
+        <div class="field">
+          <label for="bon-iban">IBAN del beneficiario</label>
+          <input id="bon-iban" name="iban" type="text" autocomplete="off" spellcheck="false"
+                 inputmode="text" placeholder="IT60 X054 2811 1010 0000 0123 456" required>
+          <span class="field__hint">Deve essere un conto non tuo: un bonifico verso il tuo stesso conto non ha senso.</span>
+        </div>
+        <div class="field">
+          <label for="bon-ben">Beneficiario</label>
+          <input id="bon-ben" name="beneficiario" type="text" autocomplete="off"
+                 placeholder="Nome o ragione sociale come risulta sul conto" required>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="bon-importo">Importo in euro</label>
+            <input id="bon-importo" name="importo" type="number" min="0.01" step="0.01"
+                   inputmode="decimal" placeholder="0,00" required>
+            <span class="field__hint" data-bon-importo-hint></span>
+          </div>
+          <div class="field">
+            <label for="bon-data">Data di esecuzione</label>
+            <input id="bon-data" name="data" type="date">
+            <span class="field__hint">Oggi, oppure fino a 90 giorni avanti.</span>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="bon-purpose">Causale di pagamento</label>
+            <select id="bon-purpose" name="purpose" data-bon-purpose></select>
+          </div>
+          <div class="field">
+            <label for="bon-causale">Descrizione (facoltativa)</label>
+            <input id="bon-causale" name="causale" type="text" maxlength="140"
+                   autocomplete="off" placeholder="Es. saldo fattura 12/2026">
+          </div>
+        </div>
+        <label class="check">
+          <input id="bon-istantaneo" name="istantaneo" type="checkbox">
+          <span>Bonifico istantaneo (arriva in pochi secondi)</span>
+        </label>
+        <p class="form__note" data-bonifico-error hidden></p>
+        <p class="xs muted" data-bonifico-riepilogo></p>
+        <div class="btn-row mt-3">
+          <button class="btn btn--accent" type="submit" data-bonifico-submit>Disponi il bonifico</button>
+          <button class="btn btn--ghost" type="button" data-bonifico-cancel>Annulla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== modale: mandato SDD ===================== -->
+  <div class="modal-backdrop" data-mandato-modal hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="man-title">
+      <h3 id="man-title">Autorizza un creditore</h3>
+      <p class="small muted">
+        Con un mandato SEPA autorizzi un creditore a prelevare dal tuo conto. È
+        revocabile in qualsiasi momento; gli addebiti già incassati restano nella
+        storia.
+      </p>
+      <form class="form mt-3" data-mandato-form novalidate>
+        <div class="field">
+          <label for="man-creditore">Creditore</label>
+          <input id="man-creditore" name="creditore" type="text" autocomplete="off"
+                 placeholder="Nome del creditore" required>
+        </div>
+        <div class="field">
+          <label for="man-id">Identificativo creditore (facoltativo)</label>
+          <input id="man-id" name="creditoreId" type="text" autocomplete="off"
+                 placeholder="IT12ZZZ0000000000000000000">
+        </div>
+        <div class="field">
+          <label for="man-scheme">Tipo di mandato</label>
+          <select id="man-scheme" name="scheme">
+            <option value="core">CORE — puoi chiedere il rimborso entro 8 settimane</option>
+            <option value="b2b">B2B — nessun rimborso automatico</option>
+          </select>
+        </div>
+        <p class="form__note" data-mandato-error hidden></p>
+        <div class="btn-row mt-3">
+          <button class="btn btn--accent" type="submit" data-mandato-submit>Firma il mandato</button>
+          <button class="btn btn--ghost" type="button" data-mandato-cancel>Annulla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== modale: contestazione addebito ===================== -->
+  <div class="modal-backdrop" data-contesta-modal hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="con-title">
+      <h3 id="con-title">Contesta l'addebito</h3>
+      <p class="small muted" data-contesta-intro></p>
+      <form class="form mt-3" data-contesta-form novalidate>
+        <div class="field">
+          <label for="con-motivo">Motivo</label>
+          <textarea id="con-motivo" name="motivo" rows="3"
+                    placeholder="Es. non ho mai autorizzato questo prelievo"></textarea>
+          <span class="field__hint">Il motivo finisce nella pratica: senza, la contestazione non si esamina.</span>
+        </div>
+        <p class="form__note" data-contesta-error hidden></p>
+        <div class="btn-row mt-3">
+          <button class="btn btn--accent" type="submit" data-contesta-submit>Invia contestazione</button>
+          <button class="btn btn--ghost" type="button" data-contesta-cancel>Chiudi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ===================== modale: estratto conto ===================== -->
   <div class="modal-backdrop" data-statement-modal hidden>
     <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="statement-title">
@@ -801,12 +1011,12 @@
 </div>
 
 
-  <script src="assets/js/ui.js?v=20261101b" defer></script>
-  <script src="assets/js/contract.js?v=20261101b" defer></script>
-  <script src="assets/js/case.js?v=20261101b" defer></script>
-  <script src="assets/js/main.js?v=20261101b" defer></script>
-  <script src="assets/js/market.js?v=20261101b" defer></script>
-  <script src="assets/js/premium.js?v=20261101b" defer></script>
+  <script src="assets/js/ui.js?v=20261101c" defer></script>
+  <script src="assets/js/contract.js?v=20261101c" defer></script>
+  <script src="assets/js/case.js?v=20261101c" defer></script>
+  <script src="assets/js/main.js?v=20261101c" defer></script>
+  <script src="assets/js/market.js?v=20261101c" defer></script>
+  <script src="assets/js/premium.js?v=20261101c" defer></script>
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
@@ -814,6 +1024,6 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/js/whatsapp.js?v=20261101b" defer></script>
+  <script src="assets/js/whatsapp.js?v=20261101c" defer></script>
 </body>
 </html>

@@ -703,10 +703,49 @@
   }
 
   /* ------------------------------------------------- versa / preleva -- */
+  /* «Preleva» non crea più un'operazione a parte: apre un bonifico già
+     compilato verso l'IBAN del cliente. Due percorsi per far uscire denaro
+     erano due percorsi da tenere allineati, e il prelievo vecchio non passava
+     dai canali SEPA (niente IBAN del beneficiario, niente esito della banca).
+     Ora c'è un modo solo, e la differenza sta nel beneficiario. */
+  function apriPrelievo() {
+    var dati = contoState.dati || {};
+    if (!dati.iban) {
+      if (window.ui && ui.toast) {
+        ui.toast("Prima indica l'IBAN del tuo conto: è lì che vanno i prelievi.", "error");
+      }
+      var form = document.querySelector("[data-iban-form]");
+      if (form) {
+        form.scrollIntoView({ behavior: "smooth", block: "center" });
+        var campo = form.querySelector("#iban-value");
+        if (campo) campo.focus();
+      }
+      return;
+    }
+    if (!dati.iban_verified) {
+      if (window.ui && ui.toast) {
+        ui.toast("Le coordinate sono salvate ma non ancora verificate: il prelievo si dispone dopo la verifica dell'analista.", "error");
+      }
+      return;
+    }
+    apriBonifico();
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    modale.querySelector("#bon-iban").value = dati.iban_formatted || dati.iban;
+    modale.querySelector("#bon-ben").value = ((window.api && api.cachedUser && api.cachedUser()) || {}).name || "";
+    var causale = modale.querySelector("#bon-causale");
+    if (causale) causale.value = "Prelievo sul mio conto";
+    var titolo = modale.querySelector("#bon-title");
+    if (titolo) titolo.textContent = "Preleva sul tuo conto";
+    aggiornaRiepilogoBonifico();
+    modale.querySelector("#bon-importo").focus();
+  }
+
   function apriMovimento(tipo) {
+    if (tipo === "withdrawal") return apriPrelievo();
     var modale = document.querySelector("[data-move-modal]");
     if (!modale) return;
-    var prelievo = tipo === "withdrawal";
+    var prelievo = false;
     var dati = contoState.dati || {};
 
     modale.querySelector("[data-move-title]").textContent = prelievo ? "Preleva" : "Versa";
@@ -855,6 +894,531 @@
     caricaEstratto("mese");
   }
 
+  /* ------------------------------------------------ bonifici e canali -- */
+  /* Un conto senza canali di pagamento è un salvadanaio. Qui ci sono le
+     quattro cose che mancavano: mandare denaro fuori (bonifico SEPA),
+     autorizzare qualcuno a prelevarlo (addebito diretto), maturare interessi,
+     e avere una carta da bloccare in fretta.
+     L'interfaccia non decide nulla: mostra lo stato che il database ha già
+     deciso, perché un bonifico "inviato" e uno "eseguito" sono cose diverse e
+     il cliente deve poterle distinguere a colpo d'occhio. */
+  var bancaState = { dati: null, modale: null };
+
+  var STATO_BONIFICO = {
+    queued: { testo: "In coda", pill: "pill--pending" },
+    sent: { testo: "Inviato alla banca", pill: "pill--pending" },
+    executed: { testo: "Eseguito", pill: "pill--active" },
+    rejected: { testo: "Respinto", pill: "pill--rejected" },
+    returned: { testo: "Restituito", pill: "pill--rejected" },
+    cancelled: { testo: "Annullato", pill: "pill--muted" }
+  };
+
+  var STATO_MANDATO = {
+    active: { testo: "Attivo", pill: "pill--active" },
+    revoked: { testo: "Revocato", pill: "pill--muted" }
+  };
+
+  var STATO_ADDEBITO = {
+    pending: { testo: "In arrivo", pill: "pill--pending" },
+    collected: { testo: "Incassato", pill: "pill--active" },
+    refused: { testo: "Rifiutato", pill: "pill--rejected" },
+    refunded: { testo: "Rimborsato", pill: "pill--active" },
+    cancelled: { testo: "Annullato", pill: "pill--muted" }
+  };
+
+  var STATO_CARTA = {
+    pending: { testo: "In attivazione", pill: "pill--pending" },
+    active: { testo: "Attiva", pill: "pill--active" },
+    blocked: { testo: "Bloccata", pill: "pill--rejected" },
+    cancelled: { testo: "Annullata", pill: "pill--muted" }
+  };
+
+  function pillStato(mappa, stato) {
+    var s = mappa[stato] || { testo: stato || "—", pill: "pill--pending" };
+    return '<span class="pill ' + s.pill + '">' + ui.esc(s.testo) + "</span>";
+  }
+
+  function dataLunga(iso) {
+    if (!iso) return "—";
+    /* la data SEPA arriva come "2026-11-05": la stessa funzione dell'estratto
+       conto evita due formati diversi nello stesso schermo */
+    return dataBreve(iso);
+  }
+
+  function caricaBanca() {
+    return api.banca().then(renderBanca).catch(function (err) {
+      if (err && err.code === "28000") return;
+      if (window.ui && ui.toast) ui.toast(err.message || "Canali di pagamento non disponibili.", "error");
+    });
+  }
+
+  function renderBanca(dati) {
+    bancaState.dati = dati;
+    renderBonifici(dati.bonifici || []);
+    renderMandati(dati.mandati || []);
+    renderInteressi(dati.interessi || {});
+    renderCarta((dati.carte || [])[0]);
+    popolaCause(dati.purposes || []);
+  }
+
+  function renderBonifici(lista) {
+    var ul = document.querySelector("[data-bonifici]");
+    if (!ul) return;
+    if (!lista.length) {
+      ul.innerHTML = '<li class="empty-state">Nessun bonifico disposto.</li>';
+      return;
+    }
+    ul.innerHTML = "";
+    lista.forEach(function (b) {
+      var li = document.createElement("li");
+      li.className = "rail-item";
+      var st = STATO_BONIFICO[b.status] || { testo: b.status, pill: "pill--pending" };
+      /* annullabile solo finché la banca non l'ha preso: dopo, tocca
+         all'assistenza, e il pulsante non deve suggerire il contrario */
+      var azione = b.status === "queued"
+        ? '<button class="link-arrow xs" type="button" data-bonifico-annulla="' + ui.esc(b.id) + '">annulla</button>'
+        : "";
+      var motivo = (b.bank_code || b.bank_message)
+        ? '<div class="xs muted">' + ui.esc([b.bank_code, b.bank_message].filter(Boolean).join(" · ")) + "</div>"
+        : "";
+      li.innerHTML =
+        '<div class="rail-item__main">' +
+          "<b>" + ui.esc(b.beneficiary_name) + "</b>" +
+          '<div class="xs muted mono">' + ui.esc(b.beneficiary_iban) + "</div>" +
+          '<div class="xs muted">' + (b.scheme === "sepa_instant" ? "Istantaneo" : "Ordinario") +
+            " · richiesta " + dataLunga(b.requested_date) +
+            (b.remittance ? " · " + ui.esc(b.remittance) : "") + "</div>" +
+          motivo +
+        "</div>" +
+        '<div class="rail-item__side">' +
+          '<span class="rail-item__amount">' + euro(b.amount_eur) + "</span>" +
+          '<span class="pill ' + st.pill + '">' + ui.esc(st.testo) + "</span>" +
+          '<span class="xs mono muted">' + ui.esc(b.reference) + "</span>" +
+          azione +
+        "</div>";
+      ul.appendChild(li);
+    });
+  }
+
+  function renderMandati(lista) {
+    var ul = document.querySelector("[data-mandati]");
+    if (!ul) return;
+    if (!lista.length) {
+      ul.innerHTML = '<li class="empty-state">Nessun mandato firmato.</li>';
+      return;
+    }
+    ul.innerHTML = "";
+    lista.forEach(function (m) {
+      var li = document.createElement("li");
+      li.className = "rail-item rail-item--stack";
+      var st = STATO_MANDATO[m.status] || { testo: m.status, pill: "pill--pending" };
+      var revoca = m.status === "active"
+        ? '<button class="link-arrow xs" type="button" data-mandato-revoca="' + ui.esc(m.id) + '">revoca</button>'
+        : "";
+      var addebiti = (m.debits || []).length
+        ? '<ul class="rail-sublist">' + m.debits.map(function (d) {
+            var ds = STATO_ADDEBITO[d.status] || { testo: d.status, pill: "pill--pending" };
+            var contesta = (d.status === "pending" || d.status === "collected")
+              ? '<button class="link-arrow xs" type="button" data-addebito-contesta="' + ui.esc(d.id) +
+                '" data-addebito-stato="' + ui.esc(d.status) + '">contesta</button>'
+              : "";
+            return "<li>" +
+              '<span class="mono xs">' + ui.esc(d.reference) + "</span>" +
+              "<span>" + euro(d.amount_eur) + "</span>" +
+              '<span class="pill ' + ds.pill + '">' + ui.esc(ds.testo) + "</span>" +
+              '<span class="xs muted">' + dataLunga(d.due_date) + "</span>" +
+              contesta +
+            "</li>";
+          }).join("") + "</ul>"
+        : '<div class="xs muted">Nessun addebito presentato.</div>';
+      li.innerHTML =
+        '<div class="rail-item__main">' +
+          "<b>" + ui.esc(m.creditor_name) + "</b>" +
+          '<div class="xs muted">' + ui.esc(m.scheme === "b2b" ? "Mandato B2B" : "Mandato CORE") +
+            " · firmato il " + dataLunga(m.signed_on) + " · " + ui.esc(m.umr) + "</div>" +
+          '<div class="xs muted mono">' + ui.esc(m.account_iban) + "</div>" +
+        "</div>" +
+        '<div class="rail-item__side">' +
+          '<span class="pill ' + st.pill + '">' + ui.esc(st.testo) + "</span>" +
+          revoca +
+        "</div>" + addebiti;
+      ul.appendChild(li);
+    });
+  }
+
+  /* Gli interessi si mostrano come tasso e come maturato, non come promessa:
+     «0,00 € / giorno» con un tasso a zero è l'informazione giusta, e dice
+     perché non arriva niente. */
+  function renderInteressi(i) {
+    var tasso = Number(i.rate_pct || 0);
+    var testo = tasso > 0
+      ? String(tasso).replace(".", ",") + " % annuo"
+      : "non previsti";
+    var set1 = function (sel, valore) {
+      var nodo = document.querySelector(sel);
+      if (nodo) nodo.textContent = valore;
+    };
+    set1("[data-interessi-tasso]", testo);
+    set1("[data-interessi-tasso-testo]", testo);
+    set1("[data-interessi-giorno]", euro(i.giornaliero_eur || 0));
+    set1("[data-interessi-maturato]", euro(i.maturato_eur || 0));
+    set1("[data-interessi-prossimo]", i.prossimo_accredito ? dataLunga(i.prossimo_accredito) : "—");
+    var nota = document.querySelector("[data-interessi-nota]");
+    if (nota) {
+      nota.textContent = tasso > 0
+        ? "Maturano sulla giacenza e si accreditano in un movimento unico il " +
+          dataLunga(i.prossimo_accredito) + ". Sotto il centesimo si accumulano, non si perdono."
+        : "Su questo conto il tasso creditore è a zero: non maturano interessi. " +
+          "Il tasso è indicato nel contratto e non cambia senza comunicazione.";
+    }
+  }
+
+  function renderCarta(carta) {
+    var box = document.querySelector("[data-carta]");
+    var vuota = document.querySelector("[data-carta-vuota]");
+    var azioni = document.querySelector("[data-carta-azioni]");
+    var richiedi = document.querySelector("[data-carta-richiedi]");
+    if (!box) return;
+
+    if (!carta) {
+      box.hidden = true;
+      if (azioni) azioni.hidden = true;
+      if (vuota) vuota.hidden = false;
+      if (richiedi) richiedi.hidden = false;
+      return;
+    }
+
+    box.hidden = false;
+    if (vuota) vuota.hidden = true;
+    if (richiedi) richiedi.hidden = true;
+    if (azioni) azioni.hidden = carta.status === "cancelled";
+
+    var pill = box.querySelector("[data-carta-pill]");
+    var stato = STATO_CARTA[carta.status] || { testo: carta.status, pill: "pill--pending" };
+    if (pill) {
+      pill.textContent = stato.testo;
+      pill.className = "pill " + stato.pill;
+    }
+    var numero = box.querySelector("[data-carta-numero]");
+    if (numero) numero.textContent = "•••• •••• •••• " + carta.last4;
+    var rif = box.querySelector("[data-carta-reference]");
+    if (rif) rif.textContent = carta.reference;
+    var scad = box.querySelector("[data-carta-scadenza]");
+    if (scad) scad.textContent = "scad. " + (carta.expires_on ? dataLunga(carta.expires_on) : "—");
+
+    var blocca = document.querySelector("[data-carta-blocca]");
+    var sblocca = document.querySelector("[data-carta-sblocca]");
+    if (blocca) blocca.hidden = carta.status !== "pending" && carta.status !== "active";
+    if (sblocca) sblocca.hidden = carta.status !== "blocked";
+
+    box.setAttribute("data-card-status", carta.status);
+  }
+
+  function popolaCause(lista) {
+    var sel = document.querySelector("[data-bon-purpose]");
+    if (!sel || sel.options.length) return;
+    lista.forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.code;
+      opt.textContent = p.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  /* ISO 13616: il codice di controllo di un IBAN sono le cifre 3 e 4, e si
+     verificano con un mod 97 sul numero ottenuto spostando i primi quattro
+     caratteri in fondo e sostituendo A=10 … Z=35. Un IBAN con una cifra
+     sbagliata non arriva alla banca: torna indietro, e il cliente pensa di
+     aver pagato. Il controllo costa un ciclo e vale un bonifico respinto. */
+  function ibanValido(valore) {
+    var s = String(valore || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (s.length < 15 || s.length > 34) return false;
+    if (!/^[A-Z]{2}[0-9]{2}$/.test(s.slice(0, 4))) return false;
+    var spostato = s.slice(4) + s.slice(0, 4);
+    var resto = 0;
+    for (var i = 0; i < spostato.length; i++) {
+      var ch = spostato.charAt(i);
+      var cifre = /[0-9]/.test(ch) ? ch : String(ch.charCodeAt(0) - 55);
+      for (var j = 0; j < cifre.length; j++) {
+        resto = (resto * 10 + Number(cifre.charAt(j))) % 97;
+      }
+    }
+    return resto === 1;
+  }
+
+  /* --------------------------------------------------- modale bonifico -- */
+  function apriBonifico() {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var titolo = modale.querySelector("#bon-title");
+    if (titolo) titolo.textContent = "Nuovo bonifico SEPA";
+    var dati = contoState.dati || {};
+    var hint = modale.querySelector("[data-bon-importo-hint]");
+    if (hint) hint.textContent = "Disponibile: " + euro(dati.disponibile || 0);
+    var data = modale.querySelector("#bon-data");
+    if (data) data.value = new Date().toISOString().slice(0, 10);
+    modale.querySelector("[data-bonifico-form]").reset();
+    if (data) data.value = new Date().toISOString().slice(0, 10);
+    var errore = modale.querySelector("[data-bonifico-error]");
+    if (errore) errore.hidden = true;
+    aggiornaRiepilogoBonifico();
+    modale.hidden = false;
+    setTimeout(function () {
+      var primo = modale.querySelector("#bon-iban");
+      if (primo) primo.focus();
+    }, 30);
+  }
+
+  function chiudiBonifico() {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (modale) modale.hidden = true;
+  }
+
+  function datiBonifico() {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return null;
+    var importo = Number(modale.querySelector("#bon-importo").value);
+    return {
+      iban: modale.querySelector("#bon-iban").value.trim(),
+      beneficiario: modale.querySelector("#bon-ben").value.trim(),
+      importo: importo,
+      causale: modale.querySelector("#bon-causale").value.trim(),
+      purpose: modale.querySelector("#bon-purpose").value || "OTHR",
+      istantaneo: modale.querySelector("#bon-istantaneo").checked,
+      data: modale.querySelector("#bon-data").value || null,
+      date: modale.querySelector("#bon-data")
+    };
+  }
+
+  /* Il riepilogo serve a un'altra cosa che il riquadro non fa: dire *quando*
+     il denaro arriva. Istantaneo e ordinario non sono la stessa promessa. */
+  function aggiornaRiepilogoBonifico() {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var riepilogo = modale.querySelector("[data-bonifico-riepilogo]");
+    if (!riepilogo) return;
+    var d = datiBonifico();
+    if (!d) return;
+    var quando = d.istantaneo
+      ? "entro pochi secondi"
+      : "entro il giorno lavorativo successivo alla data indicata";
+    riepilogo.textContent = d.importo > 0
+      ? euro(d.importo) + " a " + (d.beneficiario || "beneficiario") + ", " + quando + "."
+      : "Seleziona istantaneo o ordinario: cambia quando arriva il denaro.";
+  }
+
+  function inviaBonifico(event) {
+    if (event) event.preventDefault();
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var errore = modale.querySelector("[data-bonifico-error]");
+    var submit = modale.querySelector("[data-bonifico-submit]");
+    var d = datiBonifico();
+
+    var problema = null;
+    if (!d.importo || d.importo <= 0) problema = "Indica un importo maggiore di zero.";
+    else if (d.importo > Number((contoState.dati || {}).disponibile || 0))
+      problema = "Puoi disporre al massimo " + euro((contoState.dati || {}).disponibile || 0) + ".";
+    else if (!ibanValido(d.iban)) problema = "L'IBAN del beneficiario non è valido: controlla le cifre.";
+    else if (d.beneficiario.length < 3) problema = "Indica il nome del beneficiario.";
+    if (problema) {
+      errore.hidden = false;
+      errore.textContent = problema;
+      return;
+    }
+
+    errore.hidden = true;
+    submit.disabled = true;
+    submit.textContent = "Invio…";
+    api.bonifico(d).then(function (res) {
+      chiudiBonifico();
+      if (window.ui && ui.toast) {
+        ui.toast("Bonifico " + (res.reference || "") + " disposto. Resta in coda finché la banca non lo esegue.", "ok");
+      }
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      errore.hidden = false;
+      errore.textContent = err.message || "Bonifico non disposto.";
+    }).then(function () {
+      submit.disabled = false;
+      submit.textContent = "Disponi il bonifico";
+    });
+  }
+
+  function annullaBonifico(id, bottone) {
+    if (!window.confirm("Annullare il bonifico? I fondi tornano disponibili.")) return;
+    bottone.disabled = true;
+    api.annullaBonifico(id).then(function () {
+      if (window.ui && ui.toast) ui.toast("Bonifico annullato: i fondi sono di nuovo disponibili.", "ok");
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      bottone.disabled = false;
+      if (window.ui && ui.toast) ui.toast(err.message, "error");
+    });
+  }
+
+  /* ---------------------------------------------------- modale mandato -- */
+  function apriMandato() {
+    var modale = document.querySelector("[data-mandato-modal]");
+    if (!modale) return;
+    modale.querySelector("[data-mandato-form]").reset();
+    var errore = modale.querySelector("[data-mandato-error]");
+    if (errore) errore.hidden = true;
+    modale.hidden = false;
+    setTimeout(function () {
+      var primo = modale.querySelector("#man-creditore");
+      if (primo) primo.focus();
+    }, 30);
+  }
+
+  function chiudiMandato() {
+    var modale = document.querySelector("[data-mandato-modal]");
+    if (modale) modale.hidden = true;
+  }
+
+  function inviaMandato(event) {
+    event.preventDefault();
+    var modale = document.querySelector("[data-mandato-modal]");
+    var errore = modale.querySelector("[data-mandato-error]");
+    var submit = modale.querySelector("[data-mandato-submit]");
+    var creditore = modale.querySelector("#man-creditore").value.trim();
+    if (creditore.length < 3) {
+      errore.hidden = false;
+      errore.textContent = "Indica il nome del creditore.";
+      return;
+    }
+    errore.hidden = true;
+    submit.disabled = true;
+    submit.textContent = "Firma…";
+    api.mandato({
+      creditore: creditore,
+      creditoreId: modale.querySelector("#man-id").value.trim(),
+      scheme: modale.querySelector("#man-scheme").value
+    }).then(function (res) {
+      chiudiMandato();
+      if (window.ui && ui.toast) ui.toast("Mandato " + (res.reference || "") + " firmato.", "ok");
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      errore.hidden = false;
+      errore.textContent = err.message || "Mandato non firmato.";
+    }).then(function () {
+      submit.disabled = false;
+      submit.textContent = "Firma il mandato";
+    });
+  }
+
+  function revocaMandato(id, bottone) {
+    if (!window.confirm("Revocare il mandato? Gli addebiti non ancora incassati vengono annullati.")) return;
+    bottone.disabled = true;
+    api.revocaMandato(id).then(function () {
+      if (window.ui && ui.toast) ui.toast("Mandato revocato.", "ok");
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      bottone.disabled = false;
+      if (window.ui && ui.toast) ui.toast(err.message, "error");
+    });
+  }
+
+  /* ------------------------------------------------- contestazione SDD -- */
+  var contestaState = { id: null, stato: null };
+
+  function apriContesta(id, stato) {
+    var modale = document.querySelector("[data-contesta-modal]");
+    if (!modale) return;
+    contestaState = { id: id, stato: stato };
+    var intro = modale.querySelector("[data-contesta-intro]");
+    if (intro) {
+      intro.textContent = stato === "collected"
+        ? "L'addebito è già stato incassato. Se il mandato è CORE, la contestazione produce lo storno dell'importo sul conto; per i mandati B2B il rimborso va concordato con il creditore."
+        : "L'addebito non è ancora stato incassato: la contestazione lo ferma prima che il denaro esca.";
+    }
+    modale.querySelector("[data-contesta-form]").reset();
+    var errore = modale.querySelector("[data-contesta-error]");
+    if (errore) errore.hidden = true;
+    modale.hidden = false;
+    setTimeout(function () {
+      var campo = modale.querySelector("#con-motivo");
+      if (campo) campo.focus();
+    }, 30);
+  }
+
+  function chiudiContesta() {
+    var modale = document.querySelector("[data-contesta-modal]");
+    if (modale) modale.hidden = true;
+  }
+
+  function inviaContesta(event) {
+    event.preventDefault();
+    var modale = document.querySelector("[data-contesta-modal]");
+    var errore = modale.querySelector("[data-contesta-error]");
+    var submit = modale.querySelector("[data-contesta-submit]");
+    var motivo = modale.querySelector("#con-motivo").value.trim();
+    if (motivo.length < 5) {
+      errore.hidden = false;
+      errore.textContent = "Spiega il motivo: senza, la contestazione non può essere esaminata.";
+      return;
+    }
+    errore.hidden = true;
+    submit.disabled = true;
+    submit.textContent = "Invio…";
+    api.contestaAddebito(contestaState.id, motivo).then(function (res) {
+      chiudiContesta();
+      if (window.ui && ui.toast) {
+        ui.toast(res.status === "refunded"
+          ? "Addebito stornato: l'importo è tornato sul conto."
+          : "Addebito fermato prima dell'incasso.", "ok");
+      }
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      errore.hidden = false;
+      errore.textContent = err.message || "Contestazione non inviata.";
+    }).then(function () {
+      submit.disabled = false;
+      submit.textContent = "Invia contestazione";
+    });
+  }
+
+  /* ------------------------------------------------------------ carta -- */
+  function richiediCarta() {
+    var tetto = window.prompt("Limite mensile di spesa della carta, in euro (50 – 10.000):", "500");
+    if (tetto === null) return;
+    var valore = Number(String(tetto).replace(",", "."));
+    if (!valore || valore < 50 || valore > 10000) {
+      if (window.ui && ui.toast) ui.toast("Il limite va da € 50,00 a € 10.000,00.", "error");
+      return;
+    }
+    api.richiediCarta(valore).then(function (res) {
+      if (window.ui && ui.toast) {
+        ui.toast("Carta " + (res.reference || "") + " richiesta. Sarà attiva dopo la verifica dell'analista.", "ok");
+      }
+      return caricaBanca();
+    }).catch(function (err) {
+      if (window.ui && ui.toast) ui.toast(err.message, "error");
+    });
+  }
+
+  /* Il blocco è l'unica azione che non chiede conferma due volte: una carta
+     persa è una corsa contro il tempo, e chiedere "sei sicuro?" è il modo di
+     perderla. La riattivazione invece chiede, perché è irreversibile al
+     contrario. */
+  function bloccaCarta(id, riattiva) {
+    var motivo = null;
+    if (!riattiva) {
+      motivo = window.prompt("Motivo del blocco (facoltativo: smarrimento, furto, sospetto):", "");
+      if (motivo === null) return;
+    } else if (!window.confirm("Riattivare la carta? Tornerà utilizzabile subito.")) {
+      return;
+    }
+    api.bloccaCarta(id, motivo, riattiva).then(function () {
+      if (window.ui && ui.toast) {
+        ui.toast(riattiva ? "Carta riattivata." : "Carta bloccata. Nessun pagamento passerà.", "ok");
+      }
+      return caricaBanca();
+    }).catch(function (err) {
+      if (window.ui && ui.toast) ui.toast(err.message, "error");
+    });
+  }
+
   function bindConto() {
     arrayEach("[data-move]", function (bottone) {
       bottone.addEventListener("click", function () {
@@ -917,6 +1481,84 @@
         });
       });
     }
+
+    bindBanca();
+  }
+
+  /* Una sola delega sul contenitore: le righe dei bonifici e dei mandati
+     vengono ridisegnate a ogni ricarica, e un listener attaccato a ogni riga
+     sarebbe un listener da riattaccare ogni volta (e da dimenticare). */
+  function bindBanca() {
+    var nodo = document.querySelector("[data-rails]");
+    if (nodo) {
+      nodo.addEventListener("click", function (e) {
+        var b;
+        if ((b = e.target.closest("[data-bonifico-annulla]"))) {
+          return annullaBonifico(b.getAttribute("data-bonifico-annulla"), b);
+        }
+        if ((b = e.target.closest("[data-mandato-revoca]"))) {
+          return revocaMandato(b.getAttribute("data-mandato-revoca"), b);
+        }
+        if ((b = e.target.closest("[data-addebito-contesta]"))) {
+          return apriContesta(b.getAttribute("data-addebito-contesta"), b.getAttribute("data-addebito-stato"));
+        }
+      });
+    }
+
+    arrayEach("[data-bonifico-apri]", function (b) { b.addEventListener("click", apriBonifico); });
+    arrayEach("[data-mandato-apri]", function (b) { b.addEventListener("click", apriMandato); });
+    arrayEach("[data-carta-richiedi]", function (b) { b.addEventListener("click", richiediCarta); });
+
+    var blocco = document.querySelector("[data-carta-blocca]");
+    if (blocco) {
+      blocco.addEventListener("click", function () {
+        var c = (bancaState.dati && bancaState.dati.carte && bancaState.dati.carte[0]) || null;
+        if (c) bloccaCarta(c.id, false);
+      });
+    }
+    var sblocco = document.querySelector("[data-carta-sblocca]");
+    if (sblocco) {
+      sblocco.addEventListener("click", function () {
+        var c = (bancaState.dati && bancaState.dati.carte && bancaState.dati.carte[0]) || null;
+        if (c) bloccaCarta(c.id, true);
+      });
+    }
+
+    /* modale bonifico */
+    var bon = document.querySelector("[data-bonifico-modal]");
+    if (bon) {
+      bon.querySelector("[data-bonifico-form]").addEventListener("submit", inviaBonifico);
+      bon.querySelector("[data-bonifico-cancel]").addEventListener("click", chiudiBonifico);
+      bon.addEventListener("click", function (e) { if (e.target === bon) chiudiBonifico(); });
+      ["#bon-importo", "#bon-ben", "#bon-istantaneo"].forEach(function (sel) {
+        var campo = bon.querySelector(sel);
+        if (campo) campo.addEventListener("input", aggiornaRiepilogoBonifico);
+        if (campo) campo.addEventListener("change", aggiornaRiepilogoBonifico);
+      });
+    }
+
+    /* modale mandato */
+    var man = document.querySelector("[data-mandato-modal]");
+    if (man) {
+      man.querySelector("[data-mandato-form]").addEventListener("submit", inviaMandato);
+      man.querySelector("[data-mandato-cancel]").addEventListener("click", chiudiMandato);
+      man.addEventListener("click", function (e) { if (e.target === man) chiudiMandato(); });
+    }
+
+    /* modale contestazione */
+    var con = document.querySelector("[data-contesta-modal]");
+    if (con) {
+      con.querySelector("[data-contesta-form]").addEventListener("submit", inviaContesta);
+      con.querySelector("[data-contesta-cancel]").addEventListener("click", chiudiContesta);
+      con.addEventListener("click", function (e) { if (e.target === con) chiudiContesta(); });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      chiudiBonifico();
+      chiudiMandato();
+      chiudiContesta();
+    });
   }
 
   /* ------------------------------------------------------- contratto -- */
@@ -1005,6 +1647,7 @@
   function load() {
     caricaNotifiche();
     caricaConto();
+    caricaBanca();
     api.dashboard()
       .then(renderDashboard)
       .catch(function (err) {

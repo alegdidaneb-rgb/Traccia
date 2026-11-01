@@ -136,6 +136,11 @@ La chiave `service_role` non deve mai finire nel repository.
 | `0008_public_wrappers.sql` | **wrapper in `public` (indispensabile)** |
 | `0010_contracts.sql` | contratto di incarico generato in automatico |
 | `0011_notifications_and_phase.sql` | cambio di fase e avvisi al cliente |
+| `0012_limits_and_testing.sql` | limiti per livello di verifica |
+| `0013_login_attempts_and_sessions.sql` | freno ai tentativi, sessioni |
+| `0014_storage_documents.sql` | file dei documenti su Storage |
+| `0015_conto_corrente.sql` | movimenti, prenotazioni, estratto conto |
+| `0016_banca_operativa.sql` | bonifici SEPA, SDD, interessi, carta, wrapper |
 
 Le funzioni devono essere richiamabili da `/rest/v1/rpc/<nome>`, quindi ognuna
 ha un wrapper `security definer` in `public` (migrazione `0008` e, per le
@@ -421,9 +426,78 @@ la destinazione dei prelievi è esattamente ciò che farebbe un intruso.
 periodo con il saldo progressivo. La stampa è già impostata (solo il foglio,
 senza navigazione).
 
-Cosa **non** c'è, di proposito: bonifici SEPA, addebiti diretti, interessi,
-carta. Qui c'è la contabilità e il controllo dei fondi; i pagamenti veri
-passano dalla banca e dall'intermediario, e il contratto lo dice.
+### 5-decies. Bonifici SEPA, addebiti diretti, interessi, carta
+
+Migrazione `0016_banca_operativa.sql`. Il conto del §5-nonies sapeva di
+contabilità; qui ci sono i canali con cui il denaro esce ed entra davvero.
+
+| Pezzo | Tabella | Regola che conta |
+|---|---|---|
+| Bonifico | `bank_transfers` | `queued → sent → executed`: il movimento si scrive **solo** su `executed` |
+| Mandato | `direct_debit_mandates` | si firma solo con IBAN verificato; la revoca annulla gli addebiti aperti |
+| Addebito | `direct_debits` | incassato = movimento; contestato entro 8 settimane (CORE) = storno |
+| Interessi | `interest_accruals` | maturazione giornaliera idempotente, accredito in un movimento unico |
+| Carta | `cards` | solo le ultime 4 cifre; il blocco non chiede conferma all'analista |
+
+**Perché «inviato» e «eseguito» sono due stati.** Mandare un bonifico alla banca
+non è pagare: finché la banca non risponde, il denaro è ancora sul conto e i
+fondi restano impegnati. Se l'esito è `rejected` o `returned` i fondi si
+liberano senza scrivere alcun movimento; se è `executed` si scrive il movimento
+e si libera la prenotazione nello stesso atto. Verificato in produzione: 100 €
+disposti, respinti con `AC04` → saldo invariato, prenotato tornato a 300.
+
+**Gli addebiti diretti sono già scritti come li vuole il regolamento.** Mandato
+CORE → rimborso entro 8 settimane; mandato B2B → nessun rimborso automatico, e
+il sito lo dice invece di lasciare il cliente a scoprirlo. La contestazione non
+cancella l'addebito: scrive uno storno (`reversal`) che resta nell'estratto.
+Verificato: −85,40 incassato, poi stornato; i due movimenti si leggono in fila.
+
+**Gli interessi non si inventano.** Il tasso sta in `settings.interest`
+(`annual_rate_pct`, oggi 1,5 %), parte da zero e il codice non ne conosce
+nessuno. `matricola_interessi(token)` è idempotente per giorno (unique su
+`user_id, accrued_on`): girare due volte non raddoppia niente — verificato.
+`accredita_interessi` somma le maturazioni non pagate e scrive un movimento
+solo; sotto il centesimo non accredita e **non azzera**: gli importi restano in
+attesa del prossimo accredito. Per farli maturare ogni notte serve un job
+(pg_cron) che chiami `select traccia.matricola_interessi();` — senza sessione,
+con il ruolo del database.
+
+**La carta** si richiede dal livello 2 con IBAN verificato, e l'analista la
+attiva (console → *Banca e pagamenti*). Il numero completo non c'è e non ci
+sarà: si conservano `last4`, scadenza e limite mensile, che sono le uniche
+informazioni che una schermata deve mostrare.
+
+**Prelievo e bonifico sono la stessa cosa.** «Preleva» apre un bonifico già
+compilato verso l'IBAN del cliente: prima erano due percorsi separati, e quello
+vecchio non passava dai canali SEPA (niente IBAN del beneficiario, niente esito
+della banca). Un modo solo vuol dire un posto solo in cui sbagliare.
+
+**Bug trovati e chiusi in questa migrazione** (tutti in produzione, non in
+teoria):
+
+1. `public.conto`, `public.estratto_conto`, `public.imposta_iban`,
+   `public.admin_verifica_iban`, `public.document_link` e
+   `public.attach_document_file` **non esistevano**: PostgREST espone solo
+   `public`, quindi il conto del §5-nonies e il pulsante «verifica» dell'IBAN
+   rispondevano «function not found». Ricreati qui, e il test
+   `tests/banca.test.js` confronta le funzioni chiamate dal client con quelle
+   definite nella migrazione.
+2. `users.reserved_eur` era una **copia** di un dato già in `operations` e in
+   produzione era arretrata: 300 € di prelievo in attesa e «Impegnato 0 €».
+   Ora `traccia.prenotato_eur(user)` calcola dalle operazioni aperte, `conto()`
+   legge il calcolo, e `prenota_fondi`/`libera_fondi` riscrivono la cache
+   invece di sommarla. `riallinea_prenotazioni()` ha corretto 1 account e resta
+   ripetibile.
+3. `bonifico_crea` trattava `daily_withdrawal_l3 = 0` come «nessun limite»
+   anche sotto il livello 3: un cliente non verificato poteva disporre bonifici.
+   Ora zero significa due cose distinte, come nel §0012.
+
+Cosa **non** c'è, e non per dimenticanza: eseguire il bonifico, incassare
+l'addebito, emettere la carta. Servono un istituto di pagamento e un contratto
+con la banca: qui ci sono la richiesta, i controlli, i mandati, la
+riconciliazione e gli esiti, che è la parte che il software può fare. Il
+contratto (§5) dice che i controlli della banca, degli intermediari e
+dell'autorità restano fermi.
 
 ### 6. Registrarità
 
