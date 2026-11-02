@@ -1076,14 +1076,29 @@ end $$;
 -- come cache per non fare un aggregato a ogni pagina, ma viene riscritta da
 -- `riallinea_prenotazioni()` e `conto()` legge il valore calcolato. Se la
 -- cache sbaglia, lo schermo dice comunque la verità.
+/* Cosa è impegnato: le operazioni in attesa *e* i bonifici disposti.
+   Il secondo pezzo mancava. `bonifico_crea` chiama `prenota_fondi`, che a sua
+   volta chiedeva il totale a questa funzione: finché qui si contavano solo le
+   `operations`, un bonifico da 2000 € su un saldo di 2219 € risultava
+   «impegnato 0, disponibile 2219». Il cliente poteva disporre due volte gli
+   stessi soldi — e il controllo dei fondi di `prenota_fondi` era d'accordo,
+   perché guardava lo stesso numero sbagliato.
+   Le due tabelle hanno cicli di vita diversi (l'operazione è una richiesta da
+   approvare, il bonifico è già una disposizione) ma per il saldo sono la
+   stessa cosa: denaro non ancora uscito e non più disponibile. */
 create or replace function traccia.prenotato_eur(p_user uuid)
 returns numeric language sql stable
 set search_path = traccia, public, extensions as $fn$
-  select coalesce(sum(o.amount_eur), 0)
-  from traccia.operations o
-  where o.user_id = p_user
-    and o.status = 'pending'
-    and o.type in ('withdrawal', 'buy', 'transfer_out');
+  select
+    (select coalesce(sum(o.amount_eur), 0)
+       from traccia.operations o
+      where o.user_id = p_user
+        and o.status = 'pending'
+        and o.type in ('withdrawal', 'buy', 'transfer_out'))
+  + (select coalesce(sum(t.amount_eur), 0)
+       from traccia.bank_transfers t
+      where t.user_id = p_user
+        and t.status in ('queued', 'sent'));
 $fn$;
 
 -- Riallinea la cache (e restituisce cosa ha corretto). Idempotente: chiamarla

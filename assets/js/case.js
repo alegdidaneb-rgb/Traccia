@@ -975,9 +975,12 @@
       var st = STATO_BONIFICO[b.status] || { testo: b.status, pill: "pill--pending" };
       /* annullabile solo finché la banca non l'ha preso: dopo, tocca
          all'assistenza, e il pulsante non deve suggerire il contrario */
-      var azione = b.status === "queued"
-        ? '<button class="link-arrow xs" type="button" data-bonifico-annulla="' + ui.esc(b.id) + '">annulla</button>'
-        : "";
+      /* «Ricevuta» c'è sempre, anche per un bonifico respinto: è proprio il
+         respinto quello che serve mostrare alla banca o al creditore. */
+      var azioni = '<button class="link-arrow xs" type="button" data-bonifico-ricevuta="' + ui.esc(b.id) + '">ricevuta</button>';
+      if (b.status === "queued") {
+        azioni += ' <button class="link-arrow xs" type="button" data-bonifico-annulla="' + ui.esc(b.id) + '">annulla</button>';
+      }
       var motivo = (b.bank_code || b.bank_message)
         ? '<div class="xs muted">' + ui.esc([b.bank_code, b.bank_message].filter(Boolean).join(" · ")) + "</div>"
         : "";
@@ -994,7 +997,7 @@
           '<span class="rail-item__amount">' + euro(b.amount_eur) + "</span>" +
           '<span class="pill ' + st.pill + '">' + ui.esc(st.testo) + "</span>" +
           '<span class="xs mono muted">' + ui.esc(b.reference) + "</span>" +
-          azione +
+          azioni +
         "</div>";
       ul.appendChild(li);
     });
@@ -1235,6 +1238,9 @@
       if (window.ui && ui.toast) {
         ui.toast("Bonifico " + (res.reference || "") + " disposto. Resta in coda finché la banca non lo esegue.", "ok");
       }
+      /* subito dopo, la ricevuta: è il momento in cui la si vuole, non dopo
+         averla cercata in un elenco */
+      if (res && res.id) raggiungiRicevuta(res.id, res.reference);
       return Promise.all([caricaBanca(), caricaConto()]);
     }).catch(function (err) {
       errore.hidden = false;
@@ -1242,6 +1248,178 @@
     }).then(function () {
       submit.disabled = false;
       submit.textContent = "Disponi il bonifico";
+    });
+  }
+
+  /* Appena disposto, il bonifico compare nell'elenco: la ricevuta si offre lì.
+     Un modale sopra un modale, o un dialogo che ruba la scena, sarebbe di
+     troppo; il pulsante «ricevuta» è già sulla riga, e questo lo evidenzia. */
+  function raggiungiRicevuta(id, riferimento) {
+    setTimeout(function () {
+      var riga = document.querySelector('[data-bonifico-ricevuta="' + id + '"]');
+      if (riga) {
+        riga.classList.add("is-new");
+        setTimeout(function () { riga.classList.remove("is-new"); }, 4000);
+      }
+      if (window.ui && ui.toast) {
+        ui.toast("Ricevuta di " + (riferimento || "disposizione") + " pronta: «ricevuta» nell'elenco.", "ok");
+      }
+    }, 400);
+  }
+
+  /* ------------------------------------------------------- ricevuta -- */
+  /* Una ricevuta si legge come un documento, non come una schermata: chi la
+     stampa la mostra a un commercialista o a un creditore. Per questo il
+     codice della banca e la data valuta stanno in chiaro, e la nota dice cosa
+     il documento NON è. */
+  function statoBonifico(b) {
+    var st = STATO_BONIFICO[b.stato] || { testo: b.stato, pill: "pill--pending" };
+    return st;
+  }
+
+  function testoRicevuta(r) {
+    var st = statoBonifico(r);
+    var righe = [
+      ["Numero", r.numero],
+      ["Stato", st.testo],
+      ["Schema", r.schema],
+      ["Importo", euro(r.importo_eur)],
+      ["Beneficiario", (r.beneficiario || {}).nome],
+      ["IBAN beneficiario", (r.beneficiario || {}).iban],
+      ["Causale", r.causale || "—"],
+      ["Codice causale", r.codice_causale || "—"],
+      ["Data disposizione", dataLunga(String(r.data_disposizione || "").slice(0, 10))],
+      ["Data richiesta", dataLunga(r.data_richiesta)],
+      ["Data valuta", r.data_valuta ? dataLunga(r.data_valuta) : "non ancora eseguito"],
+      ["Saldo dopo", r.saldo_dopo_eur === null || r.saldo_dopo_eur === undefined
+        ? "—" : euro(r.saldo_dopo_eur)]
+    ];
+    if (r.codice_banca || r.messaggio_banca) {
+      righe.push(["Esito banca", [r.codice_banca, r.messaggio_banca].filter(Boolean).join(" · ")]);
+    }
+    return righe;
+  }
+
+  function apriRicevuta(id) {
+    var modale = document.querySelector("[data-receipt-modal]");
+    if (!modale) return;
+    var corpo = modale.querySelector("[data-receipt-body]");
+    var testa = modale.querySelector("[data-receipt-head]");
+    var piede = modale.querySelector("[data-receipt-foot]");
+    if (corpo) corpo.innerHTML = '<p class="empty-state">Preparo la ricevuta…</p>';
+    modale.hidden = false;
+
+    api.ricevutaBonifico(id).then(function (r) {
+      var p = r.provider || {};
+      if (testa) {
+        testa.innerHTML =
+          "<b>" + ui.esc(p.name || "Traccia") + "</b>" +
+          '<div class="xs muted">' + ui.esc(p.address || "") + "</div>" +
+          '<div class="xs muted">P.IVA ' + ui.esc(p.vat || "—") +
+            " · PEC " + ui.esc(p.pec || "—") + "</div>";
+      }
+      var st = statoBonifico(r);
+      if (corpo) {
+        corpo.innerHTML =
+          '<div class="receipt__top">' +
+            '<div><span class="xs muted">Ricevuta di disposizione</span>' +
+              '<div class="receipt__num mono">' + ui.esc(r.numero) + "</div></div>" +
+            '<span class="pill ' + st.pill + '">' + ui.esc(st.testo) + "</span>" +
+          "</div>" +
+          '<div class="receipt__amount">' + euro(r.importo_eur) + "</div>" +
+          '<table class="data-table receipt__table"><tbody>' +
+            /* numero, stato, schema e importo sono già in testa alla ricevuta:
+               ripeterli in tabella fa sembrare il documento compilato due volte */
+            testoRicevuta(r).slice(4).map(function (c) {
+              return "<tr><th>" + ui.esc(c[0]) + "</th><td>" + ui.esc(c[1]) + "</td></tr>";
+            }).join("") +
+            "<tr><th>Cliente</th><td>" + ui.esc((r.cliente || {}).name) +
+              '<div class="xs muted">' + ui.esc((r.cliente || {}).case || "") + "</div></td></tr>" +
+          "</tbody></table>";
+      }
+      if (piede) {
+        piede.innerHTML = ui.esc(r.nota) + '<div class="xs muted mt-1">Emessa il ' +
+          dataLunga(String(r.emesso_il || "").slice(0, 10)) + " · " +
+          ui.esc((r.cliente || {}).name) + " · " + ui.esc((r.cliente || {}).email) + "</div>";
+      }
+    }).catch(function (err) {
+      if (corpo) {
+        corpo.innerHTML = '<p class="empty-state">' + ui.esc(err.message || "Ricevuta non disponibile.") + "</p>";
+      }
+    });
+  }
+
+  function chiudiRicevuta() {
+    var modale = document.querySelector("[data-receipt-modal]");
+    if (modale) modale.hidden = true;
+  }
+
+  /* ------------------------------------------------- estratto bonifici -- */
+  /* CSV e non PDF: un estratto serve a chi lo rilegge in un foglio di calcolo,
+     e un CSV si apre ovunque senza dipendere da un visualizzatore. Il PDF
+     resta possibile per la via di stampa. */
+  function csvBonifici(dati) {
+    var q = function (v) {
+      var t = v === null || v === undefined ? "" : String(v);
+      return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    };
+    var righe = [[
+      "Numero", "Disposto il", "Data richiesta", "Data valuta", "Beneficiario",
+      "IBAN beneficiario", "Importo", "Divisa", "Causale", "Codice causale",
+      "Schema", "Stato", "Codice banca", "Messaggio banca"
+    ]];
+    (dati.bonifici || []).forEach(function (b) {
+      righe.push([
+        b.reference,
+        String(b.disposto_il || "").slice(0, 10),
+        b.data_richiesta || "",
+        b.data_valuta || "",
+        b.beneficiario || "",
+        b.iban || "",
+        /* numero con la virgola: è un foglio italiano, e un importo letto
+           come testo non si somma */
+        Number(b.importo_eur || 0).toFixed(2).replace(".", ","),
+        b.divisa || "EUR",
+        b.causale || "",
+        b.codice_causale || "",
+        b.schema === "sepa_instant" ? "SEPA istantaneo" : "SEPA ordinario",
+        (STATO_BONIFICO[b.stato] || {}).testo || b.stato || "",
+        b.codice_banca || "",
+        b.messaggio_banca || ""
+      ]);
+    });
+    return righe.map(function (r) { return r.map(q).join(";"); }).join("\r\n");
+  }
+
+  function scaricaTesto(nome, testo) {
+    var blob = new Blob(["\ufeff" + testo], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    /* su Safari la revoca immediata annulla il download: si aspetta un giro */
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+
+  function scaricaEstrattoBonifici() {
+    var bottone = document.querySelector("[data-bonifici-csv]");
+    if (bottone) bottone.disabled = true;
+    api.estrattoBonifici().then(function (dati) {
+      if (!dati.bonifici || !dati.bonifici.length) {
+        if (window.ui && ui.toast) ui.toast("Nessun bonifico nel periodo: non c'è niente da scaricare.", "error");
+        return;
+      }
+      scaricaTesto("bonifici-" + dati.da + "_" + dati.a + ".csv", csvBonifici(dati));
+      if (window.ui && ui.toast) {
+        ui.toast(dati.numero_bonifici + " bonifici esportati.", "ok");
+      }
+    }).catch(function (err) {
+      if (window.ui && ui.toast) ui.toast(err.message || "Estratto non disponibile.", "error");
+    }).then(function () {
+      if (bottone) bottone.disabled = false;
     });
   }
 
@@ -1496,6 +1674,9 @@
         if ((b = e.target.closest("[data-bonifico-annulla]"))) {
           return annullaBonifico(b.getAttribute("data-bonifico-annulla"), b);
         }
+        if ((b = e.target.closest("[data-bonifico-ricevuta]"))) {
+          return apriRicevuta(b.getAttribute("data-bonifico-ricevuta"));
+        }
         if ((b = e.target.closest("[data-mandato-revoca]"))) {
           return revocaMandato(b.getAttribute("data-mandato-revoca"), b);
         }
@@ -1536,6 +1717,22 @@
         if (campo) campo.addEventListener("change", aggiornaRiepilogoBonifico);
       });
     }
+
+    /* modale ricevuta. Ogni pulsante si attacca solo se c'è: una bind che
+       assume la presenza di tutti i nodi trasforma un elemento mancante in una
+       schermata muta — è il modo in cui il pulsante del bonifico era già
+       rimasto senza ascoltatore una volta. */
+    var ric = document.querySelector("[data-receipt-modal]");
+    if (ric) {
+      var chiudiRic = ric.querySelector("[data-receipt-close]");
+      if (chiudiRic) chiudiRic.addEventListener("click", chiudiRicevuta);
+      var stampaRic = ric.querySelector("[data-receipt-print]");
+      if (stampaRic) stampaRic.addEventListener("click", function () { window.print(); });
+      ric.addEventListener("click", function (e) { if (e.target === ric) chiudiRicevuta(); });
+    }
+
+    var csv = document.querySelector("[data-bonifici-csv]");
+    if (csv) csv.addEventListener("click", scaricaEstrattoBonifici);
 
     /* modale mandato */
     var man = document.querySelector("[data-mandato-modal]");

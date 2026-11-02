@@ -2640,6 +2640,98 @@ body.is-staff-view #sicurezza { display: none !important; }
   white-space: nowrap;
 }
 
+/* ----------------------------------------------------------- ricevuta -- */
+/* Una ricevuta deve sembrare un documento, non una schermata. */
+.receipt { font-variant-numeric: tabular-nums; }
+.receipt__head {
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.receipt__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.1rem;
+}
+.receipt__num { font-size: 1.02rem; font-weight: 600; letter-spacing: -0.01em; }
+.receipt__amount {
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  margin: 0.5rem 0 1.1rem;
+}
+.receipt__table { width: 100%; }
+.receipt__table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 0.8rem;
+  width: 42%;
+  padding: 0.45rem 0;
+  vertical-align: top;
+}
+.receipt__table td { font-size: 0.86rem; padding: 0.45rem 0; }
+
+/* il collegamento appena comparso si nota senza lampeggiare */
+.link-arrow.is-new { box-shadow: 0 0 0 3px var(--accent-wash); border-radius: 4px; }
+
+.rail__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.9rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+.rail__foot .xs { flex: 1 1 12rem; }
+
+/* la ricevuta in stampa è un foglio, con il suo margine */
+@media print {
+  .receipt__table th, .receipt__table td { font-size: 10pt; }
+  .receipt__amount { font-size: 20pt; }
+}
+
+/* --------------------------------------------------------- modali lunghe --
+   Il difetto: un backdrop in `display:grid; place-items:center` con un modale
+   più alto della finestra taglia *entrambe* le estremità. Il pulsante in fondo
+   al modulo — «Disponi il bonifico» — finisce sotto il bordo dello schermo e
+   non c'è modo di raggiungerlo: né scrollando, perché il contenitore non
+   scrolla, né rimpicciolendo la pagina. Da qui «non mi fa andare avanti».
+   `max-height: 92vh` c'era solo su `.modal--wide`, cioè sull'estratto conto,
+   che è l'unico modale che nessuno deve leggere fino in fondo.
+
+   Ora ogni modale ha un tetto all'altezza e scorre da sola. `place-items:center`
+   resta, perché con `overflow:auto` su un elemento più alto del contenitore
+   il centraggio taglia comunque la testa: per questo il padding del backdrop
+   è più generoso e le modali hanno `margin: auto`. */
+.modal-backdrop { overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem 1.25rem; }
+.modal {
+  max-height: min(92vh, calc(100dvh - 3rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: auto;
+}
+/* i pulsanti non devono mai sparire sotto il bordo: si fermano, restano
+   raggiungibili, e il modulo scorre dietro */
+.modal .btn-row {
+  position: sticky;
+  bottom: -1.5rem;
+  margin-inline: -1.5rem;
+  padding: 0.9rem 1.5rem 1.5rem;
+  background: #fff;
+  box-shadow: 0 -12px 16px -12px rgba(10, 10, 13, 0.18);
+}
+/* su uno schermo basso (telefono in orizzontale, finestra piccola) il modale
+   occupa quello che c'è, invece di fingere che ci stia tutto */
+@media (max-height: 520px) {
+  .modal-backdrop { padding: 0.5rem; }
+  .modal { max-height: calc(100dvh - 1rem); padding: 1rem; }
+  .modal .btn-row { bottom: -1rem; margin-inline: -1rem; padding: 0.75rem 1rem 1rem; }
+}
+
 /* ---------------------------------------------------------- estratto conto */
 .statement-table td, .statement-table th { font-size: 0.85rem; }
 .statement-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -2648,13 +2740,13 @@ body.is-staff-view #sicurezza { display: none !important; }
 /* stampa: solo l'estratto, e senza fronzoli */
 @media print {
   .site-header, .app-side, .appv2__bar, .toast-stack,
-  .modal-backdrop .btn-row, [data-statement-range] { display: none !important; }
+  .modal .btn-row, [data-statement-range] { display: none !important; }
   .modal-backdrop {
     position: static;
     background: none;
     padding: 0;
   }
-  .modal { box-shadow: none; border: 0; max-width: none; }
+  .modal { box-shadow: none; border: 0; max-width: none; max-height: none; overflow: visible; }
   .table-scroll { max-height: none; overflow: visible; }
 }
 

@@ -233,6 +233,15 @@
       });
     },
     annullaBonifico: function (id) { return call("bonifico_annulla", { p_id: id }); },
+    /* i due documenti del bonifico: la ricevuta del singolo bonifico e
+       l'estratto dei soli bonifici. Non passano dall'estratto conto perché
+       il ledger non sa l'IBAN del beneficiario né l'esito della banca. */
+    ricevutaBonifico: function (id) { return call("bonifico_ricevuta", { p_id: id }); },
+    estrattoBonifici: function (da, a, stato) {
+      return call("bonifici_estratto", {
+        p_da: da || null, p_a: a || null, p_stato: stato || null
+      });
+    },
     mandato: function (dati) {
       return call("mandato_crea", {
         p_creditore: dati.creditore,
