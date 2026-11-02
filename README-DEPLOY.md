@@ -558,6 +558,49 @@ riconciliazione e gli esiti, che è la parte che il software può fare. Il
 contratto (§5) dice che i controlli della banca, degli intermediari e
 dell'autorità restano fermi.
 
+### 5-duodecies. La ricevuta di un bonifico e l'estratto dei soli bonifici
+
+Migrazione `0018_documenti_bonifico.sql`.
+
+Due funzioni, perché il cliente chiede due cose diverse:
+
+| funzione | cosa restituisce |
+|---|---|
+| `public.bonifico_ricevuta(p_token, p_id)` | il documento di **un** bonifico, pronto da stampare |
+| `public.bonifici_estratto(p_token, p_da, p_a, p_stato)` | **solo** i bonifici del periodo, con il totale eseguito |
+
+**Perché non bastava `estratto_conto`.** Il ledger ha una riga per movimento:
+importo, data, descrizione. Non ha l'IBAN del beneficiario, non ha lo stato,
+non ha il codice con cui la banca ha risposto. Un «estratto dei bonifici» fatto
+filtrando il ledger sarebbe un elenco di importi senza intestatari — cioè la
+cosa che il cliente chiede di non ricevere. `bonifici_estratto` legge
+`traccia.bank_transfers`, filtra `direction = 'out'` e, se non gli si dà un
+periodo, copre gli ultimi dodici mesi.
+
+Il totale dell'estratto conta **solo i bonifici eseguiti**: sommare anche quelli
+in attesa direbbe al cliente che ha spostato denaro che non è ancora partito.
+
+**Ricevuta, non fattura.** Il bonifico non ha un corrispettivo: gli onorari
+sono 190 € all'apertura e il 12% di quanto si recupera, e nessuno dei due si
+applica a un trasferimento. Non c'è quindi niente da fatturare, e la ricevuta
+lo dice: la nota in fondo è «non documento fiscale». Se un giorno comparisse un
+costo per singolo bonifico, la ricevuta guadagna una riga di addebito e diventa
+una fattura, con numerazione progressiva — che oggi non esiste apposta.
+
+Il documento porta il blocco del prestatore (`traccia.provider_block()`:
+ERSEL SPA, P.IVA, PEC, sede), il codice banca e il messaggio quando la banca ha
+rifiutato, e la data valuta. La stampa è `window.print()` sulla modale: i CSS
+di stampa nascono il foglio.
+
+**L'estratto in CSV** usa il punto e virgola e la virgola nei decimali: è il
+formato che Excel italiano apre senza chiedere niente. In testa c'è il BOM,
+senza il quale gli accenti arrivano rotti. Nome del file:
+`bonifici-<da>_<a>.csv`.
+
+Entrambe le funzioni sono raggiungibili solo dal titolare: `bonifico_ricevuta`
+risponde `42501` se il bonifico non è suo, e l'estratto non accetta un utente
+come parametro — lo ricava dal gettone.
+
 ### 6. Registrarità
 
 `traccia.audit` è append-only e registra ogni azione amministrativa con
