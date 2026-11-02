@@ -148,4 +148,93 @@ test("migrazione: il tasso di interesse non è inventato nel codice", () => {
   assert.ok(!/tasso\s*:=\s*[0-9]/.test(MIG), "tasso scritto nel codice");
 });
 
+
+
+/* ---------------------------------------------------------------------------
+ * La superficie pubblica
+ *
+ * Questi test nascono dal difetto più costoso del #12: `public.conto` non
+ * esisteva. Il sito funzionava lo stesso perché le funzioni erano state
+ * create a mano nel database, una sessione alla volta, e non sono mai finite
+ * in un file. Il repository sembrava completo e non lo era: ricostruire il
+ * database da `supabase/migrations/` avrebbe prodotto un progetto senza login.
+ *
+ * Per questo si prova il repository contro se stesso, e non contro il database
+ * vivo: un test che interroga il database dice com'è il database oggi, non se
+ * il repository lo sa ricostruire.
+ * ------------------------------------------------------------------------- */
+const TUTTE = fs.readdirSync(path.join(__dirname, "..", "supabase/migrations"))
+  .filter((f) => /\.sql$/.test(f)).sort()
+  .map((f) => fs.readFileSync(path.join(__dirname, "..", "supabase/migrations", f), "utf8"))
+  .join("\n");
+
+/* funzioni interne: esistono in `public` per ragioni storiche, ma il browser
+   non deve poterle chiamare */
+const INTERNE = ["hash_token", "holdings_value", "set_updated_at"];
+
+function definite(schema) {
+  const out = {};
+  const re = new RegExp(
+    "create (?:or replace )?function " + schema + "\\.([a-z_0-9]+)\\s*\\(([^)]*)\\)", "gi");
+  let m;
+  while ((m = re.exec(TUTTE))) {
+    out[m[1]] = m[2].split(",").map((x) => x.trim().split(/\s+/)[0]).filter(Boolean).sort();
+  }
+  return out;
+}
+
+test("ogni funzione chiamata dal client ha un wrapper in public", () => {
+  const chiamate = new Set();
+  const re = /call\("([a-z_0-9]+)"/g;
+  let m;
+  while ((m = re.exec(API))) chiamate.add(m[1]);
+
+  const pub = definite("public");
+  const tra = definite("traccia");
+
+  /* si guardano le funzioni del progetto: un nome che non esiste in `traccia`
+     è una RPC di Supabase, non affar nostro */
+  const mancanti = [...chiamate].filter((n) => tra[n] && !pub[n]);
+  assert.deepStrictEqual(mancanti, [], "chiamate senza wrapper public: " + mancanti.join(", "));
+});
+
+test("ogni wrapper public ha gli stessi parametri della funzione traccia", () => {
+  /* nomi diversi danno lo stesso errore di un wrapper assente (`PGRST202`),
+     ed è più difficile accorgersene perché la funzione *c'è* */
+  const pub = definite("public");
+  const tra = definite("traccia");
+  let confrontati = 0;
+  Object.keys(pub).forEach(function (nome) {
+    if (!tra[nome]) return; /* es. health, market: definite direttamente in public */
+    assert.deepStrictEqual(pub[nome], tra[nome],
+      "public." + nome + " ha parametri (" + pub[nome] + ") diversi da traccia." + nome + " (" + tra[nome] + ")");
+    confrontati++;
+  });
+  assert.ok(confrontati >= 60, "confrontati solo " + confrontati + " wrapper");
+});
+
+test("le funzioni interne non sono eseguibili da anon", () => {
+  /* `hash_token` calcola l'impronta di un gettone di sessione: aperta ad anon
+     è un modo per verificare se un gettone è valido senza averne uno.
+     `holdings_value` legge il portafoglio di un utente qualsiasi. */
+  INTERNE.forEach(function (nome) {
+    const re = new RegExp("revoke all on function public\\.\\s*" + nome + "\\s*\\([^)]*\\)\\s*from public, anon, authenticated", "i");
+    assert.ok(re.test(TUTTE),
+      "public." + nome + " non è revocata ad anon: serve «from public, anon, authenticated»");
+  });
+});
+
+test("nessuna migrazione lascia un endpoint senza grant esplicito", () => {
+  /* una funzione in `public` senza grant è raggiungibile da anon per via del
+     permesso di default di PostgreSQL — quindi «non l'ho scritto» non è una
+     scelta, è una dimenticanza */
+  const pub = definite("public");
+  const senza = Object.keys(pub).filter(function (nome) {
+    if (INTERNE.indexOf(nome) > -1) return false;
+    const re = new RegExp("grant execute on function public\\.\\s*" + nome + "\\s*\\(", "i");
+    return !re.test(TUTTE);
+  });
+  assert.deepStrictEqual(senza, [], "in public senza grant: " + senza.join(", "));
+});
+
 module.exports = casi;
