@@ -31,5 +31,8 @@ window.TRACCIA_CONFIG = {
 
   /* Messaggio già scritto nella chat. `{pratica}` viene sostituito con il
      codice della pratica quando il cliente ha una sessione aperta. */
-  whatsappText: "Buongiorno, vi scrivo dalla mia area riservata Traccia. Pratica {pratica}."
+  /* La prima frase deve funzionare anche per chi non ha una sessione: «dalla
+     mia area riservata» su una pagina pubblica è una frase che il visitatore
+     non può aver scritto. La seconda compare solo quando c'è una pratica. */
+  whatsappText: "Buongiorno, vi scrivo dal sito Traccia. Pratica {pratica}."
 };

@@ -85,4 +85,11 @@ test("whatsapp: nessun numero di telefono inventato resta nelle pagine", () => {
   assert.deepStrictEqual(colpevoli, [], "numeri segnaposto in: " + colpevoli.join(", "));
 });
 
+test("whatsapp: il messaggio standard non presuppone una sessione", () => {
+  /* «dalla mia area riservata» su una pagina pubblica è una frase che il
+     visitatore non può aver scritto: il pulsante sta anche in home page. */
+  const testo = decodeURIComponent(api().link("").split("text=")[1]);
+  assert.ok(!/area riservata/i.test(testo), "messaggio da cliente su una pagina pubblica: " + testo);
+});
+
 module.exports = casi;
