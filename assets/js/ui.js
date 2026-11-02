@@ -23,6 +23,13 @@
     }).format(Number(value) || 0);
   }
   function when(ts) { return ts ? dateFmt.format(new Date(ts * 1000)) : "—"; }
+  /* solo l'ora: serve là dove conta la scadenza, non il giorno. Accetta
+     secondi epoch, come `when`, perché è così che il database li restituisce. */
+  function time(ts) {
+    if (!ts) return "—";
+    return new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" })
+      .format(new Date(ts * 1000));
+  }
   function esc(text) {
     return String(text === null || text === undefined ? "" : text)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -162,7 +169,7 @@
   }
 
   global.ui = {
-    money: money, num: num, when: when, esc: esc,
+    money: money, num: num, when: when, time: time, esc: esc,
     pill: pill, toast: toast, ask: ask,
     requireAuth: requireAuth, requireAdmin: requireAdmin, isAuthError: isAuthError,
     initials: initials, labels: LABELS

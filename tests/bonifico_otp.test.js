@@ -1,0 +1,192 @@
+/* ==========================================================================
+   La conferma del bonifico: il codice, i due tempi, e il blocco che non torna
+   ==========================================================================
+   Il cliente ha descritto il difetto così: «quando faccio un nuovo bonifico
+   SEPA non mi permette di andare avanti e tutto si blocca». Questi test
+   difendono le tre cose che quel difetto ha insegnato:
+
+   1. il browser non decide mai se il cliente ha i soldi;
+   2. il bonifico non esiste senza un codice, e il codice non passa dal sito;
+   3. il percorso diretto (`bonifico_crea`) non è più una porta aperta.
+   ========================================================================== */
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+
+/* il runner del progetto è `tests/run.js`: un modulo che esporta i casi */
+const casi = [];
+function test(nome, fn) { casi.push({ nome, fn }); }
+
+const R = (f) => fs.readFileSync(path.join(__dirname, "..", f), "utf8");
+const SQL = R("supabase/migrations/0019_bonifico_otp.sql");
+const API = R("assets/js/api.js");
+const CASE = R("assets/js/case.js");
+const ADMIN = R("assets/js/admin.js");
+const APP = R("app.html");
+const ADMIN_HTML = R("admin.html");
+
+/* ------------------------------------------------------------ il blocco -- */
+test("il client non confronta più l'importo con il disponibile letto prima", () => {
+  /* questa era la riga che spegneva il pulsante: `d.importo > disponibile`.
+     Se torna, torna il difetto — e torna in un modo che sembra un guasto. */
+  const invia = CASE.slice(CASE.indexOf("function inviaBonifico"));
+  const corpo = invia.slice(0, invia.indexOf("function mostraConfermaBonifico"));
+  assert.ok(!/disponibile/i.test(corpo),
+    "inviaBonifico non deve leggere il disponibile: la decisione è del server");
+  assert.ok(/api\.preparaBonifico/.test(corpo), "inviaBonifico deve chiamare il server");
+});
+
+test("la disponibilità si mostra ma non si usa per decidere", () => {
+  /* il suggerimento accanto all'importo resta: è un'informazione utile. Non è
+     più un cancello. */
+  assert.ok(/data-bon-importo-hint/.test(APP), "manca il suggerimento del disponibile");
+  const hint = CASE.slice(CASE.indexOf("data-bon-importo-hint"));
+  assert.ok(/"Disponibile: "/.test(hint.slice(0, 300)), "il suggerimento deve dire quanto è disponibile");
+});
+
+/* ----------------------------------------------------------- due tempi -- */
+test("disporre non crea il bonifico: crea una richiesta di conferma", () => {
+  assert.ok(/call\("bonifico_prepara"/.test(API), "api.js deve chiamare bonifico_prepara");
+  assert.ok(/call\("bonifico_conferma"/.test(API), "api.js deve chiamare bonifico_conferma");
+  assert.ok(!/call\("bonifico_crea"/.test(API),
+    "bonifico_crea non deve più essere raggiungibile dal browser");
+});
+
+test("dalla richiesta alla conferma: il codice è obbligatorio e sono sei cifre", () => {
+  const c = CASE.slice(CASE.indexOf("function confermaBonifico"));
+  const corpo = c.slice(0, c.indexOf("Appena disposto"));
+  assert.ok(/codice\.length !== 6/.test(corpo), "il client deve rifiutare un codice che non ha sei cifre");
+  assert.ok(/api\.confermaBonifico/.test(corpo), "deve confermare con il server");
+});
+
+test("il pannello del codice non promette che il denaro sia partito", () => {
+  assert.ok(/data-bonifico-conferma/.test(APP), "manca il secondo tempo nella modale");
+  /* dal secondo tempo fino alla modale successiva: il testo che il cliente
+     legge, compresa la nota in fondo */
+  const pannello = APP.slice(APP.indexOf("data-bonifico-conferma"));
+  const testo = pannello.slice(0, pannello.indexOf("data-receipt-modal")).replace(/<[^>]+>/g, " ");
+  assert.ok(/non è ancora disposto/.test(testo), "deve dire che il bonifico non è ancora disposto");
+  assert.ok(/quando la banca esegue/.test(testo),
+    "il denaro esce quando la banca esegue, non alla conferma: è una promessa che deve restare vera");
+});
+
+test("il codice non compare mai nella schermata del cliente", () => {
+  /* la modale del cliente non ha nessun nodo che possa mostrarlo: il codice
+     esiste solo nella console degli analisti */
+  const zona = APP.slice(APP.indexOf("data-bonifico-conferma"), APP.indexOf("data-receipt-modal"));
+  assert.ok(!/data-conferma-codice-valore|data-codice-valore/.test(zona),
+    "la modale del cliente non deve avere un contenitore per il codice");
+  const mostrar = CASE.indexOf("[data-conferma-codice]");
+  const contesto = CASE.slice(mostrar - 200, mostrar + 300);
+  assert.ok(!/textContent\s*=\s*res\.codice/.test(contesto), "case.js non deve scrivere il codice");
+});
+
+/* --------------------------------------------------------------- server -- */
+test("il codice è generato dal generatore crittografico, non da random()", () => {
+  assert.ok(/gen_random_bytes/.test(SQL), "il codice deve venire da pgcrypto");
+  const gen = SQL.slice(SQL.indexOf("function traccia.genera_codice"));
+  const corpo = gen.slice(0, gen.indexOf("$fn$;"));
+  assert.ok(!/random\(\)/.test(corpo.replace(/gen_random_bytes/g, "")),
+    "random() non è un generatore crittografico");
+  assert.ok(/< 250/.test(corpo), "lo scarto sopra 250 serve a distribuire le cifre uniformemente");
+});
+
+test("del codice resta solo l'impronta", () => {
+  assert.ok(/code_hash/.test(SQL), "la tabella deve conservare l'impronta");
+  assert.ok(/traccia\.hash_token\(codice\)/.test(SQL), "l'impronta è la stessa forma dei gettoni di sessione");
+  assert.ok(/if ch\.code_hash <> traccia\.hash_token/.test(SQL),
+    "il confronto deve essere fra impronte");
+});
+
+test("la conferma rifà i controlli invece di fidarsi della richiesta", () => {
+  const conf = SQL.slice(SQL.indexOf("function traccia.bonifico_conferma"));
+  const corpo = conf.slice(0, conf.indexOf("-- 7. Rinunciare"));
+  /* le regole che devono tornare a girare alla conferma */
+  ["iban_verified_at", "payment_purposes", "daily_withdrawal", "current_date + 90"]
+    .forEach(function (regola) {
+      assert.ok(corpo.indexOf(regola) > -1, "alla conferma manca il controllo " + regola);
+    });
+});
+
+test("il bonifico si crea dal payload salvato, non da quello che rimanda il browser", () => {
+  const conf = SQL.slice(SQL.indexOf("function traccia.bonifico_conferma"));
+  const corpo = conf.slice(0, conf.indexOf("-- 7. Rinunciare"));
+  assert.ok(/ch\.payload ->> 'importo'/.test(corpo),
+    "l'importo deve venire dalla richiesta salvata: altrimenti un codice per 10 € ne conferma 10.000");
+  assert.ok(/traccia\.bank_transfers/.test(corpo), "la conferma crea il bonifico");
+});
+
+test("una conferma vale una volta sola e scade", () => {
+  assert.ok(/consumed_at is not null/.test(SQL), "una conferma già usata deve essere rifiutata");
+  assert.ok(/ch\.expires_at < now\(\)/.test(SQL), "una conferma scaduta deve essere rifiutata");
+  assert.ok(/attempts/.test(SQL) && /max_attempts/.test(SQL), "i tentativi devono essere contati");
+  assert.ok(/cancelled_at = now\(\)/.test(SQL), "esauriti i tentativi la richiesta si chiude");
+});
+
+test("la richiesta appartiene a chi la conferma", () => {
+  assert.ok(/where id = p_challenge and user_id = u\.id/.test(SQL),
+    "la conferma deve essere cercata per id *e* utente: un codice non deve valere per un altro conto");
+});
+
+test("i soldi impegnati dalla richiesta in attesa contano nel disponibile", () => {
+  const pren = SQL.slice(SQL.indexOf("function traccia.prenotato_eur"));
+  const corpo = pren.slice(0, pren.indexOf("$fn$;"));
+  assert.ok(/transfer_challenges/.test(corpo),
+    "una richiesta aperta impegna denaro: contarla zero autorizza una seconda spesa degli stessi soldi");
+  assert.ok(/expires_at > now\(\)/.test(corpo), "una richiesta scaduta non deve più contare");
+});
+
+test("chiudere o annullare libera i soldi", () => {
+  const rin = SQL.slice(SQL.indexOf("function traccia.bonifico_rinuncia"));
+  const corpo = rin.slice(0, rin.indexOf("-- 8. Leggere il codice"));
+  assert.ok(/libera_fondi/.test(corpo), "rinunciare deve restituire il disponibile");
+  assert.ok(/libera_fondi/.test(SQL.slice(SQL.indexOf("function traccia.scadi_conferme_bonifico"))),
+    "chiudere le scadute deve restituire il disponibile");
+});
+
+/* ----------------------------------------------------- la porta chiusa -- */
+test("bonifico_crea non è più eseguibile dal browser", () => {
+  const revoca = /revoke all on function public\.bonifico_crea\([^)]*\)\s*from public, anon, authenticated/i;
+  assert.ok(revoca.test(SQL), "senza questa revoca il codice è una cerimonia davanti a una porta aperta");
+});
+
+/* ------------------------------------------------------- console analisti -- */
+test("l'analista legge il codice una volta e il database lo registra", () => {
+  assert.ok(/function traccia\.admin_conferma_codice/.test(SQL), "manca la consegna del codice");
+  assert.ok(/consegnato_at is not null/.test(SQL), "un codice già consegnato non si rilegge");
+  assert.ok(/log_action\(a, 'bonifico_conferma_consegnata'/.test(SQL),
+    "la consegna deve finire nel registro: è un atto umano, e va attribuito");
+  assert.ok(/function traccia\.admin_conferme_bonifico/.test(SQL), "manca l'elenco delle conferme");
+  assert.ok(/api\.codiceConferma/.test(ADMIN), "admin.js deve poter leggere il codice");
+  assert.ok(/data-codice-valore/.test(ADMIN_HTML), "manca il riquadro che mostra il codice");
+});
+
+test("il codice non arriva nel sito del cliente, ma dalla console", () => {
+  /* la scelta: nessun servizio di posta configurato, e un codice «inviato»
+     che nessuno riceve sarebbe il blocco di prima in un'altra forma */
+  assert.ok(/console/.test(SQL), "il canale di consegna va dichiarato");
+  assert.ok(!/public\.[a-z_]*codice[a-z_]*\(.*\)[^;]*grant execute[^;]*to anon/i.test(SQL.replace(/admin_conferma_codice/g, "XXX")),
+    "nessuna funzione che restituisce il codice deve essere raggiungibile dal cliente");
+});
+
+/* ------------------------------------------------------------- cablaggio -- */
+test("app.html e admin.html hanno i nodi che il codice cerca", () => {
+  ["data-bonifico-conferma", "data-conferma-form", "data-conferma-codice",
+   "data-conferma-submit", "data-conferma-indietro", "data-conferma-email",
+   "data-conferma-riepilogo"].forEach(function (nodo) {
+    assert.ok(APP.indexOf(nodo) > -1, "app.html non ha " + nodo);
+  });
+  ["conferme-table", "data-codice-modal", "data-codice-close", "data-conferme-scadi"]
+    .forEach(function (nodo) {
+      assert.ok(ADMIN_HTML.indexOf(nodo) > -1, "admin.html non ha " + nodo);
+    });
+});
+
+test("chiudere la modale con una conferma aperta restituisce i soldi", () => {
+  const ch = CASE.slice(CASE.indexOf("function chiudiBonifico"));
+  const corpo = ch.slice(0, ch.indexOf("function datiBonifico"));
+  assert.ok(/rinunciaBonifico/.test(corpo),
+    "chiudere deve rinunciare: altrimenti i soldi restano fermi dieci minuti");
+});
+
+module.exports = casi;

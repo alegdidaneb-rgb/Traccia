@@ -514,6 +514,7 @@
       count.textContent = totale ? String(totale) : "";
     }
 
+    caricaConferme();
     renderBonifici(dati && dati.bonifici);
     renderMandati(dati && dati.mandati);
     renderAddebiti(dati && dati.addebiti);
@@ -807,6 +808,113 @@
     }).catch(function (err) { ui.toast(err.message, "error"); });
   }
 
+  /* ------------------------------------------- conferme dei bonifici -- */
+  /* Il codice non arriva al cliente da solo: il progetto non ha un servizio di
+     posta configurato, e un codice «inviato» che nessuno riceve sarebbe il
+     blocco di ieri in un'altra forma. Lo legge un analista, lo comunica, e il
+     database annota chi e quando. Quando ci sarà un servizio di posta, cambia
+     solo questa funzione: il flusso del cliente non sa come il codice arriva.
+     Mostrarlo qui e non nel sito è la differenza fra un secondo fattore e una
+     password scritta sul muro. */
+  function renderConferme(lista) {
+    var corpo = document.querySelector("#conferme-table tbody");
+    if (!corpo) return;
+    if (!lista || !lista.length) {
+      corpo.innerHTML = '<tr><td colspan="7" class="empty-state">Nessuna conferma in attesa.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function (c) {
+      var azione = c.consegnata_il
+        ? '<span class="xs muted">consegnata a voce</span>'
+        : '<button class="btn btn--approve btn--sm" data-codice="' + ui.esc(c.id) +
+          '" type="button">Leggi il codice</button>';
+      return "<tr>" +
+        '<td class="mono xs">' + ui.esc(c.reference) +
+          '<div class="xs muted">' + ui.esc(c.stato) + "</div></td>" +
+        "<td><strong>" + ui.esc(c.cliente) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(c.email) + "</div></td>" +
+        "<td>" + ui.esc(c.beneficiario) +
+          '<div class="xs mono muted">' + ui.esc(c.iban) + "</div></td>" +
+        '<td class="num">' + ui.money(c.importo_eur) + "</td>" +
+        "<td>" + ui.when(c.scade_il) + "</td>" +
+        '<td class="xs muted">' + (c.consegnata_il
+          ? ui.esc(c.consegnata_da || "") + "<br>" + ui.when(c.consegnata_il)
+          : "—") + "</td>" +
+        '<td class="data-table__actions">' + azione + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  function caricaConferme() {
+    /* «aperte» è ciò che richiede un'azione umana adesso; le scadute si
+       chiudono con un pulsante a parte */
+    return api.confermeBonifico("aperte").then(function (res) {
+      var lista = (res && res.conferme) || [];
+      renderConferme(lista);
+      var nodo = document.querySelector("[data-banca-kpi-conferme]");
+      if (nodo) {
+        nodo.textContent = String(lista.length);
+        nodo.classList.toggle("is-alert", lista.length > 0);
+      }
+      var count = document.querySelector("[data-count-banca]");
+      if (count && lista.length) count.textContent = String(lista.length);
+      return lista;
+    });
+  }
+
+  function leggiCodice(id) {
+    var modale = document.querySelector("[data-codice-modal]");
+    if (!modale) return;
+    var intro = modale.querySelector("[data-codice-intro]");
+    var valore = modale.querySelector("[data-codice-valore]");
+    var dettagli = modale.querySelector("[data-codice-dettagli]");
+    var errore = modale.querySelector("[data-codice-error]");
+    if (errore) errore.hidden = true;
+    if (intro) intro.textContent = "Recupero il codice…";
+    if (valore) valore.textContent = "";
+    if (dettagli) dettagli.textContent = "";
+    modale.hidden = false;
+
+    api.codiceConferma(id).then(function (res) {
+      if (intro) {
+        intro.textContent = "Comunica questo codice a " + (res.cliente || "il cliente") +
+          ". Vale fino alle " + ui.time(res.scade_il) + " e una volta sola.";
+      }
+      if (valore) {
+        /* spezzato in due gruppi: si legge al telefono senza confondere le cifre */
+        var c = String(res.codice || "");
+        valore.textContent = c.slice(0, 3) + " " + c.slice(3);
+      }
+      if (dettagli) {
+        dettagli.textContent = (res.importo_eur ? ui.money(res.importo_eur) : "") +
+          " a " + (res.beneficiario || "") + " · " + (res.email || "") +
+          ". " + (res.avviso || "");
+      }
+      caricaConferme();
+      refresh();
+    }).catch(function (err) {
+      if (errore) {
+        errore.hidden = false;
+        errore.textContent = err.message || "Codice non disponibile.";
+      }
+      if (intro) intro.textContent = "Il codice non è stato consegnato.";
+      if (valore) valore.textContent = "";
+      caricaConferme();
+    });
+  }
+
+  function scadiConferme(btn) {
+    if (btn) btn.disabled = true;
+    api.scadiConferme().then(function (res) {
+      ui.toast((res && res.scadute ? res.scadute + " richieste chiuse, " +
+        ui.money(res.liberati_eur) + " tornati disponibili." : "Nessuna richiesta scaduta."), "ok");
+      caricaConferme();
+      refresh();
+    }).catch(function (err) {
+      ui.toast(err.message, "error");
+    }).then(function () { if (btn) btn.disabled = false; });
+  }
+
   function bindBanca() {
     var nodo = document.querySelector("#banca");
     if (!nodo) return;
@@ -824,7 +932,23 @@
       if ((b = e.target.closest("[data-carta]"))) {
         return azioneCarta(b.getAttribute("data-carta"), b.getAttribute("data-azione"));
       }
+      if ((b = e.target.closest("[data-codice]"))) {
+        return leggiCodice(b.getAttribute("data-codice"));
+      }
+      if ((b = e.target.closest("[data-conferme-scadi]"))) {
+        return scadiConferme(b);
+      }
     });
+
+    var modaleCodice = document.querySelector("[data-codice-modal]");
+    if (modaleCodice) {
+      var chiudiCodice = function () { modaleCodice.hidden = true; };
+      var bChiudi = modaleCodice.querySelector("[data-codice-close]");
+      if (bChiudi) bChiudi.addEventListener("click", chiudiCodice);
+      modaleCodice.addEventListener("click", function (e) {
+        if (e.target === modaleCodice) chiudiCodice();
+      });
+    }
 
     var entrata = document.querySelector("[data-banca-entrata-apri]");
     if (entrata) entrata.addEventListener("click", apriEntrata);

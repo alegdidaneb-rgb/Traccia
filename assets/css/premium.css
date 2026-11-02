@@ -1594,18 +1594,6 @@ body.is-admin .panel__head h2 {
 }
 .auth-shell--photo .auth-card__head h1 { letter-spacing: -0.04em; }
 
-/* le scorciatoie demo, più discrete ma leggibili */
-.auth-shell--photo .demo-accounts {
-  background: #fafaf7;
-  border-color: #e2e2e6;
-}
-.auth-shell--photo .demo-accounts button {
-  padding: 0.45rem 0.5rem;
-  border-radius: 6px;
-  transition: background .18s var(--ease-out), color .18s var(--ease-out);
-}
-.auth-shell--photo .demo-accounts button:hover { background: #fff; }
-
 /* --------------------------------------------------------------------------
    27. Le cinque fasi: rail verticale con linea che si riempie allo scroll
    -------------------------------------------------------------------------- */
@@ -1796,27 +1784,6 @@ body.is-area .appbar .brand__mark { width: 27px; height: 27px; font-size: 1rem; 
 /* la barra delle tab non deve più agganciarsi all'header pubblico */
 body.is-area .appv2__bar { top: 0; }
 body.is-area .appv2 { min-height: calc(100vh - 62px); }
-
-/* account di prova: collassabili, sobri */
-.auth-shell--photo .demo-accounts { padding: 0.55rem 0.85rem 0.75rem; }
-.demo-accounts summary {
-  cursor: pointer;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 0.35rem 0;
-  list-style: none;
-}
-.demo-accounts summary::-webkit-details-marker { display: none; }
-.demo-accounts summary::after {
-  content: "+";
-  float: right;
-  font-size: 0.95rem;
-  line-height: 1;
-}
-.demo-accounts[open] summary::after { content: "−"; }
 
 /* toast: varianti allineate a ui.toast(msg, kind) */
 .toast--ok { border-left: 3px solid var(--accent); }
@@ -2692,6 +2659,54 @@ body.is-staff-view #sicurezza { display: none !important; }
 @media print {
   .receipt__table th, .receipt__table td { font-size: 10pt; }
   .receipt__amount { font-size: 20pt; }
+}
+
+/* ------------------------------------------------- conferma del bonifico -- */
+/* Il secondo tempo: il riepilogo di ciò che si sta per confermare, e il campo
+   del codice. Il riepilogo sta in una fascia, non in una tabella, perché è la
+   frase che il cliente deve rileggere prima di digitare. */
+.bonifico-conferma__riepilogo {
+  margin: 0.9rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface, #faf9f6);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+#bon-codice {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 1.35rem;
+  letter-spacing: 0.42em;
+  text-align: center;
+  padding: 0.7rem 0.4rem 0.7rem 0.75rem;
+}
+
+/* il codice nelle mani dell'analista: grande, leggibile al telefono */
+.codice-conferma {
+  margin: 1rem 0;
+  padding: 1.1rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  text-align: center;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+}
+.codice-conferma:empty { display: none; }
+
+/* intestazione dentro un panel, per le tabelle che si aggiungono a una sezione */
+.panel__head--inner {
+  padding: 0.85rem 0 0.5rem;
+  border-bottom: 0;
+}
+.panel__subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------- modali lunghe --

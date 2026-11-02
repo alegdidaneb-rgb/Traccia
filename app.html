@@ -24,10 +24,10 @@
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261102c" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261102c" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261102c">
-  <link rel="stylesheet" href="assets/css/premium.css?v=20261102c">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261102d">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261102d">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/js/config.js?v=20261102c" defer></script>
-  <script src="assets/js/api.js?v=20261102c" defer></script>
-  <script src="assets/js/session.js?v=20261102c" defer></script>
+  <script src="assets/js/config.js?v=20261102d" defer></script>
+  <script src="assets/js/api.js?v=20261102d" defer></script>
+  <script src="assets/js/session.js?v=20261102d" defer></script>
 
   <script type="application/ld+json">
   {
@@ -732,8 +732,10 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bon-title">
       <h3 id="bon-title">Nuovo bonifico SEPA</h3>
       <p class="small muted">
-        Il denaro esce dal conto solo quando la banca esegue il bonifico. Fino a
-        quel momento l'importo resta impegnato e puoi annullare la disposizione.
+        Il bonifico si compone in due passaggi: prima i dati, poi un codice di
+        conferma. Il denaro esce dal conto solo quando la banca esegue il
+        bonifico: fino a quel momento l'importo resta impegnato e puoi
+        annullare la disposizione.
       </p>
       <form class="form mt-3" data-bonifico-form novalidate>
         <div class="field">
@@ -778,10 +780,48 @@
         <p class="form__note" data-bonifico-error hidden></p>
         <p class="xs muted" data-bonifico-riepilogo></p>
         <div class="btn-row mt-3">
-          <button class="btn btn--accent" type="submit" data-bonifico-submit>Disponi il bonifico</button>
+          <button class="btn btn--accent" type="submit" data-bonifico-submit>Continua</button>
           <button class="btn btn--ghost" type="button" data-bonifico-cancel>Annulla</button>
         </div>
       </form>
+
+      <!-- ================= secondo tempo: il codice ===================== -->
+      <!-- Il bonifico non esiste finché il cliente non conferma. Il codice
+           arriva all'indirizzo email dell'iscrizione, e nel sito non compare
+           mai: chi lo legge lo legge da un'altra parte. -->
+      <div data-bonifico-conferma hidden>
+        <p class="small muted">
+          Il bonifico non è ancora disposto. Ti abbiamo mandato un codice di sei
+          cifre a <strong data-conferma-email></strong>: inseriscilo qui sotto
+          per confermare. Le sei cifre valgono <span data-conferma-scadenza>10</span>
+          minuti e una volta sola.
+        </p>
+        <p class="bonifico-conferma__riepilogo" data-conferma-riepilogo></p>
+        <form class="form mt-3" data-conferma-form novalidate>
+          <div class="field">
+            <label for="bon-codice">Codice di conferma</label>
+            <input id="bon-codice" name="codice" type="text" inputmode="numeric"
+                   autocomplete="one-time-code" maxlength="6" placeholder="000000"
+                   pattern="[0-9]{6}" data-conferma-codice required>
+            <span class="field__hint">
+              Sei cifre. Se non lo trovi, controlla la casella dell'indirizzo con
+              cui ti sei iscritto, compresa la posta indesiderata. L'assistenza
+              non te lo chiederà mai per telefono.
+            </span>
+          </div>
+          <p class="form__note" data-conferma-error hidden></p>
+          <div class="btn-row mt-3">
+            <button class="btn btn--accent" type="submit" data-conferma-submit>Conferma il bonifico</button>
+            <button class="btn btn--ghost" type="button" data-conferma-indietro>Modifica i dati</button>
+          </div>
+        </form>
+        <p class="xs muted mt-2">
+          Fino alla conferma non esce niente dal conto: l'importo resta
+          impegnato e puoi annullare chiudendo questa finestra. Anche dopo la
+          conferma il denaro esce dal conto quando la banca esegue il
+          bonifico, non prima.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -1038,12 +1078,12 @@
 </div>
 
 
-  <script src="assets/js/ui.js?v=20261102c" defer></script>
-  <script src="assets/js/contract.js?v=20261102c" defer></script>
-  <script src="assets/js/case.js?v=20261102c" defer></script>
-  <script src="assets/js/main.js?v=20261102c" defer></script>
-  <script src="assets/js/market.js?v=20261102c" defer></script>
-  <script src="assets/js/premium.js?v=20261102c" defer></script>
+  <script src="assets/js/ui.js?v=20261102d" defer></script>
+  <script src="assets/js/contract.js?v=20261102d" defer></script>
+  <script src="assets/js/case.js?v=20261102d" defer></script>
+  <script src="assets/js/main.js?v=20261102d" defer></script>
+  <script src="assets/js/market.js?v=20261102d" defer></script>
+  <script src="assets/js/premium.js?v=20261102d" defer></script>
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
@@ -1051,6 +1091,6 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/js/whatsapp.js?v=20261102c" defer></script>
+  <script src="assets/js/whatsapp.js?v=20261102d" defer></script>
 </body>
 </html>

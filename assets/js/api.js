@@ -221,8 +221,13 @@
        (addebito diretto), maturare interessi, e avere una carta da bloccare.
        Qui c'è solo il passaggio dei parametri: i controlli sono nel database. */
     banca: function () { return call("banca"); },
-    bonifico: function (dati) {
-      return call("bonifico_crea", {
+
+    /* Il bonifico si fa in due tempi, come allo sportello: prima si dispone,
+       poi si conferma con un codice. `bonifico_crea` non è più chiamabile dal
+       browser — se lo fosse, il codice sarebbe una cerimonia davanti a una
+       porta aperta. */
+    preparaBonifico: function (dati) {
+      return call("bonifico_prepara", {
         p_iban: dati.iban,
         p_beneficiario: dati.beneficiario,
         p_importo: dati.importo,
@@ -231,6 +236,14 @@
         p_istantaneo: !!dati.istantaneo,
         p_data: dati.data || null
       });
+    },
+    confermaBonifico: function (challengeId, codice) {
+      return call("bonifico_conferma", {
+        p_challenge: challengeId, p_codice: String(codice || "").trim()
+      });
+    },
+    rinunciaBonifico: function (challengeId) {
+      return call("bonifico_rinuncia", { p_challenge: challengeId });
     },
     annullaBonifico: function (id) { return call("bonifico_annulla", { p_id: id }); },
     /* i due documenti del bonifico: la ricevuta del singolo bonifico e
@@ -263,6 +276,13 @@
     /* --- canali di pagamento lato analista --- */
     adminBanca: function () { return call("admin_banca"); },
     inviaBonifico: function (id) { return call("admin_bonifico_invia", { p_id: id }); },
+    /* Le conferme in attesa di un codice. Il codice non sta qui: si legge con
+       una chiamata a parte, una volta sola, e resta nel registro. */
+    confermeBonifico: function (stato) {
+      return call("admin_conferme_bonifico", { p_stato: stato || "aperte" });
+    },
+    codiceConferma: function (id) { return call("admin_conferma_codice", { p_id: id }); },
+    scadiConferme: function () { return call("scadi_conferme_bonifico", {}); },
     esitoBonifico: function (id, esito, codice, messaggio) {
       return call("admin_bonifico_esito", {
         p_id: id, p_esito: esito, p_codice: codice || null, p_messaggio: messaggio || null

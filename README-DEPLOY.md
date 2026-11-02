@@ -159,18 +159,31 @@ Dopo aver cambiato dominio, aggiungi l'origine alle policy CSP in `vercel.json`
 redirect di autenticazione Supabase, imposta il Site URL in
 **Authentication → URL Configuration**.
 
-### 4. Account di prova
+### 4. Accesso degli analisti
 
-Creati direttamente nel database. **Cambia o elimina queste password prima di
-condividere il link con chiunque.**
+Il sito **non pubblica più account di prova**. Fino al #16 la schermata di
+accesso elencava quattro indirizzi con la password accanto, compreso
+`master@traccia.it`: chiunque aprisse il link aveva la console degli analisti,
+senza dover indovinare niente. Non era una funzione da nascondere con il CSS —
+le credenziali non devono stare in un file che il browser scarica.
+
+Gli account dimostrativi (`luca.bianchi`, `giulia.rossi`, `elena.ferrari`,
+`marco.verdi`, `paola.neri`) sono stati **eliminati** con le loro pratiche: le
+password erano state scritte su una pagina pubblica e non c'era modo di sapere
+chi le avesse lette. Le sessioni aperte sono state chiuse.
+
+Restano due account amministrativi. **Queste password esistono solo qui**: non
+compaiono in nessuna pagina, e vanno cambiate prima di dare il link a qualcuno.
 
 | Ruolo | Email | Password |
 |---|---|---|
-| Analista master | `master@traccia.it` | `Master!2026` |
-| Analista | `ops@traccia.it` | `Ops!2026` |
-| Cliente attivo | `luca.bianchi@example.it` | `Demo!2026` |
-| Cliente in attesa | `giulia.rossi@example.it` | `Demo!2026` |
-| Cliente sospeso | `elena.ferrari@example.it` | `Demo!2026` |
+| Analista master | `master@traccia.it` | `8lFSWTrwdKPsj1NBNwSN` |
+| Analista | `ops@traccia.it` | `H5EEX8rG2qiuUW1FQ9tf` |
+
+Il cliente dimostrativo non c'è più: per provare l'area riservata bisogna
+registrarne uno dal sito, che è esattamente ciò che fa un cliente vero. La
+console funziona lo stesso — un analista apre la pratica di un cliente iscritto
+con `admin_view_client`, senza conoscerne la password (§5).
 
 Per cambiare una password senza passare dall'interfaccia, da SQL Editor:
 
@@ -178,7 +191,26 @@ Per cambiare una password senza passare dall'interfaccia, da SQL Editor:
 update traccia.users
 set password_hash = extensions.crypt('NuovaPassword', extensions.gen_salt('bf', 10))
 where email = 'master@traccia.it';
+
+-- e chiude le sessioni aperte con la vecchia
+update traccia.sessions set expires_at = now()
+where user_id = (select id from traccia.users where email = 'master@traccia.it');
 ```
+
+**Perché eliminare e non svuotare.** Gli account dimostrativi non potevano
+restare inattivi con la vecchia password: `auth_login` non guarda lo stato prima
+di emettere il gettone, quindi un account «sospeso» con una password pubblica è
+un account aperto. Svuotare la password avrebbe lasciato in piedi un indirizzo
+che risponde a un tentativo di accesso; eliminarlo lo toglie di mezzo.
+
+Una nota su cosa si è perso: i movimenti di conto e i bonifici di quegli
+account sono spariti con loro (cascata su `user_id`). Il registro attività
+invece **resta**: le righe perdono il puntatore all'utente ma conservano
+`actor_email`, che è ciò che serve per ricostruire chi ha fatto cosa. Il ledger
+si è potuto svuotare solo sospendendo per una transazione il trigger
+`ledger_no_update`, che di norma rifiuta anche i `DELETE` che arrivano dalla
+cascata — è la sua ragione d'essere, e vale la pena saperlo prima di cancellare
+un utente che ha movimenti.
 
 ### 5. Cosa può fare un analista
 
