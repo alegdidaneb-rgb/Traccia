@@ -141,6 +141,7 @@ La chiave `service_role` non deve mai finire nel repository.
 | `0014_storage_documents.sql` | file dei documenti su Storage |
 | `0015_conto_corrente.sql` | movimenti, prenotazioni, estratto conto |
 | `0016_banca_operativa.sql` | bonifici SEPA, SDD, interessi, carta, wrapper |
+| `0017_superficie_public.sql` | tutti i wrapper `public`, revoca delle funzioni interne |
 
 Le funzioni devono essere richiamabili da `/rest/v1/rpc/<nome>`, quindi ognuna
 ha un wrapper `security definer` in `public` (migrazione `0008` e, per le
@@ -491,6 +492,64 @@ teoria):
 3. `bonifico_crea` trattava `daily_withdrawal_l3 = 0` come «nessun limite»
    anche sotto il livello 3: un cliente non verificato poteva disporre bonifici.
    Ora zero significa due cose distinte, come nel §0012.
+
+### 5-undecies. La superficie pubblica: perché una funzione che non c'è non si vede
+
+Migrazione `0017_superficie_public.sql`.
+
+PostgREST espone **solo** lo schema `public`. Le funzioni del progetto vivono
+in `traccia`, e per arrivarci serve un wrapper in `public` con gli stessi nomi
+dei parametri. Un wrapper mancante non dà un errore di compilazione: dà
+`function not found` al browser, e nessuno se ne accorge finché non apre quella
+schermata. Nel #12 è successo con `public.conto`: il conto e il pulsante
+«verifica IBAN» erano morti.
+
+Guardando meglio, il problema era più grande. Confronto fra database vivo e
+cartella `supabase/migrations/`:
+
+| | |
+|---|---|
+| funzioni in `public` nel database | **69** |
+| funzioni `public` scritte nei file | **29** |
+
+Le altre 40 erano state create a mano, una sessione alla volta. Il sito
+funzionava; **ricostruire il database da questa cartella avrebbe prodotto un
+progetto in cui login, area riservata e console analisti non esistono.** Il
+repository sembrava completo perché il database lo era.
+
+La 0017 scrive tutti i wrapper che mancavano (38, incluso
+`admin_revoke_sessions`, che non esisteva nemmeno nel database e rendeva muto
+il pulsante «chiudi le sessioni»).
+
+**La regola, e come si fa rispettare.** Ogni funzione che il client chiama ha
+un wrapper in `public` scritto in una migrazione. Non è una convenzione: è un
+test. `tests/banca.test.js` legge `assets/js/api.js`, estrae le funzioni
+chiamate e le confronta con i `create function public.*` di **tutte** le
+migrazioni; poi confronta i nomi dei parametri con la funzione `traccia`
+corrispondente, perché un wrapper con i parametri sbagliati dà lo stesso
+errore di un wrapper assente ed è più difficile da vedere.
+
+**Il secondo difetto, dello stesso giro.** Tutto ciò che sta in `public` è
+eseguibile da `anon`: PostgreSQL concede `EXECUTE` a `PUBLIC` per impostazione
+predefinita. C'erano anche `hash_token` (calcola l'impronta di un gettone di
+sessione), `holdings_value` (legge il portafoglio di un utente qualsiasi) e
+`set_updated_at` (una funzione di trigger, che non è un endpoint). La 0017 le
+revoca **`from public, anon, authenticated`** — il `from public` è quello che
+conta: senza, la revoca ad `anon` non serve a niente, perché il permesso
+arriva da `PUBLIC`. Verificato: tutte e tre rispondono `false` a
+`has_function_privilege('anon', …)`.
+
+Per controllare il database invece dei file:
+
+```sql
+select p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
+order by 1;
+```
+
+Se in quell'elenco compare qualcosa che non è un endpoint del client, è un
+wrapper da revocare — non una funzione da nascondere.
 
 Cosa **non** c'è, e non per dimenticanza: eseguire il bonifico, incassare
 l'addebito, emettere la carta. Servono un istituto di pagamento e un contratto

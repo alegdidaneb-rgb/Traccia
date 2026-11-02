@@ -9,7 +9,10 @@
   var CFG = global.TRACCIA_CONFIG || {};
   var TEXT = CFG.whatsappText || "Buongiorno, vi scrivo dal sito Traccia.";
 
-  /* +39 011 0000 0000  →  390110000000 */
+  /* Il numero si scrive come lo si legge (+1 539 215 1268); `wa.me` vuole
+     solo cifre, quindi il "+" e gli spazi si tolgono qui e in nessun altro
+     posto. Il prefisso internazionale resta: senza, WhatsApp cerca il numero
+     nel paese di chi apre il link. */
   function digits(value) {
     return String(value || "").replace(/\D/g, "");
   }
@@ -23,10 +26,17 @@
     return digits(CFG.whatsapp);
   }
 
-  /* parte leggibile: usata nei testi accanto al pulsante */
+  /* parte leggibile: usata nei testi accanto al pulsante. Un numero
+     internazionale non si spezzetta a caso — si mostra con il suo prefisso e
+     il resto come l'ha scritto chi lo ha configurato, invece di indovinare
+     dove finisce il prefisso. */
   function leggibile() {
     var n = numero();
     if (!n) return "";
+    /* i prefissi che il sito può usare: 1 (USA/Canada), 39 (Italia) */
+    if (n.indexOf("1") === 0 && n.length === 11) {
+      return "+1 " + n.slice(1, 4) + " " + n.slice(4, 7) + " " + n.slice(7);
+    }
     if (n.indexOf("39") === 0) {
       return "+39 " + n.slice(2).replace(/(\d{3})(\d{3})(\d+)/, "$1 $2 $3");
     }
@@ -60,6 +70,18 @@
     return ref;
   }
 
+  /* Il numero scritto in chiaro in una pagina deve venire dalla stessa fonte
+     del collegamento: due copie divergono, e quella vecchia resta lì per mesi.
+     Se il testo non ha il segnaposto, lo si aggiunge accanto al pulsante. */
+  function scriviNumero() {
+    var n = leggibile();
+    if (!n) return;
+    Array.prototype.forEach.call(
+      document.querySelectorAll("[data-whatsapp-numero]"),
+      function (el) { el.textContent = n; }
+    );
+  }
+
   function init() {
     if (!configured()) {
       /* niente numero: si toglie anche quello che è stato scritto a mano */
@@ -75,6 +97,8 @@
       if (el.tagName === "A") el.setAttribute("href", href);
       el.hidden = false;
     });
+
+    scriviNumero();
   }
 
   global.TracciaWhatsApp = {
@@ -82,6 +106,7 @@
     numero: numero,
     leggibile: leggibile,
     configured: configured,
+    scriviNumero: scriviNumero,
     init: init
   };
 
