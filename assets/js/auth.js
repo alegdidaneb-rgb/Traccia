@@ -108,19 +108,6 @@
     });
   });
 
-  document.querySelectorAll("[data-demo]").forEach(function (button) {
-    button.addEventListener("click", function () {
-      var parts = button.getAttribute("data-demo").split("|");
-      loginForm.hidden = false;
-      registerForm.hidden = true;
-      setMode("login");
-      document.getElementById("email").value = parts[0];
-      document.getElementById("password").value = parts[1];
-      clearError(loginError);
-      document.getElementById("password").focus();
-    });
-  });
-
   /* già autenticato? vai direttamente all'area giusta */
   if (api.token()) {
     api.me().then(function (data) {

@@ -1175,6 +1175,18 @@
   function chiudiBonifico() {
     var modale = document.querySelector("[data-bonifico-modal]");
     if (modale) modale.hidden = true;
+    var form = modale && modale.querySelector("[data-bonifico-form]");
+    var pannello = modale && modale.querySelector("[data-bonifico-conferma]");
+    if (form) form.hidden = false;
+    if (pannello) pannello.hidden = true;
+    /* chiudere con una conferma aperta significa rinunciarci: i soldi tornano
+       disponibili subito, e il cliente non deve aspettare dieci minuti */
+    if (bonificoInCorso.challenge) {
+      var ch = bonificoInCorso.challenge;
+      bonificoInCorso.challenge = null;
+      api.rinunciaBonifico(ch).then(function () { return caricaConto(); })
+        .catch(function () {});
+    }
   }
 
   function datiBonifico() {
@@ -1210,6 +1222,18 @@
       : "Seleziona istantaneo o ordinario: cambia quando arriva il denaro.";
   }
 
+  /* ------------------------------------------------------ due tempi -- */
+  /* Il cliente ha descritto il difetto così: «non mi permette di andare avanti
+     e tutto si blocca». Il blocco non era la rete: era il pulsante che si
+     spegneva perché il browser confrontava l'importo con la disponibilità
+     letta in un altro momento. Qui quel confronto non c'è più. Si controlla
+     solo ciò che il browser può sapere senza mentire — che i campi siano
+     compilati e che l'IBAN abbia una forma plausibile — e tutto il resto lo
+     decide il server, che ha i soldi davanti.
+     Il secondo tempo è il codice: il bonifico non esiste finché il cliente non
+     lo conferma con le sei cifre. */
+  var bonificoInCorso = { challenge: null, dati: null };
+
   function inviaBonifico(event) {
     if (event) event.preventDefault();
     var modale = document.querySelector("[data-bonifico-modal]");
@@ -1217,11 +1241,11 @@
     var errore = modale.querySelector("[data-bonifico-error]");
     var submit = modale.querySelector("[data-bonifico-submit]");
     var d = datiBonifico();
+    if (!d) return;
 
+    /* solo forma, mai disponibilità: quella non è una cosa che il browser sa */
     var problema = null;
     if (!d.importo || d.importo <= 0) problema = "Indica un importo maggiore di zero.";
-    else if (d.importo > Number((contoState.dati || {}).disponibile || 0))
-      problema = "Puoi disporre al massimo " + euro((contoState.dati || {}).disponibile || 0) + ".";
     else if (!ibanValido(d.iban)) problema = "L'IBAN del beneficiario non è valido: controlla le cifre.";
     else if (d.beneficiario.length < 3) problema = "Indica il nome del beneficiario.";
     if (problema) {
@@ -1232,22 +1256,133 @@
 
     errore.hidden = true;
     submit.disabled = true;
-    submit.textContent = "Invio…";
-    api.bonifico(d).then(function (res) {
-      chiudiBonifico();
-      if (window.ui && ui.toast) {
-        ui.toast("Bonifico " + (res.reference || "") + " disposto. Resta in coda finché la banca non lo esegue.", "ok");
-      }
-      /* subito dopo, la ricevuta: è il momento in cui la si vuole, non dopo
-         averla cercata in un elenco */
-      if (res && res.id) raggiungiRicevuta(res.id, res.reference);
-      return Promise.all([caricaBanca(), caricaConto()]);
+    submit.textContent = "Verifico…";
+    api.preparaBonifico(d).then(function (res) {
+      bonificoInCorso.challenge = res.challenge_id;
+      bonificoInCorso.dati = res;
+      mostraConfermaBonifico(res);
+      /* la disponibilità è cambiata: si rilegge, ma per mostrarla, non per
+         decidere se il cliente può */
+      return caricaConto();
     }).catch(function (err) {
       errore.hidden = false;
       errore.textContent = err.message || "Bonifico non disposto.";
     }).then(function () {
       submit.disabled = false;
-      submit.textContent = "Disponi il bonifico";
+      submit.textContent = "Continua";
+    });
+  }
+
+  /* Il secondo pannello della stessa modale. Non è una seconda finestra: il
+     cliente ha appena compilato un modulo e non deve ritrovarsi a ricominciare
+     da capo se sbaglia una cifra. */
+  function mostraConfermaBonifico(res) {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var form = modale.querySelector("[data-bonifico-form]");
+    var pannello = modale.querySelector("[data-bonifico-conferma]");
+    if (!pannello) return;
+    if (form) form.hidden = true;
+    pannello.hidden = false;
+
+    var importo = euro(res.importo_eur || 0);
+    arrayEach("[data-conferma-riepilogo]", function (n) {
+      n.innerHTML = "<strong>" + ui.esc(importo) + "</strong> a " +
+        ui.esc(res.beneficiario || "") +
+        "<br><span class=\"small muted\">" + ui.esc(res.iban || "") + "</span>";
+    });
+    arrayEach("[data-conferma-email]", function (n) {
+      n.textContent = res.email || "il tuo indirizzo";
+    });
+    arrayEach("[data-conferma-scadenza]", function (n) {
+      n.textContent = res.minuti || 10;
+    });
+    var errore = modale.querySelector("[data-conferma-error]");
+    if (errore) { errore.hidden = true; errore.textContent = ""; }
+    var codice = modale.querySelector("[data-conferma-codice]");
+    if (codice) { codice.value = ""; codice.disabled = false; }
+    var invia = modale.querySelector("[data-conferma-submit]");
+    if (invia) { invia.disabled = false; invia.textContent = "Conferma il bonifico"; }
+    var annulla = modale.querySelector("[data-conferma-indietro]");
+    if (annulla) annulla.textContent = "Modifica i dati";
+
+    setTimeout(function () {
+      var primo = modale.querySelector("[data-conferma-codice]");
+      if (primo) primo.focus();
+    }, 60);
+  }
+
+  function tornaAlModuloBonifico(annullaRichiesta) {
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var form = modale.querySelector("[data-bonifico-form]");
+    var pannello = modale.querySelector("[data-bonifico-conferma]");
+    if (form) form.hidden = false;
+    if (pannello) pannello.hidden = true;
+    /* Tornare indietro senza dirlo lascerebbe i soldi impegnati per una
+       richiesta che il cliente crede di aver ritirato. */
+    if (annullaRichiesta && bonificoInCorso.challenge) {
+      api.rinunciaBonifico(bonificoInCorso.challenge).then(function () {
+        bonificoInCorso.challenge = null;
+        return caricaConto();
+      }).catch(function () { /* scade da sola: non è un errore da mostrare */ });
+    }
+  }
+
+  function confermaBonifico(event) {
+    if (event) event.preventDefault();
+    var modale = document.querySelector("[data-bonifico-modal]");
+    if (!modale) return;
+    var campo = modale.querySelector("[data-conferma-codice]");
+    var errore = modale.querySelector("[data-conferma-error]");
+    var submit = modale.querySelector("[data-conferma-submit]");
+    var codice = campo ? String(campo.value || "").replace(/\D/g, "") : "";
+
+    if (!bonificoInCorso.challenge) {
+      if (errore) {
+        errore.hidden = false;
+        errore.textContent = "La richiesta è scaduta: disponi di nuovo il bonifico.";
+      }
+      return;
+    }
+    if (codice.length !== 6) {
+      if (errore) {
+        errore.hidden = false;
+        errore.textContent = "Il codice ha sei cifre.";
+      }
+      return;
+    }
+
+    if (errore) errore.hidden = true;
+    if (submit) { submit.disabled = true; submit.textContent = "Confermo…"; }
+    api.confermaBonifico(bonificoInCorso.challenge, codice).then(function (res) {
+      bonificoInCorso.challenge = null;
+      chiudiBonifico();
+      if (window.ui && ui.toast) {
+        ui.toast("Bonifico " + (res.reference || "") + " disposto. Resta in coda finché la banca non lo esegue.", "ok");
+      }
+      if (res && res.id) raggiungiRicevuta(res.id, res.reference);
+      return Promise.all([caricaBanca(), caricaConto()]);
+    }).catch(function (err) {
+      if (errore) {
+        errore.hidden = false;
+        errore.textContent = err.message || "Codice non accettato.";
+      }
+      if (err && /annullata|scaduto|usata/i.test(err.message || "")) {
+        /* la richiesta non esiste più: si torna al modulo invece di lasciare
+           il cliente a premere un pulsante che non può funzionare */
+        bonificoInCorso.challenge = null;
+        var invia = modale.querySelector("[data-conferma-submit]");
+        if (invia) { invia.disabled = true; invia.textContent = "Richiesta chiusa"; }
+        if (campo) campo.disabled = true;
+        if (errore) errore.textContent = (err.message || "") + " Ricomincia dal modulo.";
+        if (typeof caricaConto === "function") caricaConto();
+      }
+    }).then(function () {
+      if (submit && submit.textContent === "Confermo…") {
+        submit.disabled = false;
+        submit.textContent = "Conferma il bonifico";
+      }
     });
   }
 
@@ -1708,14 +1843,33 @@
     /* modale bonifico */
     var bon = document.querySelector("[data-bonifico-modal]");
     if (bon) {
-      bon.querySelector("[data-bonifico-form]").addEventListener("submit", inviaBonifico);
-      bon.querySelector("[data-bonifico-cancel]").addEventListener("click", chiudiBonifico);
+      var formBon = bon.querySelector("[data-bonifico-form]");
+      if (formBon) formBon.addEventListener("submit", inviaBonifico);
+      var annullaBon = bon.querySelector("[data-bonifico-cancel]");
+      if (annullaBon) annullaBon.addEventListener("click", chiudiBonifico);
       bon.addEventListener("click", function (e) { if (e.target === bon) chiudiBonifico(); });
       ["#bon-importo", "#bon-ben", "#bon-istantaneo"].forEach(function (sel) {
         var campo = bon.querySelector(sel);
         if (campo) campo.addEventListener("input", aggiornaRiepilogoBonifico);
         if (campo) campo.addEventListener("change", aggiornaRiepilogoBonifico);
       });
+
+      /* secondo tempo: il codice */
+      var formCodice = bon.querySelector("[data-conferma-form]");
+      if (formCodice) formCodice.addEventListener("submit", confermaBonifico);
+      var indietro = bon.querySelector("[data-conferma-indietro]");
+      if (indietro) {
+        indietro.addEventListener("click", function () { tornaAlModuloBonifico(true); });
+      }
+      var campoCodice = bon.querySelector("[data-conferma-codice]");
+      if (campoCodice) {
+        /* solo cifre, e non oltre sei: un codice incollato con spazi o
+           trattini deve funzionare lo stesso */
+        campoCodice.addEventListener("input", function () {
+          var pulito = String(campoCodice.value || "").replace(/\D/g, "").slice(0, 6);
+          if (pulito !== campoCodice.value) campoCodice.value = pulito;
+        });
+      }
     }
 
     /* modale ricevuta. Ogni pulsante si attacca solo se c'è: una bind che

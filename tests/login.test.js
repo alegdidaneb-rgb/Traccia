@@ -121,4 +121,55 @@ test("sessione scaduta: un 28000 arriva alla pagina come errore di accesso", asy
   assert.strictEqual(errore.code, "28000");
 });
 
+/* ---------------------------------------------------- gli account di prova -- */
+/* La schermata di accesso pubblicava quattro indirizzi con la password in
+   chiaro accanto, compreso l'account analista master. Chiunque aprisse il link
+   aveva l'area riservata e la console degli analisti: nessun attacco, solo una
+   pagina che le offriva. Non è una funzione da nascondere con il CSS: le
+   credenziali non devono stare nel file. */
+const LOGIN = fs.readFileSync(path.join(__dirname, "..", "login.html"), "utf8");
+const AUTH = fs.readFileSync(path.join(__dirname, "..", "assets/js/auth.js"), "utf8");
+
+test("login: nessun account di prova è pubblicato nella pagina", () => {
+  assert.ok(!/data-demo=/.test(LOGIN), "login.html non deve contenere pulsanti data-demo");
+  assert.ok(!/Account di prova/i.test(LOGIN), "login.html non deve annunciare account di prova");
+  assert.ok(!/master@traccia\.it/.test(LOGIN), "l'account analista master non deve comparire nel login");
+  assert.ok(!/Demo!2026|Master!2026|Ops!2026/.test(LOGIN), "nessuna password in chiaro nel login");
+});
+
+test("login: nessun codice riempie più il modulo da solo", () => {
+  assert.ok(!/\[data-demo\]/.test(AUTH), "auth.js non deve cablare pulsanti demo");
+  assert.ok(!/Demo!2026|Master!2026|Ops!2026/.test(AUTH), "auth.js non deve contenere password");
+});
+
+/* la stessa regola per tutto ciò che il browser scarica: una password scritta
+   in un file statico è pubblica, anche se nessuno la linka */
+test("nessun file servito al browser contiene le password degli account", () => {
+  const sospetti = ["Demo!2026", "Master!2026", "Ops!2026"];
+  const cartelle = ["assets/js", "assets/css"];
+  const file = [".html"];
+  let controllati = 0;
+  fs.readdirSync(path.join(__dirname, "..")).filter(function (f) {
+    return /\.html$/.test(f);
+  }).forEach(function (f) {
+    const testo = fs.readFileSync(path.join(__dirname, "..", f), "utf8");
+    sospetti.forEach(function (p) {
+      assert.ok(testo.indexOf(p) === -1, f + " contiene la password " + p);
+    });
+    controllati++;
+  });
+  cartelle.forEach(function (dir) {
+    fs.readdirSync(path.join(__dirname, "..", dir)).forEach(function (f) {
+      if (!/\.(js|css)$/.test(f)) return;
+      if (/^config\.js$/.test(f)) return;
+      const testo = fs.readFileSync(path.join(__dirname, "..", dir, f), "utf8");
+      sospetti.forEach(function (p) {
+        assert.ok(testo.indexOf(p) === -1, dir + "/" + f + " contiene la password " + p);
+      });
+      controllati++;
+    });
+  });
+  assert.ok(file.length > 0 && controllati > 10, "controllati solo " + controllati + " file");
+});
+
 module.exports = casi;

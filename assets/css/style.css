@@ -1562,31 +1562,6 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   text-align: center;
 }
 .auth-switch a { color: var(--accent); font-weight: 600; }
-.demo-accounts {
-  margin-top: 1.25rem;
-  border: 1px dashed var(--line);
-  border-radius: var(--r-md);
-  padding: 0.9rem 1rem;
-  font-size: var(--fs-xs);
-  background: var(--bg-soft);
-}
-.demo-accounts h4 { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; color: var(--muted); }
-.demo-accounts button {
-  display: flex;
-  width: 100%;
-  gap: 0.5rem;
-  align-items: baseline;
-  justify-content: space-between;
-  background: none;
-  border: 0;
-  padding: 0.35rem 0;
-  cursor: pointer;
-  text-align: left;
-  font-size: var(--fs-xs);
-  border-radius: 4px;
-}
-.demo-accounts button:hover { color: var(--accent); }
-.demo-accounts code { font-family: var(--font-num); font-size: 0.72rem; }
 
 /* app layout */
 .app-shell {

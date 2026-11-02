@@ -103,11 +103,17 @@ test("stato nullo non produce «null» a schermo", () => {
    guasto generale. */
 const API = fs.readFileSync(path.join(__dirname, "..", "assets/js/api.js"), "utf8");
 const MIG = fs.readFileSync(
-  path.join(__dirname, "..", "supabase/migrations/0016_banca_operativa.sql"), "utf8");
+  path.join(__dirname, "..", "supabase/migrations/0016_banca_operativa.sql"), "utf8") +
+  fs.readFileSync(
+  path.join(__dirname, "..", "supabase/migrations/0019_bonifico_otp.sql"), "utf8");
 
 test("api: ogni chiamata della banca usa una funzione che esiste", () => {
   const attese = [
-    "banca", "bonifico_crea", "bonifico_annulla", "mandato_crea", "mandato_revoca",
+    /* `bonifico_crea` non è più in questo elenco: dal #15 il browser dispone e
+       conferma, e la creazione diretta è stata revocata ad anon. Resta nel
+       database perché la usano le prove e la conferma. */
+    "banca", "bonifico_prepara", "bonifico_conferma", "bonifico_rinuncia",
+    "bonifico_annulla", "mandato_crea", "mandato_revoca",
     "addebito_contesta", "carta_richiedi", "carta_blocca", "admin_banca",
     "admin_bonifico_invia", "admin_bonifico_esito", "admin_bonifico_entrata",
     "admin_addebito_crea", "admin_addebito_esito", "admin_carta_azione",
