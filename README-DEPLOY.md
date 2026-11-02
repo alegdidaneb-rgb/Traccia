@@ -172,30 +172,39 @@ Gli account dimostrativi (`luca.bianchi`, `giulia.rossi`, `elena.ferrari`,
 password erano state scritte su una pagina pubblica e non c'era modo di sapere
 chi le avesse lette. Le sessioni aperte sono state chiuse.
 
-Restano due account amministrativi. **Queste password esistono solo qui**: non
-compaiono in nessuna pagina, e vanno cambiate prima di dare il link a qualcuno.
+Restano due account amministrativi: `master@traccia.it` e `ops@traccia.it`.
 
-| Ruolo | Email | Password |
-|---|---|---|
-| Analista master | `master@traccia.it` | `8lFSWTrwdKPsj1NBNwSN` |
-| Analista | `ops@traccia.it` | `H5EEX8rG2qiuUW1FQ9tf` |
+**Le loro password non sono scritte qui, e non devono esserlo.** Questo file sta
+in un repository pubblico: qualunque password scritta in questo file è una
+password pubblicata, con l'unica differenza che nessuno la linka. È successo due
+volte — prima con la pagina di accesso, poi con questa tabella — quindi la regola
+non è «stare attenti», è non avere il posto dove scriverle.
+
+Per impostarle, dalla SQL Editor del progetto:
+
+```sql
+update traccia.users
+set password_hash = extensions.crypt('LA-PASSWORD-SCELTA', extensions.gen_salt('bf', 10))
+where email = 'master@traccia.it';
+
+-- e chiude le sessioni già aperte con la vecchia
+update traccia.sessions set expires_at = now()
+where user_id = (select id from traccia.users where email = 'master@traccia.it');
+```
+
+Conservale in un gestore di password. Se una di queste password finisce in un
+file, in una chat o in uno screenshot, va cambiata: la rotazione costa una riga
+di SQL, non farlo costa l'area riservata.
+
+Serve una password provvisoria per entrare la prima volta? Si genera con
+`openssl rand -base64 18` e si mette nel comando qui sopra. Non va salvata nel
+repository per ricordarsela: se serve ricordarla, il posto è il gestore di
+password.
 
 Il cliente dimostrativo non c'è più: per provare l'area riservata bisogna
 registrarne uno dal sito, che è esattamente ciò che fa un cliente vero. La
 console funziona lo stesso — un analista apre la pratica di un cliente iscritto
 con `admin_view_client`, senza conoscerne la password (§5).
-
-Per cambiare una password senza passare dall'interfaccia, da SQL Editor:
-
-```sql
-update traccia.users
-set password_hash = extensions.crypt('NuovaPassword', extensions.gen_salt('bf', 10))
-where email = 'master@traccia.it';
-
--- e chiude le sessioni aperte con la vecchia
-update traccia.sessions set expires_at = now()
-where user_id = (select id from traccia.users where email = 'master@traccia.it');
-```
 
 **Perché eliminare e non svuotare.** Gli account dimostrativi non potevano
 restare inattivi con la vecchia password: `auth_login` non guarda lo stato prima
@@ -211,6 +220,33 @@ si è potuto svuotare solo sospendendo per una transazione il trigger
 `ledger_no_update`, che di norma rifiuta anche i `DELETE` che arrivano dalla
 cascata — è la sua ragione d'essere, e vale la pena saperlo prima di cancellare
 un utente che ha movimenti.
+
+### 4-bis. Il repository è pubblico, e la build pubblica la cartella
+
+Due cose che sembrano ovvie e sono costate due giri:
+
+**1. `.gitignore` non toglie un file già versionato.** `traccia-sito.zip` era
+nell'ignore dal primo giorno ed era comunque dentro git: l'ignore vale per i file
+nuovi, non per quelli già tracciati. Dentro c'erano il vecchio `login.html` e un
+`api.js` con sei account e le relative password in chiaro. Il file è stato
+rimosso dal versionamento con `git rm --cached`, non cancellato dal disco.
+
+Restare nella storia di git, però, non basta a metterlo al sicuro: un repository
+pubblico conserva ogni versione. Se un giorno questo repository tornerà privato o
+verrà riscritto, la storia va ripulita; nel frattempo ciò che conta è che le
+password contenute lì dentro **non valgano più**, ed è così.
+
+**2. Vercel pubblica la cartella, non le pagine linkate.** Un file che sta nel
+repository finisce online anche se nessuna pagina lo cita. Per questo esiste
+`.vercelignore`, che tiene fuori archivi, documentazione e cartelle di lavoro —
+`README-DEPLOY.md` compreso. `tests/login.test.js` verifica che ci sia e che
+elenchi le voci giuste.
+
+La conseguenza pratica: **in questo repository non si scrivono password.** Non
+nel README, non nei commenti, non negli esempi. Se una password serve a qualcuno,
+si comunica per un canale suo; se serve a ricordarsela, il posto è un gestore di
+password. La SQL per impostarla è qui sopra, e prende la password come testo da
+sostituire.
 
 ### 5. Cosa può fare un analista
 
