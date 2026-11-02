@@ -142,6 +142,58 @@ test("login: nessun codice riempie più il modulo da solo", () => {
   assert.ok(!/Demo!2026|Master!2026|Ops!2026/.test(AUTH), "auth.js non deve contenere password");
 });
 
+/* --------------------------------------------------- il repository è pubblico --
+   Il difetto che questi test chiudono non è «una pagina espone le credenziali»:
+   è che le credenziali avevano un posto dove stare. Il controllo precedente
+   guardava solo `.html`, `assets/js` e `assets/css`, e per questo non ha visto
+   né il README né l'archivio zip — che contenevano, in chiaro, le stesse
+   password più quelle nuove appena create. Un test che elenca le cartelle da
+   controllare è un test che dimentica quella aggiunta ieri: qui si guarda tutto
+   ciò che git traccia. */
+test("nessuna password in chiaro in nessun file versionato", () => {
+  const { execSync } = require("child_process");
+  const radice = path.join(__dirname, "..");
+  const elenco = execSync("git ls-files -z", { cwd: radice, encoding: "buffer" })
+    .toString("utf8").split("\0").filter(Boolean);
+
+  /* le sequenze usate nelle prove e nei test, e la forma delle password
+     provvisorie generate per gli account amministrativi */
+  const sospette = [/Demo!2026/, /Master!2026/, /Ops!2026/,
+                    /password_hash\s*=\s*extensions\.crypt\('(?!LA-PASSWORD)[^']{6,}'/];
+  const saltate = /^tests\//;   /* i test citano le password per vietarle */
+
+  const trovate = [];
+  elenco.forEach(function (f) {
+    if (saltate.test(f)) return;
+    /* binari e immagini non si leggono come testo */
+    if (/\.(png|jpe?g|webp|ico|woff2?|ttf|pdf|zip)$/i.test(f)) return;
+    const testo = fs.readFileSync(path.join(radice, f), "utf8");
+    sospette.forEach(function (re) {
+      if (re.test(testo)) trovate.push(f + " → " + re);
+    });
+  });
+  assert.deepStrictEqual(trovate, [],
+    "password in chiaro in file versionati: " + trovate.join(", "));
+});
+
+test("nessun archivio del sito è versionato", () => {
+  const { execSync } = require("child_process");
+  const zip = execSync("git ls-files", { cwd: path.join(__dirname, ".."), encoding: "utf8" })
+    .split("\n").filter((f) => /\.zip$/i.test(f));
+  assert.deepStrictEqual(zip, [],
+    "un archivio del sito nel repository è una copia del sito con le credenziali di allora: " + zip.join(", "));
+});
+
+test("la build non pubblica ciò che non è una pagina", () => {
+  /* `.gitignore` non serve a Vercel, che pubblica la cartella: serve un
+     `.vercelignore`. Senza, `NOTE.md` o un archivio finiscono online insieme al
+     sito, e nessuno se ne accorge perché nessuna pagina li linka. */
+  const v = fs.readFileSync(path.join(__dirname, "..", ".vercelignore"), "utf8");
+  ["*.zip", "README-DEPLOY.md", "tests/", "supabase/"].forEach(function (regola) {
+    assert.ok(v.indexOf(regola) > -1, ".vercelignore non esclude " + regola);
+  });
+});
+
 /* la stessa regola per tutto ciò che il browser scarica: una password scritta
    in un file statico è pubblica, anche se nessuno la linka */
 test("nessun file servito al browser contiene le password degli account", () => {

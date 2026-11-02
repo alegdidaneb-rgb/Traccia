@@ -8,5 +8,10 @@ node_modules/
 .env.*
 *.pem
 
-# il pacchetto sorgente originale
+# il pacchetto sorgente originale. Questa riga c'era già quando il file è stato
+# versionato, e non è servita: `.gitignore` non toglie un file già tracciato.
+# L'archivio conteneva le vecchie credenziali dimostrative in chiaro ed è stato
+# rimosso dalla storia; se ricompare, `git rm --cached` non basta — va escluso
+# anche dalla build, e lo fa `.vercelignore`.
 traccia-sito.zip
+*_sorgente.zip

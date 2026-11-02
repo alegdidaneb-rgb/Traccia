@@ -1,0 +1,18 @@
+# Il repository è pubblico e Vercel pubblica ciò che trova: un archivio del
+# sito finisce online insieme al sito, anche se non è linkato da nessuna pagina.
+#
+# `traccia-sito.zip` era il pacchetto sorgente originale, tracciato da git nonostante
+# fosse in .gitignore (l'ignore vale per i file nuovi, non per quelli già dentro).
+# Conteneva un `login.html` e un `api.js` con sei account e relative password in
+# chiaro, compreso l'analista master. Non viene più versionato, e questo file
+# impedisce che un archivio rimesso nella cartella finisca nella build.
+*.zip
+traccia-sito.zip
+
+# documentazione e prove: non sono pagine del sito
+README-DEPLOY.md
+ANALISI.md
+tests/
+supabase/
+tools/
+partials/
