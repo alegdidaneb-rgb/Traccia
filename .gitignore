@@ -15,3 +15,9 @@ node_modules/
 # anche dalla build, e lo fa `.vercelignore`.
 traccia-sito.zip
 *_sorgente.zip
+
+# Bytecode Python: gli script in tools/ vengono importati fra loro, quindi
+# `python3 tools/build_team.py` lascia una cartella __pycache__ che non serve a
+# nessuno e che, una volta tracciata, cambia a ogni versione di Python.
+__pycache__/
+*.py[cod]

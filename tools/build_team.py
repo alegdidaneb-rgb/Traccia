@@ -10,9 +10,15 @@ browser legge — e questa pagina è la loro resa completa: profilo, aree di
 lavoro, lingue, strumenti, ritratto. Il file JS resta la fonte di verità perché
 serve anche alla home, che mostra le schede brevi.
 
+La pagina ha due parti generate da due script — i profili (qui) e le tessere
+(`build_tessere.py`) — ma un solo comando, questo: chi aggiunge una persona
+lancia `build_team.py` e si aggiornano tutte e due. Due comandi separati
+sarebbero due occasioni di dimenticarne uno, e la pagina mostrerebbe una
+tessera in meno senza un errore da nessuna parte.
+
 Uso:
-    python3 tools/build_team.py            # riscrive team.html
-    python3 tools/build_team.py --check    # esce 1 se team.html è disallineato
+    python3 tools/build_team.py            # riscrive team.html (profili e tessere)
+    python3 tools/build_team.py --check    # esce 1 se una delle due parti è disallineata
 """
 from __future__ import annotations
 
@@ -217,6 +223,15 @@ def costruisci() -> str:
 
 
 def main(argomenti: list[str]) -> int:
+    esito = profili(argomenti)
+    # le tessere si aggiornano con lo stesso comando: import locale per non
+    # creare un ciclo (build_tessere importa da questo file la lettura dei dati)
+    from build_tessere import main as tessere
+    esito_tessere = tessere(argomenti)
+    return 1 if (esito or esito_tessere) else 0
+
+
+def profili(argomenti: list[str]) -> int:
     nuovo = costruisci()
     vecchio = PAGINA.read_text(encoding="utf-8") if PAGINA.exists() else ""
     if "--check" in argomenti:

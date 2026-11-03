@@ -167,4 +167,112 @@ test("team: i dati sono nel file, non scritti a mano nell'HTML", () => {
   assert.deepStrictEqual(fuori, [], "profili generati mancanti: " + fuori.join(", "));
 });
 
+/* ------------------------------------------------------------ tessere -- */
+test("tessere: la sezione è allineata ai dati", () => {
+  /* `build_team.py --check` controlla profili *e* tessere: un comando solo
+     perché chi aggiunge una persona non deve ricordarsi di due script. Se
+     questo test diventa rosso, la tessera mostra il ruolo di ieri. */
+  let esito = null;
+  try {
+    esito = execFileSync("python3", ["tools/build_team.py", "--check"],
+      { cwd: ROOT, encoding: "utf8" });
+  } catch (e) {
+    assert.fail("la pagina non è allineata a assets/js/team.js: " +
+      String(e.stdout || e.message).trim());
+  }
+  assert.ok(/tessere allineate/.test(esito), "le tessere non sono controllate: " + esito);
+});
+
+test("tessere: una per persona, con il nome e il ruolo giusti", () => {
+  const elenco = persone();
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  assert.ok(dentro.length > 1000, "la sezione delle tessere è vuota");
+  const quante = (dentro.match(/class="tessera"/g) || []).length;
+  assert.strictEqual(quante, elenco.length,
+    "persone nei dati: " + elenco.length + ", tessere in pagina: " + quante);
+  elenco.forEach(function (p) {
+    assert.ok(dentro.indexOf('data-persona="' + p.id + '"') > -1,
+      "manca la tessera di " + p.nome);
+    assert.ok(dentro.indexOf(p.nome) > -1, "manca il nome " + p.nome + " su una tessera");
+    assert.ok(dentro.indexOf(p.ruolo) > -1, "manca il ruolo di " + p.nome);
+  });
+});
+
+test("tessere: il numero interno è progressivo per anno di ingresso", () => {
+  /* `TRC-2019-01`, `TRC-2019-02`, … Il progressivo si azzera ogni anno: il
+     numero racconta da quanto uno è in ufficio, non quante persone ci sono
+     state in tutto. Un contatore globale direbbe la seconda cosa. */
+  const elenco = persone();
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  const numeri = (dentro.match(/TRC-\d{4}-\d{2}/g) || []);
+  assert.strictEqual(numeri.length, elenco.length,
+    "numeri interni: " + numeri.length + ", persone: " + elenco.length);
+  assert.strictEqual(new Set(numeri).size, numeri.length,
+    "due tessere hanno lo stesso numero interno");
+
+  /* il conteggio per anno deve combaciare con i dati */
+  const attesi = {};
+  elenco.forEach(function (p) {
+    attesi["TRC-" + p.dal] = (attesi["TRC-" + p.dal] || 0) + 1;
+  });
+  Object.keys(attesi).forEach(function (prefisso) {
+    for (let i = 1; i <= attesi[prefisso]; i++) {
+      const n = prefisso + "-" + String(i).padStart(2, "0");
+      assert.ok(numeri.indexOf(n) > -1, "manca il numero interno " + n);
+    }
+  });
+});
+
+test("tessere: ognuna dichiara di non essere un documento di identità", () => {
+  /* Questo è il test che conta più degli altri. Se un giorno qualcuno toglie
+     l'avvertenza per «pulire» il disegno, queste immagini diventano, alla
+     vista, dei documenti: e sono persone inventate. Meglio un test rosso. */
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  const tessere = (dentro.match(/class="tessera"/g) || []).length;
+  const avvisi = (dentro.match(/non è un documento di identità/g) || []).length;
+  assert.strictEqual(avvisi, tessere,
+    "tessere: " + tessere + ", avvertenze «non è un documento di identità»: " +
+      avvisi + " — ne mancano " + (tessere - avvisi));
+});
+
+test("tessere: nessun elemento da documento d'identità", () => {
+  /* La differenza fra un badge e una carta d'identità non è il tono: sono i
+     campi. Qui si verifica che non ne sia entrato nessuno per distrazione. */
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  const vietati = [
+    [/codice fiscale/i, "codice fiscale"],
+    [/data di nascita/i, "data di nascita"],
+    [/luogo di nascita/i, "luogo di nascita"],
+    [/carta d'identità/i, "carta d'identità"],
+    [/carta di identità/i, "carta di identità"],
+    [/repubblica italiana/i, "emblema della Repubblica"],
+    [/MRZ|<<<</, "codice a lettura ottica"],
+    [/\bCIE\b/, "sigla CIE"],
+    [/\bchip\b/i, "chip"],
+  ];
+  vietati.forEach(function (v) {
+    assert.ok(!v[0].test(dentro),
+      "la sezione delle tessere contiene «" + v[1] + "»: non è una tessera, " +
+      "è un documento");
+  });
+});
+
+test("tessere: ognuna ha il ritratto della persona, non un segnaposto", () => {
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  persone().forEach(function (p) {
+    if (!p.foto) return;
+    assert.ok(dentro.indexOf("team/" + p.foto + "-480.jpg") > -1,
+      "la tessera di " + p.nome + " non usa il ritratto");
+  });
+  const immagini = (dentro.match(/<img [^>]*width="480" height="480"/g) || []).length;
+  const conFoto = persone().filter((p) => p.foto).length;
+  assert.strictEqual(immagini, conFoto,
+    "ritratti con dimensioni dichiarate: " + immagini + " su " + conFoto);
+});
+
 module.exports = casi;
