@@ -225,6 +225,20 @@ test("tessere: il numero interno è progressivo per anno di ingresso", () => {
   });
 });
 
+test("tessere: sono in ordine di arrivo in ufficio", () => {
+  /* I numeri crescono da sinistra a destra: la sezione si legge come una scala
+     di anzianità. Il primo giro le metteva nell'ordine dell'array dei dati, e
+     la tessera del 2023 finiva prima di quella del 2022. */
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  const anni = (dentro.match(/TRC-(\d{4})-\d{2}/g) || []).map(function (n) {
+    return Number(n.slice(4, 8));
+  });
+  const ordinati = anni.slice().sort(function (a, b) { return a - b; });
+  assert.deepStrictEqual(anni, ordinati,
+    "le tessere non sono in ordine di anno: " + anni.join(", "));
+});
+
 test("tessere: ognuna dichiara di non essere un documento di identità", () => {
   /* Questo è il test che conta più degli altri. Se un giorno qualcuno toglie
      l'avvertenza per «pulire» il disegno, queste immagini diventano, alla
