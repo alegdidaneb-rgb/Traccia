@@ -41,7 +41,7 @@ SEGNA_FINE_FOOTER = "<!-- /shell:footer -->"
 # Pagine con l'intestazione pubblica completa.
 PAGINE_PUBBLICHE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
-    "chi-siamo.html", "onorari.html", "supporto.html", "login.html",
+    "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
     "privacy.html", "termini.html", "cookie.html", "note-legali.html",
     "404.html", "admin.html",
 ]
@@ -62,6 +62,7 @@ def voci_menu() -> list[tuple[str, str, str]]:
         ("casi", "Casi seguiti", "casi.html"),
         ("crypto", "Truffe cripto", "crypto.html"),
         ("chi-siamo", "Chi siamo", "chi-siamo.html"),
+        ("team", "Il team", "team.html"),
         ("onorari", "Onorari", "onorari.html"),
         ("supporto", "Supporto", "supporto.html"),
     ]

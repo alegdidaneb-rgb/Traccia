@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Il team — Traccia</title>
+  <meta name="description" content="Le nove persone dell'ufficio: chi firma le perizie, chi segue le transazioni on-chain, chi parla con gli istituti. Ruolo, aree di lavoro e strumenti di ciascuna.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it/team.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it-IT">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Il team — Traccia">
+  <meta property="og:description" content="Le nove persone dell'ufficio: chi firma le perizie, chi segue le transazioni on-chain, chi parla con gli istituti.">
+  <meta property="og:url" content="https://traccia.it/team.html">
+  <meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/inter-var.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/display-serif.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css?v=20261102d">
+  <link rel="stylesheet" href="assets/css/premium.css?v=20261102d">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="assets/js/config.js?v=20261102d" defer></script>
+  <script src="assets/js/api.js?v=20261102d" defer></script>
+  <script src="assets/js/session.js?v=20261102d" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it",
+    "description": "Ufficio di analisi forense su truffe finanziarie e criptovalute.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "ciao@traccia.it",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+</head>
+<body class="">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <!-- shell:header -->
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="index.html">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="come-funziona.html">Come funziona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="casi.html">Casi seguiti</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="crypto.html">Truffe cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="chi-siamo.html">Chi siamo</a></li>
+        <li><a class="nav-link is-active" data-nav="team" href="team.html" aria-current="page">Il team</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
+          <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="app.html">La mia pratica</a>
+            <a class="nav-user__link nav-user__link--admin" href="admin.html" data-auth-admin hidden>Console admin</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+  <!-- /shell:header -->
+
+
+  <main id="main">
+    <section class="page-head page-head--media grain">
+  <div class="page-head--media__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/team-room-900.webp 900w, assets/img/team-room-1600.webp 1600w" sizes="100vw">
+      <img src="assets/img/team-room-1600.jpg" srcset="assets/img/team-room-900.jpg 900w, assets/img/team-room-1600.jpg 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" loading="lazy" decoding="async">
+    </picture>
+  </div>
+  <div class="container">
+    <div class="page-head__inner">
+      <div>
+        <span class="eyebrow">Il team</span>
+        <h1 class="h1 balance" style="margin-top:.75rem">Nove persone, nove nomi, e quello che fa ciascuna.</h1>
+        <p class="lead mt-3" style="max-width:60ch">Ogni pratica ha un analista responsabile e un revisore
+      che non ha partecipato all'analisi. Qui c'è chi fa cosa, con quali
+      strumenti e da quanti anni lavora in questo ufficio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="metric-band-wrap">
+  <div class="container">
+    <div class="metric-band">
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="9">9</span></span>
+        <span class="metric-band__label">persone nel team, tutte interne</span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="2">2</span></span>
+        <span class="metric-band__label">persone su ogni pratica: analista e revisore</span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value"><span data-count="4">4</span></span>
+        <span class="metric-band__label">lingue di lavoro: <span data-team-lingue>IT, EN, ES, FR</span></span>
+      </div>
+      <div class="metric-band__cell">
+        <span class="metric-band__value">—</span>
+        <span class="metric-band__label">perizie firmate dal 2019</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ I PROFILI ============================ -->
+<!-- I profili sono generati da tools/build_team.py leggendo
+     assets/js/team.js: la stessa fonte che usa la home. Non modificare a mano
+     dentro i marcatori, si sovrascrive alla prossima build. -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Chi fa cosa</span>
+        <h2 class="h2 balance mt-2">I profili.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Nessun analista gestisce più di dodici pratiche attive contemporaneamente.
+        È un limite che ci siamo dati per non lavorare in serie.
+      </p>
+    </div>
+
+    <div class="team-profiles" data-reveal-group="team">
+      <!-- team:profili -->
+<article class="profilo" id="marta-bellini">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/marta-bellini-480.webp 480w, assets/img/team/marta-bellini-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/marta-bellini-480.jpg" srcset="assets/img/team/marta-bellini-480.jpg 480w, assets/img/team/marta-bellini-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Marta Bellini" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Marta Bellini</h3>
+          <p class="profilo__ruolo">Direzione analisi forense</p>
+          <p class="profilo__dal">Nell'ufficio dal 2019</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Perizie</span><span class="member__tag">Contenzioso</span><span class="member__tag">Revisione contabile</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Coordina l'ufficio e firma le perizie destinate al giudice. Tiene i rapporti con i consulenti tecnici d'ufficio e decide quali pratiche non hanno i presupposti per andare avanti — che sono, ogni anno, circa un terzo di quelle che arrivano.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Foglio di calcolo forense</li><li>Archivio perizie</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2004</span><span class="profilo__tappa"><strong>Revisore contabile junior</strong><span class="profilo__dove">Studio associato, Torino</span></span></li><li><span class="profilo__anno">2008</span><span class="profilo__tappa"><strong>Senior, revisione legale</strong><span class="profilo__dove">Società di revisione, Milano</span></span></li><li><span class="profilo__anno">2013</span><span class="profilo__tappa"><strong>Consulente tecnico di parte</strong><span class="profilo__dove">Contenzioso civile, Torino</span></span></li><li><span class="profilo__anno">2019</span><span class="profilo__tappa"><strong>Direzione analisi forense</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Economia aziendale</strong><span class="profilo__dove">Università degli Studi di Torino · 2003</span></li><li><strong>Master in revisione e contabilità forense</strong><span class="profilo__dove">Scuola di specializzazione, Milano · 2007</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Iscrizione</span><strong>Ordine dei Dottori Commercialisti e degli Esperti Contabili</strong><span class="profilo__credenziale-dettaglio">Sezione A — Torino · in corso</span></li><li><span class="profilo__credenziale-tipo">Abilitazione</span><strong>Revisione legale dei conti (d.lgs. 39/2010)</strong><span class="profilo__credenziale-dettaglio">Registro dei revisori legali · in corso</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha firmato la perizia che ha portato al sequestro di due conti di appoggio, con la ricostruzione della catena dei bonifici dal conto del segnalante.</li><li>Ha impostato il limite interno di dodici pratiche attive per analista, dopo aver misurato che oltre quella soglia gli errori di datazione raddoppiavano.</li><li>Ha ridotto di un terzo le pratiche che arrivano alla fase 3 senza i presupposti, spostando il controllo nelle prime 48 ore.</li></ul>
+        <h4 class="profilo__sezione">Pubblicazioni</h4>
+        <ul class="profilo__formazione"><li>La catena dei bonifici nelle truffe con finto broker <span class="profilo__dove">Rivista di diritto bancario e finanziario, 2022</span></li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="andrea-costa">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/andrea-costa-480.webp 480w, assets/img/team/andrea-costa-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/andrea-costa-480.jpg" srcset="assets/img/team/andrea-costa-480.jpg 480w, assets/img/team/andrea-costa-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Andrea Costa" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Andrea Costa</h3>
+          <p class="profilo__ruolo">Responsabile blockchain intelligence</p>
+          <p class="profilo__dal">Nell'ufficio dal 2019</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">On-chain</span><span class="member__tag">USDT</span><span class="member__tag">Wallet clustering</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Traccia transazioni su Bitcoin, Ethereum e stablecoin. Riconosce exchange, servizi di offuscamento e pattern di raggruppamento dei wallet, e redige la parte on-chain delle perizie.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Esploratori di blocchi</li><li>Analisi di clustering</li><li>Python</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2012</span><span class="profilo__tappa"><strong>Analista dati</strong><span class="profilo__dove">Società di consulenza informatica, Torino</span></span></li><li><span class="profilo__anno">2016</span><span class="profilo__tappa"><strong>Analista blockchain</strong><span class="profilo__dove">Studio di investigazione finanziaria, Lugano</span></span></li><li><span class="profilo__anno">2019</span><span class="profilo__tappa"><strong>Responsabile blockchain intelligence</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Informatica</strong><span class="profilo__dove">Politecnico di Torino · 2011</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Blockchain forensics — analisi di transazioni</strong><span class="profilo__credenziale-dettaglio">Livello professionale · rinnovata nel 2025</span></li><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Analisi di rete e Open Source Intelligence</strong><span class="profilo__credenziale-dettaglio">Corso avanzato · 2024</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha ricostruito il raggruppamento di 340 indirizzi riconducibili a un unico servizio di mixing, oggi citato in tre procedimenti.</li><li>Ha scritto il metodo interno di tracciamento delle stablecoin, che è la ragione per cui gli allegati on-chain sono citabili in un atto.</li><li>Ha dimostrato, con una prova di firma, che un presunto «wallet della vittima» era in realtà un indirizzo di deposito dell'exchange.</li></ul>
+        <h4 class="profilo__sezione">Pubblicazioni</h4>
+        <ul class="profilo__formazione"><li>Raggruppamento dei wallet: quando un indirizzo non è una persona <span class="profilo__dove">Atti del convegno sulle frodi digitali, 2024</span></li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="sara-ferrero">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/sara-ferrero-480.webp 480w, assets/img/team/sara-ferrero-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/sara-ferrero-480.jpg" srcset="assets/img/team/sara-ferrero-480.jpg 480w, assets/img/team/sara-ferrero-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Sara Ferrero" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Sara Ferrero</h3>
+          <p class="profilo__ruolo">Investigazione finanziaria</p>
+          <p class="profilo__dal">Nell'ufficio dal 2020</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Bonifici</span><span class="member__tag">Chargeback</span><span class="member__tag">Antifrode</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Segue i flussi su bonifici, carte e conti di appoggio. Gestisce le richieste di conservazione dei dati e di blocco delle somme verso gli intermediari, e sa quanto tempo ha un istituto per rispondere.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li><li>Francese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Estratti conto</li><li>Richieste di conservazione</li><li>SEPA</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2010</span><span class="profilo__tappa"><strong>Addetta antifrode, bonifici</strong><span class="profilo__dove">Istituto di credito, Genova</span></span></li><li><span class="profilo__anno">2015</span><span class="profilo__tappa"><strong>Specialista chargeback e recupero crediti</strong><span class="profilo__dove">Istituto di credito, Milano</span></span></li><li><span class="profilo__anno">2020</span><span class="profilo__tappa"><strong>Investigazione finanziaria</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea triennale in Economia e finanza</strong><span class="profilo__dove">Università degli Studi di Genova · 2009</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Antifrode nei pagamenti (ACFE — Italia)</strong><span class="profilo__credenziale-dettaglio">Membro associato · in corso</span></li><li><span class="profilo__credenziale-tipo">Formazione</span><strong>Regolamento SEPA e richiami di bonifico</strong><span class="profilo__credenziale-dettaglio">Aggiornamento · 2025</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha ottenuto il richiamo di bonifici SEPA già accreditati in quattro casi su dieci, lavorando sulle finestre di tempo che gli istituti concedono e che quasi nessuno usa.</li><li>Ha costruito la procedura interna delle richieste di conservazione, con il termine di risposta di ciascun istituto.</li><li>Ha gestito la contestazione di un addebito diretto mai autorizzato, con lo storno degli 85,40 € in undici giorni.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="giulia-rinaldi">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/giulia-rinaldi-480.webp 480w, assets/img/team/giulia-rinaldi-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/giulia-rinaldi-480.jpg" srcset="assets/img/team/giulia-rinaldi-480.jpg 480w, assets/img/team/giulia-rinaldi-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Giulia Rinaldi" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Giulia Rinaldi</h3>
+          <p class="profilo__ruolo">Gestione pratiche</p>
+          <p class="profilo__dal">Nell'ufficio dal 2021</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Pratiche</span><span class="member__tag">Segnalazioni</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">È il primo nome che un segnalante vede e l'ultimo che saluta. Tiene i tempi delle cinque fasi, le scadenze verso gli istituti e il calendario delle consegne.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Area riservata</li><li>Registro pratiche</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2015</span><span class="profilo__tappa"><strong>Assistenza clienti, area crediti</strong><span class="profilo__dove">Società di servizi finanziari, Torino</span></span></li><li><span class="profilo__anno">2018</span><span class="profilo__tappa"><strong>Coordinamento pratiche legali</strong><span class="profilo__dove">Studio legale, Torino</span></span></li><li><span class="profilo__anno">2021</span><span class="profilo__tappa"><strong>Gestione pratiche</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea triennale in Scienze dei servizi giuridici</strong><span class="profilo__dove">Università degli Studi di Torino · 2014</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Gestione della relazione con il cliente in contesti di crisi</strong><span class="profilo__credenziale-dettaglio">Corso professionale · 2023</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha ridotto da nove a quattro giorni il tempo medio fra la segnalazione e la prima risposta, riscrivendo le domande che si fanno al primo contatto.</li><li>Tiene il calendario delle consegne di tutte le pratiche attive, e nessuna delle 214 dell'ultimo anno è stata consegnata in ritardo senza avvisare il cliente prima.</li><li>Ha riscritto le lettere standard al segnalante, togliendo il linguaggio che prometteva esiti.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="davide-marchetti">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/davide-marchetti-480.webp 480w, assets/img/team/davide-marchetti-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/davide-marchetti-480.jpg" srcset="assets/img/team/davide-marchetti-480.jpg 480w, assets/img/team/davide-marchetti-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Davide Marchetti" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Davide Marchetti</h3>
+          <p class="profilo__ruolo">Analista on-chain</p>
+          <p class="profilo__dal">Nell'ufficio dal 2023</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">EVM</span><span class="member__tag">Bitcoin</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Lavora sulle reti EVM e su Bitcoin: ricostruisce il percorso di un importo preciso, non di un saldo. Prepara gli allegati tecnici con hash e indirizzi che il legale può citare in un atto.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Node EVM</li><li>Bitcoin Core</li><li>Graph analysis</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2018</span><span class="profilo__tappa"><strong>Sviluppatore, sistemi distribuiti</strong><span class="profilo__dove">Azienda software, Torino</span></span></li><li><span class="profilo__anno">2021</span><span class="profilo__tappa"><strong>Analista on-chain</strong><span class="profilo__dove">Studio di investigazione, Milano</span></span></li><li><span class="profilo__anno">2023</span><span class="profilo__tappa"><strong>Analista on-chain</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Ingegneria informatica</strong><span class="profilo__dove">Politecnico di Torino · 2017</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Analisi forense di rete Bitcoin ed EVM</strong><span class="profilo__credenziale-dettaglio">Livello avanzato · 2024</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha ricostruito il percorso di un singolo versamento da 12.000 € attraverso quattro exchange, con la data e l'hash di ogni passaggio.</li><li>Ha scritto il generatore degli allegati tecnici: gli indirizzi e gli hash sono prodotti dai dati, non ricopiati a mano, e questo è ciò che li rende citabili.</li><li>Ha trovato un errore di datazione in una perizia già consegnata; da allora ogni allegato porta la data della fonte accanto alla data dell'evento.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="chiara-neri">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/chiara-neri-480.webp 480w, assets/img/team/chiara-neri-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/chiara-neri-480.jpg" srcset="assets/img/team/chiara-neri-480.jpg 480w, assets/img/team/chiara-neri-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Chiara Neri" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Chiara Neri</h3>
+          <p class="profilo__ruolo">Analisi documentale</p>
+          <p class="profilo__dal">Nell'ufficio dal 2022</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Documenti</span><span class="member__tag">Cronologie</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Mette in ordine ciò che il cliente consegna: estratto conto, schermate, email, contratti firmati. Costruisce la cronologia che regge in giudizio, con la data di ogni passaggio e la sua fonte.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Cronologie</li><li>Archivio documenti</li><li>Metadati</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2017</span><span class="profilo__tappa"><strong>Archivista documentale</strong><span class="profilo__dove">Società di gestione documentale, Torino</span></span></li><li><span class="profilo__anno">2020</span><span class="profilo__tappa"><strong>Analista documentale, contenzioso</strong><span class="profilo__dove">Studio legale, Torino</span></span></li><li><span class="profilo__anno">2022</span><span class="profilo__tappa"><strong>Analisi documentale</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Scienze storiche e documentarie</strong><span class="profilo__dove">Università degli Studi di Torino · 2016</span></li><li><strong>Corso in gestione dei documenti digitali e metadati</strong><span class="profilo__dove">Università degli Studi di Torino · 2019</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Gestione documentale e conservazione digitale</strong><span class="profilo__credenziale-dettaglio">Corso professionale · 2022</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha ricostruito una cronologia di 189 passaggi partendo da schermate senza data, usando i metadati dei file e gli orari delle email.</li><li>Ha introdotto la regola per cui ogni riga di cronologia porta la fonte accanto: senza fonte, la riga non entra in perizia.</li><li>Ha ricomposto un contratto firmato che il cliente aveva in tre versioni diverse, individuando quella depositata presso la piattaforma.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="paolo-greco">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/paolo-greco-480.webp 480w, assets/img/team/paolo-greco-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/paolo-greco-480.jpg" srcset="assets/img/team/paolo-greco-480.jpg 480w, assets/img/team/paolo-greco-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Paolo Greco" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Paolo Greco</h3>
+          <p class="profilo__ruolo">Relazioni con gli istituti</p>
+          <p class="profilo__dal">Nell'ufficio dal 2021</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Istituti</span><span class="member__tag">Exchange</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Presenta le richieste a banche, intermediari ed exchange, e tiene traccia di chi ha risposto e di chi non ha risposto nel termine. Conosce le procedure di escalation di ciascuno.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li><li>Spagnolo</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>PEC</li><li>Richieste dati</li><li>Escalation</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2003</span><span class="profilo__tappa"><strong>Back office, pagamenti esteri</strong><span class="profilo__dove">Banca di credito cooperativo, Torino</span></span></li><li><span class="profilo__anno">2011</span><span class="profilo__tappa"><strong>Responsabile reclami e rapporti con gli intermediari</strong><span class="profilo__dove">Gruppo bancario, Milano</span></span></li><li><span class="profilo__anno">2021</span><span class="profilo__tappa"><strong>Relazioni con gli istituti</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Economia e commercio</strong><span class="profilo__dove">Università degli Studi di Torino · 2002</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Antiriciclaggio e adeguata verifica (d.lgs. 231/2007)</strong><span class="profilo__credenziale-dettaglio">Formazione obbligatoria · aggiornata nel 2025</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha costruito la mappa dei tempi di risposta di 26 istituti ed exchange: sa, prima di scrivere, chi risponde in tre giorni e chi non risponde affatto.</li><li>Ha ottenuto da un exchange estero la conservazione dei dati di accesso di un conto, dopo due solleciti e una richiesta formale in inglese.</li><li>Ha portato in ufficio la pratica della PEC con protocollo: ogni richiesta ha un numero, e quel numero è ciò che si cita quando un istituto dice di non aver ricevuto.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="luca-venturi">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/luca-venturi-480.webp 480w, assets/img/team/luca-venturi-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/luca-venturi-480.jpg" srcset="assets/img/team/luca-venturi-480.jpg 480w, assets/img/team/luca-venturi-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Luca Venturi" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Luca Venturi</h3>
+          <p class="profilo__ruolo">Dati e strumenti</p>
+          <p class="profilo__dal">Nell'ufficio dal 2024</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Evidenze</span><span class="member__tag">Strumenti</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Costruisce gli strumenti interni: importazione degli estratti, normalizzazione delle date, generazione degli allegati. Il suo criterio è che un dato citato in perizia sia ricostruibile da chiunque, non solo da lui.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Python</li><li>SQL</li><li>Generazione PDF</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2017</span><span class="profilo__tappa"><strong>Sviluppatore dati</strong><span class="profilo__dove">Startup fintech, Torino</span></span></li><li><span class="profilo__anno">2021</span><span class="profilo__tappa"><strong>Data engineer</strong><span class="profilo__dove">Società di analisi, Milano</span></span></li><li><span class="profilo__anno">2024</span><span class="profilo__tappa"><strong>Dati e strumenti</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea triennale in Informatica</strong><span class="profilo__dove">Università degli Studi di Torino · 2016</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Basi di dati relazionali e sicurezza dei dati</strong><span class="profilo__credenziale-dettaglio">Percorso professionale · 2023</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha riscritto l'importazione degli estratti conto: prima si copiavano gli importi a mano, ora il formato è riconosciuto e gli errori di segno sono spariti.</li><li>Ha reso ricostruibile ogni dato citato in perizia: chiunque, con lo stesso file di partenza, ottiene lo stesso numero.</li><li>Ha scritto il generatore degli allegati PDF e la verifica automatica che un importo in perizia corrisponda al movimento da cui viene.</li></ul>
+      </div>
+    </article>
+
+<article class="profilo" id="francesca-bruno">
+      <div class="profilo__testata">
+      <picture class="profilo__ritratto">
+        <source type="image/webp" srcset="assets/img/team/francesca-bruno-480.webp 480w, assets/img/team/francesca-bruno-960.webp 960w" sizes="(max-width: 700px) 38vw, 180px">
+        <img src="assets/img/team/francesca-bruno-480.jpg" srcset="assets/img/team/francesca-bruno-480.jpg 480w, assets/img/team/francesca-bruno-960.jpg 960w" sizes="(max-width: 700px) 38vw, 180px" alt="Ritratto di Francesca Bruno" width="480" height="480" loading="lazy" decoding="async">
+      </picture>
+        <div class="profilo__anagrafica">
+          <h3 class="profilo__nome">Francesca Bruno</h3>
+          <p class="profilo__ruolo">Qualità e revisione</p>
+          <p class="profilo__dal">Nell'ufficio dal 2022</p>
+          <div class="member__tags profilo__aree"><span class="member__tag">Qualità</span><span class="member__tag">Revisione</span></div>
+        </div>
+      </div>
+
+      <div class="profilo__corpo">
+        <p class="profilo__bio">Controlla ogni perizia prima della consegna: coerenza dei dati, fonti citate, limiti dichiarati. Ha facoltà di bloccare una consegna, e la usa.</p>
+
+        <dl class="profilo__dettagli">
+          <div>
+            <dt>Lingue di lavoro</dt>
+            <dd><ul class="profilo__elenco"><li>Italiano</li><li>Inglese</li></ul></dd>
+          </div>
+          <div>
+            <dt>Strumenti</dt>
+            <dd><ul class="profilo__elenco"><li>Checklist di revisione</li><li>Controllo incrociato</li></ul></dd>
+          </div>
+        </dl>
+        <h4 class="profilo__sezione">Percorso</h4>
+        <ol class="profilo__percorso"><li><span class="profilo__anno">2008</span><span class="profilo__tappa"><strong>Controllo qualità, documentazione tecnica</strong><span class="profilo__dove">Società manifatturiera, Torino</span></span></li><li><span class="profilo__anno">2014</span><span class="profilo__tappa"><strong>Auditor interno, sistemi di gestione</strong><span class="profilo__dove">Gruppo industriale, Milano</span></span></li><li><span class="profilo__anno">2022</span><span class="profilo__tappa"><strong>Qualità e revisione</strong><span class="profilo__dove">Traccia</span></span></li></ol>
+        <h4 class="profilo__sezione">Formazione</h4>
+        <ul class="profilo__formazione"><li><strong>Laurea magistrale in Ingegneria gestionale</strong><span class="profilo__dove">Politecnico di Torino · 2007</span></li></ul>
+        <h4 class="profilo__sezione">Credenziali</h4>
+        <ul class="profilo__credenziali"><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Auditor interno di sistemi di gestione per la qualità</strong><span class="profilo__credenziale-dettaglio">Auditor qualificato · in corso</span></li><li><span class="profilo__credenziale-tipo">Certificazione</span><strong>Revisione indipendente di relazioni tecniche</strong><span class="profilo__credenziale-dettaglio">Metodo interno · 2024</span></li></ul>
+        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>
+        <ul class="profilo__risultati"><li>Ha bloccato sette consegne nell'ultimo anno: in tutti i casi mancava una fonte, oppure una data non reggeva il confronto con il documento.</li><li>Ha introdotto la checklist di revisione in 24 punti, che è l'unica ragione per cui due persone diverse arrivano allo stesso giudizio su una perizia.</li><li>Ha riscritto la sezione «limiti dell'analisi», che prima era una frase di rito e ora elenca ciò che non è stato possibile verificare.</li></ul>
+      <p class="profilo__revisione"><span class="profilo__revisione-label">Ruolo di controllo</span>Revisore indipendente</p>
+      </div>
+    </article>
+      <!-- /team:profili -->
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COME LAVORIAMO ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="split">
+      <div class="reveal reveal--left">
+        <span class="eyebrow">Organizzazione</span>
+        <h2 class="h2 balance mt-2">Due persone su ogni pratica, sempre.</h2>
+        <p class="lead mt-3">
+          Ogni caso ha un analista responsabile e un revisore che non ha
+          partecipato all'analisi. Il revisore può fermare una consegna, e lo fa
+          quando manca un punto di aggancio verificabile.
+        </p>
+        <p class="small muted mt-2">
+          Le aree coperte dall'ufficio, ricavate dai profili qui sopra:
+          <span data-team-aree>perizie, contenzioso, on-chain</span>.
+        </p>
+      </div>
+
+      <div class="reveal reveal--right">
+        <ul class="timeline">
+          <li>
+            <span class="timeline__year">2019</span>
+            <p><b>Nasce l'ufficio.</b> Tre analisti, un solo ambito: frodi su piattaforme di trading con bonifici verso l'estero.</p>
+          </li>
+          <li>
+            <span class="timeline__year">2021</span>
+            <p><b>Prima perizia depositata in giudizio</b> e ammessa dal tribunale come consulenza di parte.</p>
+          </li>
+          <li>
+            <span class="timeline__year">2023</span>
+            <p><b>Blockchain intelligence.</b> Nasce il nucleo on-chain: tracciamento di stablecoin e ricostruzione dei wallet di raggruppamento.</p>
+          </li>
+          <li>
+            <span class="timeline__year">2025</span>
+            <p><b>Rete di corrispondenti</b> in quattordici giurisdizioni, per le richieste che devono essere presentate all'estero.</p>
+          </li>
+          <li>
+            <span class="timeline__year">2026</span>
+            <p><b>Area riservata.</b> Ogni segnalante vede lo stato della propria pratica, i documenti e la cronologia degli aggiornamenti.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band grain" data-reveal="up">
+      <div>
+        <h2 class="h2 balance">Vuoi parlare con una di queste persone?</h2>
+        <p class="small muted mt-2">La prima valutazione è gratuita e non impegna. Se il caso non è nelle nostre corde te lo diciamo subito.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn--accent btn--lg" href="login.html#registrati">Segnala un caso</a>
+        <a class="btn btn--ghost btn--lg" href="come-funziona.html">Come funziona</a>
+      </div>
+    </div>
+  </div>
+</section>
+  </main>
+
+  <!-- shell:footer -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Analisi forense delle truffe finanziarie online. Ricostruiamo il percorso dei tuoi soldi quando una
+          piattaforma di investimento non ti restituisce più il capitale.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servizio</h4>
+        <ul>
+          <li><a href="come-funziona.html">Come funziona</a></li>
+          <li><a href="come-funziona.html#fasi">Le cinque fasi</a></li>
+          <li><a href="casi.html">Casi seguiti</a></li>
+          <li><a href="crypto.html">Truffe cripto</a></li>
+          <li><a href="chi-siamo.html">Chi siamo</a></li>
+          <li><a href="team.html">Il team</a></li>
+          <li><a href="onorari.html">Onorari</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Cosa non facciamo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Prima di iniziare</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Ti chiedono altri soldi?</a></li>
+          <li><a href="supporto.html#segnalare">Dove segnalare</a></li>
+          <li><a href="supporto.html#documenti">Documenti da conservare</a></li>
+          <li><a href="supporto.html#faq">Domande frequenti</a></li>
+          <li><a href="login.html">La mia pratica</a></li>
+          <li><a href="supporto.html#contatti">Contatti</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="termini.html">Termini e condizioni</a></li>
+          <li><a href="cookie.html">Cookie policy</a></li>
+          <li><a href="note-legali.html">Note legali</a></li>
+          <li><a href="privacy.html#reclami">Reclami</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Avvertenza necessaria.</strong> Traccia svolge attività di
+        analisi tecnica e documentale e di assistenza nella ricostruzione dei
+        flussi finanziari. <strong>Non siamo un avvocato, uno studio legale, un
+        istituto di credito, una società di recupero crediti autorizzata ex
+        art. 115 TULPS né un intermediario finanziario.</strong> Non possiamo
+        garantire il recupero delle somme: l'esito dipende da fattori che non
+        controlliamo, come la tracciabilità dei fondi, la collaborazione degli
+        istituti coinvolti e i tempi della giustizia. Nessun operatore può
+        promettere un rimborso garantito: se qualcuno lo fa, è una truffa nella
+        truffa. Il nostro numero WhatsApp è solo quello pubblicato sul sito:
+        non scriviamo mai noi per primi e non chiediamo denaro in chat.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifrode.</strong> Non chiediamo mai di anticipare denaro per
+        «sbloccare» un rimborso, di pagare imposte anticipate, di installare
+        software di accesso remoto o di comunicare codici OTP e chiavi private.
+        Ogni richiesta di questo tipo va segnalata subito a
+        <a href="mailto:assistenza@traccia.it">assistenza@traccia.it</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legale e direzione generale:
+          Piazza Solferino, 11 - 10121 Torino (TO) · P.IVA / Codice Fiscale 06900230018 · PEC traccia@pec.it ·
+          Attività di analisi tecnica e documentale, non riservata a
+          intermediari autorizzati. Non siamo una banca né un intermediario
+          finanziario e non operiamo sotto la vigilanza di Banca d'Italia o CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Tutti i diritti riservati.
+          P.IVA 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Note legali</a> ·
+          <a href="privacy.html">Privacy</a> ·
+          <a href="cookie.html">Cookie</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+  <!-- /shell:footer -->
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Utilizziamo cookie tecnici necessari al funzionamento del sito e, previo
+    consenso, cookie di misurazione. Puoi accettare, rifiutare o leggere la
+    <a href="cookie.html" style="text-decoration:underline">cookie policy</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Accetta tutti</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necessari</button>
+    <a class="btn btn--ghost" href="cookie.html">Preferenze</a>
+  </div>
+</div>
+
+
+  <script src="assets/js/team.js?v=20261102d" defer></script>
+  <script src="assets/js/main.js?v=20261102d" defer></script>
+  <script src="assets/js/market.js?v=20261102d" defer></script>
+  <script src="assets/js/premium.js?v=20261102d" defer></script>
+  <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
+       pulsante non compare affatto -->
+  <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
+     aria-label="Scrivici su WhatsApp" hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
+    <span class="wa-fab__label">Scrivici su WhatsApp</span>
+  </a>
+  <script src="assets/js/whatsapp.js?v=20261102d" defer></script>
+</body>
+</html>

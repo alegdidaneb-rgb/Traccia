@@ -1,0 +1,170 @@
+/* ==========================================================================
+   La pagina del team
+   ==========================================================================
+   Tre cose possono rompersi qui, e tutte e tre in silenzio:
+
+   1. **La pagina e i dati si separano.** `team.html` è generata da
+      `assets/js/team.js`, ma il file generato è nel repository: se qualcuno
+      modifica i dati e non ri-genera, la pagina continua a mostrare la
+      versione di ieri senza un errore da nessuna parte. `--check` esiste per
+      questo, e questo test lo esegue.
+
+   2. **Un profilo resta senza fotografia e nessuno se ne accorge.** Le
+      iniziali sono una riserva onesta, non un errore: ma in una pagina che si
+      chiama «persone», nove riquadri con le lettere sono un lavoro a metà. Qui
+      si tiene l'elenco di chi ha una foto e di chi no, così quando arrivano si
+      sa cosa manca.
+
+   3. **Una voce di menu porta a una pagina che non c'è.** Il menu è generato da
+      `partials/` su quattordici pagine: un link sbagliato è sbagliato quattordici
+      volte.
+   ========================================================================== */
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const { execFileSync } = require("child_process");
+
+const casi = [];
+function test(nome, fn) { casi.push({ nome, fn }); }
+
+const ROOT = path.join(__dirname, "..");
+const R = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
+const TEAM = R("team.html");
+const DATI = R("assets/js/team.js");
+
+/* i dati, letti come li legge il browser */
+function persone() {
+  const script =
+    "global.window = {};" +
+    "global.document = { readyState: 'complete'," +
+    " querySelectorAll: function () { return []; }," +
+    " addEventListener: function () {} };" +
+    "require(" + JSON.stringify(path.join(ROOT, "assets/js/team.js")) + ");" +
+    "process.stdout.write(JSON.stringify(global.window.TRACCIA_TEAM));";
+  return JSON.parse(execFileSync("node", ["-e", script], { encoding: "utf8" }));
+}
+
+/* ------------------------------------------------------------ coerenza -- */
+test("team: la pagina è allineata ai dati", () => {
+  /* se questo fallisce, la pagina mostra una versione vecchia del team */
+  let esito = null;
+  try {
+    esito = execFileSync("python3", ["tools/build_team.py", "--check"],
+      { cwd: ROOT, encoding: "utf8" });
+  } catch (e) {
+    assert.fail("team.html non è allineata a assets/js/team.js: " +
+      String(e.stdout || e.message).trim());
+  }
+  assert.ok(/allineata/.test(esito), "esito inatteso: " + esito);
+});
+
+test("team: ogni persona dei dati ha il suo profilo nella pagina", () => {
+  const elenco = persone();
+  assert.ok(elenco.length >= 9, "il team ha " + elenco.length + " persone, ne attendevo 9");
+  elenco.forEach(function (p) {
+    assert.ok(TEAM.indexOf('id="' + p.id + '"') > -1,
+      "manca il profilo di " + p.nome + " (#" + p.id + ")");
+    assert.ok(TEAM.indexOf(p.nome) > -1, "manca il nome " + p.nome);
+    assert.ok(TEAM.indexOf(p.ruolo) > -1, "manca il ruolo di " + p.nome);
+  });
+});
+
+test("team: ogni profilo ha ruolo, anni, aree e bio", () => {
+  const elenco = persone();
+  elenco.forEach(function (p) {
+    assert.ok(p.nome && p.nome.length > 3, "nome mancante o troppo corto: " + p.id);
+    assert.ok(p.ruolo && p.ruolo.length > 3, p.nome + " non ha un ruolo");
+    assert.ok(p.bio && p.bio.length > 80,
+      "la bio di " + p.nome + " è troppo corta per dire qualcosa (" +
+        (p.bio || "").length + " caratteri)");
+    assert.ok(Array.isArray(p.aree) && p.aree.length >= 2,
+      p.nome + " non ha almeno due aree di lavoro");
+    assert.ok(Number(p.dal) >= 2000 && Number(p.dal) <= 2026,
+      p.nome + " ha un anno di ingresso implausibile: " + p.dal);
+    assert.ok(Array.isArray(p.lingue) && p.lingue.length >= 1,
+      p.nome + " non dichiara lingue di lavoro");
+    assert.ok(Array.isArray(p.strumenti) && p.strumenti.length >= 1,
+      p.nome + " non dichiara strumenti");
+    assert.ok(/^[A-Z]{2}$/.test(p.iniziali),
+      p.nome + " ha iniziali non valide: " + p.iniziali);
+  });
+});
+
+test("team: c'è un revisore indipendente, ed è uno solo", () => {
+  const revisori = persone().filter((p) => p.revisione);
+  assert.strictEqual(revisori.length, 1,
+    "il revisore indipendente deve essere una persona, non un comitato: " +
+      revisori.map((p) => p.nome).join(", "));
+  assert.ok(/revisore/i.test(revisori[0].revisione),
+    "il ruolo di controllo non dice «revisore»: " + revisori[0].revisione);
+});
+
+/* ------------------------------------------------------------- foto -- */
+test("team: chi ha una foto ha tutti e quattro i file", () => {
+  const cartella = path.join(ROOT, "assets/img/team");
+  persone().forEach(function (p) {
+    if (!p.foto) return;
+    ["480.jpg", "480.webp", "960.jpg", "960.webp"].forEach(function (suffisso) {
+      const f = path.join(cartella, p.foto + "-" + suffisso);
+      assert.ok(fs.existsSync(f), "manca " + path.relative(ROOT, f) + " (" + p.nome + ")");
+      assert.ok(fs.statSync(f).size > 4000,
+        path.relative(ROOT, f) + " pesa meno di 4 KB: sarà un errore di conversione");
+    });
+  });
+});
+
+test("team: la pagina mostra il ritratto con le dimensioni dichiarate", () => {
+  /* `width` e `height` sull'img non sono decorazione: senza, il browser non
+     riserva lo spazio e la pagina salta quando le foto arrivano */
+  const conFoto = persone().filter((p) => p.foto);
+  if (!conFoto.length) return; /* nessuna foto caricata: la riserva è le iniziali */
+  conFoto.forEach(function (p) {
+    assert.ok(TEAM.indexOf("team/" + p.foto + "-480.jpg") > -1,
+      "la pagina non usa la foto di " + p.nome);
+  });
+  assert.ok(/profilo__ritratto[^>]*>/.test(TEAM), "manca il contenitore del ritratto");
+  assert.ok(/width="480" height="480"/.test(TEAM),
+    "le immagini dei ritratti devono dichiarare larghezza e altezza");
+});
+
+test("team: senza foto la scheda mostra le iniziali, non un riquadro rotto", () => {
+  const senza = persone().filter((p) => !p.foto);
+  const quante = (TEAM.match(/profilo__ritratto--iniziali/g) || []).length;
+  assert.strictEqual(quante, senza.length,
+    "profili senza foto: " + senza.length + ", riquadri con le iniziali: " + quante);
+});
+
+/* ------------------------------------------------------- raggiungibilità -- */
+test("team: la pagina è nel menu, nel footer e nella sitemap", () => {
+  const header = R("partials/header.html");
+  const footer = R("partials/footer.html");
+  assert.ok(R("tools/build_shell.py").indexOf('"team.html"') > -1,
+    "team.html non è fra le pagine del menu");
+  assert.ok(footer.indexOf("team.html") > -1, "il footer non linka il team");
+  assert.ok(R("sitemap.xml").indexOf("/team") > -1, "manca /team nella sitemap");
+  assert.ok(/nav-link is-active[^>]*data-nav="team"/.test(TEAM),
+    "la voce «Il team» non risulta attiva sulla sua pagina");
+  assert.ok(header.length > 100);
+});
+
+test("team: la pagina ha testata, piè di pagina e metadati sociali", () => {
+  assert.ok(TEAM.indexOf("site-header") > -1, "manca la testata");
+  assert.ok(TEAM.indexOf("site-footer") > -1, "manca il piè di pagina");
+  assert.ok(/<title>[^<]*team/i.test(TEAM), "il titolo non nomina il team");
+  assert.ok(/rel="canonical" href="https:\/\/traccia.it\/team.html"/.test(TEAM),
+    "manca il canonical");
+  assert.ok(/og:title/.test(TEAM), "mancano i metadati Open Graph");
+  assert.ok(/assets\/js\/team\.js/.test(TEAM), "la pagina non carica i dati del team");
+});
+
+test("team: i dati sono nel file, non scritti a mano nell'HTML", () => {
+  /* se qualcuno rimette a mano un profilo dentro i marcatori, la prossima
+     generazione lo cancella: meglio accorgersene qui che in produzione */
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:profili -->"),
+                            TEAM.indexOf("<!-- /team:profili -->"));
+  const nomi = persone().map((p) => p.nome);
+  const fuori = nomi.filter((n) => dentro.indexOf(n) === -1);
+  assert.deepStrictEqual(fuori, [], "profili generati mancanti: " + fuori.join(", "));
+});
+
+module.exports = casi;
