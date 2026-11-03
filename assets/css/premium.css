@@ -2661,6 +2661,298 @@ body.is-staff-view #sicurezza { display: none !important; }
   .receipt__amount { font-size: 20pt; }
 }
 
+/* ------------------------------------------------------- profili team -- */
+/* La pagina del team: ogni persona è una scheda larga, non una tessera.
+   Nella home le nove tessere stanno in griglia perché servono a dire «siamo in
+   nove»; qui la domanda è «chi è questa persona», e una tessera da 300 px non
+   ha spazio per rispondere. Da 900 px la scheda si dispone su due colonne —
+   ritratto a sinistra, testo a destra — e sotto quella misura si impila. */
+.team-profiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.profilo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  scroll-margin-top: 5rem;
+}
+
+.profilo__testata {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+/* Il ritratto ha una misura fissa e un ritaglio quadrato: nove fotografie
+   scattate da persone diverse, in luoghi diversi, devono sembrare la stessa
+   serie. `aspect-ratio` lo garantisce anche se il file arriva sbagliato. */
+.profilo__ritratto {
+  flex: 0 0 auto;
+  width: clamp(84px, 12vw, 112px);
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  display: block;
+  background: var(--bg-soft);
+}
+.profilo__ritratto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Senza fotografia: le iniziali, che è già l'aspetto delle tessere in home.
+   Non è un segnaposto rotto, è una scelta grafica che regge da sola. */
+.profilo__ritratto--iniziali {
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  letter-spacing: 0.02em;
+}
+
+.profilo__anagrafica { min-width: 0; }
+.profilo__nome {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.profilo__ruolo {
+  margin: 0.15rem 0 0;
+  font-size: var(--fs-xs);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+.profilo__dal {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.profilo__aree { margin-top: 0.5rem; padding-top: 0; }
+
+.profilo__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.profilo__bio {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* I dettagli stanno in due colonne di definizioni: etichetta sopra, elenco
+   sotto. Su schermo stretto diventano una colonna sola, non si comprimono. */
+.profilo__dettagli {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+.profilo__dettagli dt {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.profilo__dettagli dd { margin: 0; }
+.profilo__elenco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
+}
+.profilo__elenco li { position: relative; }
+.profilo__elenco li + li::before {
+  content: "·";
+  margin-right: 0.5rem;
+  color: var(--muted);
+}
+
+/* Il ruolo di controllo è l'unico che cambia la natura del rapporto: chi
+   revisiona non ha lavorato al caso. Vale un riquadro, non una parola persa. */
+.profilo__revisione {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border-left: 2px solid var(--accent);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
+}
+.profilo__revisione-label {
+  display: block;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+/* ---------------------------------------------- percorso e credenziali --
+   Un profilo che dice solo «quindici anni di esperienza» chiede di essere
+   creduto. Una riga per anno, con il ruolo e il posto, si può controllare.
+   Le credenziali hanno la stessa logica: il tipo, l'ente e il riferimento
+   pubblico stanno insieme, perché una qualifica senza ente non è una
+   qualifica. */
+.profilo__sezione {
+  margin: 1.35rem 0 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.profilo__sezione:first-of-type { margin-top: 1.1rem; }
+
+.profilo__percorso,
+.profilo__formazione,
+.profilo__credenziali,
+.profilo__risultati {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* il percorso è una linea del tempo: l'anno a sinistra, la tappa a destra */
+.profilo__percorso li {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  position: relative;
+  padding-left: 0.85rem;
+}
+.profilo__percorso li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.profilo__percorso li:last-child::before { background: var(--accent); }
+.profilo__percorso li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 2.5px;
+  top: calc(0.45em + 8px);
+  bottom: -0.5rem;
+  width: 1px;
+  background: var(--line);
+}
+.profilo__anno {
+  font-family: var(--font-num, ui-monospace, monospace);
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.profilo__tappa { display: flex; flex-direction: column; gap: 0.1rem; }
+.profilo__dove {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* formazione e pubblicazioni: titolo in evidenza, istituto sotto */
+.profilo__formazione li { display: flex; flex-direction: column; gap: 0.1rem; }
+.profilo__formazione strong { font-weight: 600; color: var(--ink); }
+
+/* le credenziali hanno un'etichetta: si vede a colpo d'occhio se è
+   un'iscrizione, una certificazione o un'abilitazione */
+.profilo__credenziali li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-soft);
+}
+.profilo__credenziali strong { font-weight: 600; color: var(--ink); font-size: var(--fs-xs); }
+.profilo__credenziale-tipo {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.profilo__credenziale-dettaglio { font-size: 0.7rem; color: var(--muted); }
+
+/* i risultati sono il cuore del profilo: elenco numerato, testo che respira */
+.profilo__risultati { counter-reset: fatto; gap: 0.6rem; }
+.profilo__risultati li {
+  counter-increment: fatto;
+  position: relative;
+  padding-left: 1.55rem;
+}
+.profilo__risultati li::before {
+  content: counter(fatto);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 1.05rem;
+  height: 1.05rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 900px) {
+  .team-profiles { grid-template-columns: 1fr; }
+  .profilo {
+    display: grid;
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .profilo__testata { position: sticky; top: 1.5rem; }
+  .profilo__ritratto { width: clamp(96px, 9vw, 132px); }
+}
+
+/* In stampa i profili sono un allegato: niente animazioni, niente ombre */
+@media print {
+  .profilo { break-inside: avoid; box-shadow: none; }
+  .profilo__credenziali li { background: none; }
+  .profilo__percorso li::after { display: none; }
+  .team-profiles { display: block; }
+  .profilo + .profilo { margin-top: 14pt; }
+}
+
 /* ------------------------------------------------- conferma del bonifico -- */
 /* Il secondo tempo: il riepilogo di ciò che si sta per confermare, e il campo
    del codice. Il riepilogo sta in una fascia, non in una tabella, perché è la
