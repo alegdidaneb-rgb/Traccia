@@ -2953,6 +2953,265 @@ body.is-staff-view #sicurezza { display: none !important; }
   .profilo + .profilo { margin-top: 14pt; }
 }
 
+/* ------------------------------------------------------- le tessere -- */
+/* Cosa sono queste e cosa non sono è la prima decisione del disegno, non
+   l'ultima. Una carta d'identità italiana ha una proporzione, un colore
+   istituzionale, un chip e un codice in basso: qui non c'è niente di tutto
+   questo, di proposito. La forma è quella di un badge da collo — verticale,
+   con il marchio in alto e la riga di avvertenza in fondo — che è un oggetto
+   che esiste in ogni ufficio e che nessuno confonde con un documento.
+
+   Le tre fasce (alto / centro / basso) non sono decorazione: tengono la riga
+   di avvertenza attaccata al bordo inferiore, dove sta sui badge veri, e
+   impediscono che il nome lungo di qualcuno la spinga fuori. */
+.section--tessere {
+  background: var(--ink-900);
+  color: #fff;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+/* Lo stesso alone della fascia scura, ma più basso: le tessere devono
+   staccarsi dal fondo, non galleggiarci sopra. */
+.section--tessere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 45% at 12% 0%, rgba(13, 107, 71, 0.26), transparent 60%),
+    radial-gradient(45% 40% at 95% 100%, rgba(201, 242, 107, 0.10), transparent 65%);
+}
+.section--tessere .h2 { color: #fff; }
+.section--tessere .lead { color: rgba(255, 255, 255, 0.68); }
+.section--tessere .eyebrow { color: var(--accent-lime); }
+.section--tessere .muted { color: rgba(255, 255, 255, 0.5); }
+
+.tessere {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  /* una colonna fino a 560, due fino a 900, tre sopra: nove tessere fanno
+     tre righe piene, che è anche il modo in cui si stampano */
+  grid-template-columns: 1fr;
+}
+
+.tessera {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* la proporzione di un badge: più alta che larga, ma non una carta */
+  aspect-ratio: 4 / 5;
+  /* Il contenuto si distribuisce lungo tutta la tessera invece di ammucchiarsi
+     in alto: su un badge il margine in mezzo è parte del disegno, uno spazio
+     vuoto in fondo è un errore. `space-between` ripartisce lo scarto fra le
+     fasce, e la riga di avvertenza resta incollata al bordo inferiore. */
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 0.9rem 0.8rem;
+  border-radius: 10px;
+  background: linear-gradient(168deg, #17171d 0%, #0b0b0f 78%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+/* La filigrana: il marchio grande, ruotato, quasi invisibile. Dà profondità
+   senza aggiungere un simbolo che possa essere letto come un emblema. */
+.tessera::after {
+  content: "T";
+  position: absolute;
+  right: -0.4rem;
+  bottom: -1.6rem;
+  font-family: var(--serif);
+  font-size: 7rem;
+  line-height: 1;
+  color: rgba(201, 242, 107, 0.07);
+  pointer-events: none;
+  z-index: 0;
+}
+.tessera > * { position: relative; z-index: 1; }
+
+.tessera__alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.tessera__marchio {
+  font-family: var(--serif);
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.tessera__numero {
+  font-family: var(--font-num);
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--accent-lime);
+  white-space: nowrap;
+}
+
+/* Il ritratto è centrato e grande: su un badge la fotografia è il primo
+   elemento, e il nome è la didascalia. 84px su una tessera da 300 è la
+   proporzione di un badge vero; a 64 il viso non si riconosce da lontano. */
+.tessera__foto {
+  align-self: center;
+  width: clamp(64px, 22vw, 84px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+  background: var(--ink-800);
+  /* il ritratto è ritagliato quadrato come nella pagina, ma qui ha una
+     cornice sottile: sulla tessera la foto è un elemento, non uno sfondo */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.tessera__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* le fotografie sono chiare, il fondo è nero: senza questo il ritratto
+     sembra incollato sopra. Il filter lo porta dentro la stessa luce. */
+  filter: saturate(0.92) contrast(1.02);
+}
+.tessera__foto--iniziali {
+  display: grid;
+  place-items: center;
+  background: var(--ink-soft);
+  color: var(--accent-lime);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.tessera__anagrafica { text-align: center; }
+.tessera__nome {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #fff;
+}
+.tessera__ruolo {
+  margin: 0.25rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--accent-lime);
+}
+.tessera__dal {
+  margin: 0.2rem 0 0;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+.tessera__revisione {
+  display: inline-block;
+  margin: 0.4rem 0 0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 242, 107, 0.4);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-lime);
+}
+
+/* Le aree di lavoro come etichette: sono il dato che riempie il centro senza
+   inventare niente. Su una riga sola non ci stanno sempre — «Revisione
+   contabile» è lunga — quindi vanno a capo e la tessera cresce in altezza
+   quanto serve, invece di troncare. */
+.tessera__aree {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+}
+.tessera__area {
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.56rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+.tessera__basso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: auto;
+}
+.tessera__lingue {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.tessera__lingue b {
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+/* L'avvertenza non è una nota legale a piè di pagina: sta sulla tessera, in
+   chiaro, dove chiunque la guardi la legge. È il motivo per cui questa
+   sezione può esistere. */
+.tessera__avvertenza {
+  display: block;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.16);
+  font-size: 0.55rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (min-width: 560px) {
+  .tessere { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .tessere { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+  .tessera { padding: 1rem 1.05rem 0.9rem; }
+  .tessera__nome { font-size: 1.05rem; }
+}
+
+/* In stampa le tessere sono un foglio di badge: tre per riga, niente ombre,
+   niente filigrana (l'inchiostro non la regge), e la tessera resta intera a
+   cavallo di due pagine solo se è più alta del foglio — che non è. */
+@media print {
+  .section--tessere {
+    background: #fff;
+    color: #000;
+    padding-block: 0;
+  }
+  .section--tessere::before { display: none; }
+  .section--tessere .h2, .section--tessere .lead,
+  .section--tessere .eyebrow { color: #000; }
+  .tessere { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8pt; }
+  .tessera {
+    break-inside: avoid;
+    box-shadow: none;
+    background: #fff;
+    border: 0.75pt solid #999;
+    color: #000;
+  }
+  .tessera::after { display: none; }
+  .tessera__marchio, .tessera__nome, .tessera__lingue b { color: #000; }
+  .tessera__numero, .tessera__ruolo { color: #444; }
+  .tessera__dal, .tessera__lingue, .tessera__avvertenza { color: #444; }
+  .tessera__revisione { border-color: #777; color: #333; }
+  .tessera__foto { box-shadow: none; }
+  .tessera__foto img { filter: grayscale(1); }
+}
+
 /* ------------------------------------------------- conferma del bonifico -- */
 /* Il secondo tempo: il riepilogo di ciò che si sta per confermare, e il campo
    del codice. Il riepilogo sta in una fascia, non in una tabella, perché è la
