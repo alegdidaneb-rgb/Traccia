@@ -142,7 +142,12 @@ def costruisci() -> str:
             "poi la riscrive questo script."
         )
     numeri = numero_interno(persone)
-    voci = "\n        ".join(tessera(p, numeri[p["id"]]) for p in persone)
+    # In pagina le tessere si leggono in ordine di arrivo in ufficio, non
+    # nell'ordine dell'array: così i numeri crescono da sinistra a destra e la
+    # sezione è una scala di anzianità. L'ordine dei *profili* resta quello dei
+    # dati, che è un'altra cosa — lì conta chi coordina, qui conta da quando.
+    ordinate = sorted(persone, key=lambda p: (int(p["dal"]), numeri[p["id"]]))
+    voci = "\n        ".join(tessera(p, numeri[p["id"]]) for p in ordinate)
     prima, resto = attuale.split(INIZIO, 1)
     _, dopo = resto.split(FINE, 1)
     return prima + INIZIO + "\n        " + voci + "\n        " + FINE + dopo
