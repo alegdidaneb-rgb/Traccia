@@ -85,6 +85,8 @@ test("team: ogni profilo ha ruolo, anni, aree e bio", () => {
       p.nome + " non dichiara lingue di lavoro");
     assert.ok(Array.isArray(p.strumenti) && p.strumenti.length >= 1,
       p.nome + " non dichiara strumenti");
+    assert.ok(Array.isArray(p.metodo) && p.metodo.length >= 2,
+      p.nome + " non dichiara come lavora (campo `metodo`)");
     assert.ok(/^[A-Z]{2}$/.test(p.iniziali),
       p.nome + " ha iniziali non valide: " + p.iniziali);
   });
@@ -165,6 +167,67 @@ test("team: i dati sono nel file, non scritti a mano nell'HTML", () => {
   const nomi = persone().map((p) => p.nome);
   const fuori = nomi.filter((n) => dentro.indexOf(n) === -1);
   assert.deepStrictEqual(fuori, [], "profili generati mancanti: " + fuori.join(", "));
+});
+
+test("team: il profilo dice come lavora, non cosa ha «ottenuto»", () => {
+  /* Fino alla revisione precedente ogni profilo aveva un campo `risultati`
+     con tre aneddoti numerati del tipo «ha bloccato sette consegne». Su
+     persone inventate quei numeri fingevano una referenza. Questo test tiene
+     fuori il registro da traguardo: niente campi `risultati`, e `metodo` che
+     parla al presente e non racconta un episodio. */
+  persone().forEach(function (p) {
+    assert.ok(!p.risultati,
+      p.nome + " ha ancora il campo `risultati`: gli aneddoti numerati vanno " +
+      "nel campo `metodo`, come criterio, non come traguardo");
+    p.metodo.forEach(function (m) {
+      assert.ok(!/^ha (firmato|bloccato|ridotto|ottenuto|costruito|ricostruito|trovato|scritto|dimostrato|portato|ricomposto|riscritto|gestito|impostato|reso)/i.test(m),
+        p.nome + ": il criterio è un racconto al passato («" + m.slice(0, 40) +
+        "…»). Il metodo si enuncia al presente.");
+      assert.ok(!/\b\d{2,}\b/.test(m),
+        p.nome + ": c'è un numero in un criterio di metodo («" + m.slice(0, 60) +
+        "…»). I numeri inventati sono la cosa che questa pagina non deve fare.");
+    });
+  });
+});
+
+test("team: le credenziali stanno in evidenza, non in fondo", () => {
+  /* Sono la prima cosa verificabile che un cliente cerca. La posizione nel
+     DOM è la prova che sono state spostate davvero e non solo colorate. */
+  const primo = TEAM.slice(TEAM.indexOf('<article class="profilo"'),
+                           TEAM.indexOf("</article>", TEAM.indexOf('<article class="profilo"')));
+  const iCred = primo.indexOf("profilo__credenziali");
+  const iMetodo = primo.indexOf("profilo__metodo");
+  const iPercorso = primo.indexOf("profilo__percorso");
+  assert.ok(iCred > -1, "il primo profilo non mostra credenziali");
+  assert.ok(iCred < iMetodo, "le credenziali vengono dopo il metodo");
+  assert.ok(iCred < iPercorso, "le credenziali vengono dopo il percorso");
+});
+
+test("tessere: ogni tessera porta al profilo che apre", () => {
+  /* Le tessere non sono una seconda presentazione delle stesse persone: sono
+     l'indice della pagina. Se un link non punta a un id esistente, l'indice
+     è rotto in silenzio. */
+  const dentro = TEAM.slice(TEAM.indexOf("<!-- team:tessere -->"),
+                            TEAM.indexOf("<!-- /team:tessere -->"));
+  const ancore = (dentro.match(/href="#([a-z-]+)"/g) || []).map(function (h) {
+    return h.slice(7, -1);
+  });
+  assert.strictEqual(ancore.length, persone().length,
+    "link nell'indice: " + ancore.length + ", persone: " + persone().length);
+  ancore.forEach(function (a) {
+    assert.ok(TEAM.indexOf('id="' + a + '"') > -1,
+      "la tessera punta a #" + a + " ma nessun profilo ha quell'id");
+  });
+});
+
+test("team: la pagina non ripete lo stesso blocco due volte", () => {
+  /* Il difetto da cui viene questa revisione: una sezione di tessere con le
+     stesse nove persone e poi nove schede che le ripetevano. Due elenchi
+     lunghi uguali, e il lettore scorre due volte la stessa cosa. */
+  const quanteSezioniTessere =
+    (TEAM.match(/<section[^>]*section--tessere/g) || []).length;
+  assert.strictEqual(quanteSezioniTessere, 1,
+    "sezioni di tessere nella pagina: " + quanteSezioniTessere + ", ne va una");
 });
 
 /* ------------------------------------------------------------ tessere -- */

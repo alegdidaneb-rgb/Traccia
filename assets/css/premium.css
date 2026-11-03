@@ -2685,10 +2685,14 @@ body.is-staff-view #sicurezza { display: none !important; }
   scroll-margin-top: 5rem;
 }
 
+/* La testata non è più una riga con la foto a fianco: è una colonna —
+   occhiello, nome, ruolo, aree, credenziali — che su schermo largo resta
+   appiccicata in alto mentre si scorre il merito. Chi legge un profilo lungo
+   non deve risalire per sapere di chi sta leggendo. */
 .profilo__testata {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 /* Il ritratto ha una misura fissa e un ritaglio quadrato: nove fotografie
@@ -2734,10 +2738,14 @@ body.is-staff-view #sicurezza { display: none !important; }
   color: var(--accent-ink);
   font-weight: 500;
 }
-.profilo__dal {
-  margin: 0.1rem 0 0;
-  font-size: 0.72rem;
-  color: var(--muted);
+.profilo__occhiello {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-num, ui-monospace, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
 }
 .profilo__aree { margin-top: 0.5rem; padding-top: 0; }
 
@@ -2824,11 +2832,11 @@ body.is-staff-view #sicurezza { display: none !important; }
   color: var(--muted);
 }
 .profilo__sezione:first-of-type { margin-top: 1.1rem; }
+.profilo__testata > .profilo__sezione:first-of-type { margin-top: 0.25rem; }
 
 .profilo__percorso,
 .profilo__formazione,
-.profilo__credenziali,
-.profilo__risultati {
+.profilo__credenziali {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -2887,18 +2895,26 @@ body.is-staff-view #sicurezza { display: none !important; }
 .profilo__formazione li { display: flex; flex-direction: column; gap: 0.1rem; }
 .profilo__formazione strong { font-weight: 600; color: var(--ink); }
 
-/* le credenziali hanno un'etichetta: si vede a colpo d'occhio se è
-   un'iscrizione, una certificazione o un'abilitazione */
-.profilo__credenziali li {
+/* Le credenziali stanno nella colonna di sinistra, sotto il nome, e non più in
+   fondo al profilo: sono la prima cosa verificabile che un cliente
+   istituzionale cerca, e in fondo erano un dettaglio. Sfondo pieno e bordo
+   perché devono leggersi come un blocco, non come un elenco qualsiasi. */
+.profilo__credenziali li,
+.profilo__credenziale {
   display: flex;
   flex-direction: column;
   gap: 0.12rem;
-  padding: 0.55rem 0.7rem;
+  padding: 0.6rem 0.75rem;
   border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
   border-radius: 8px;
   background: var(--bg-soft);
 }
-.profilo__credenziali strong { font-weight: 600; color: var(--ink); font-size: var(--fs-xs); }
+.profilo__credenziale-dettaglio em { font-style: normal; color: var(--accent-ink); }
+.profilo__credenziali strong,
+.profilo__credenziale-ente {
+  font-weight: 600; color: var(--ink); font-size: var(--fs-xs); line-height: 1.35;
+}
 .profilo__credenziale-tipo {
   font-size: 0.6rem;
   font-weight: 700;
@@ -2908,28 +2924,54 @@ body.is-staff-view #sicurezza { display: none !important; }
 }
 .profilo__credenziale-dettaglio { font-size: 0.7rem; color: var(--muted); }
 
-/* i risultati sono il cuore del profilo: elenco numerato, testo che respira */
-.profilo__risultati { counter-reset: fatto; gap: 0.6rem; }
-.profilo__risultati li {
-  counter-increment: fatto;
-  position: relative;
-  padding-left: 1.55rem;
+/* L'ambito e il metodo: tre criteri operativi. Elenco numerato sobrio, senza
+   il pallino scuro che aveva senso per i «risultati» e qui pesa troppo. */
+.profilo__metodo {
+  counter-reset: criterio;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--ink-soft);
 }
-.profilo__risultati li::before {
-  content: counter(fatto);
+.profilo__metodo li {
+  counter-increment: criterio;
+  position: relative;
+  padding-left: 1.6rem;
+}
+.profilo__metodo li::before {
+  content: counter(criterio);
   position: absolute;
   left: 0;
-  top: 0.05em;
-  width: 1.05rem;
-  height: 1.05rem;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
-  font-size: 0.6rem;
-  font-weight: 700;
+  top: 0.02em;
+  width: 1.1rem;
+  font-family: var(--font-num, ui-monospace, monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--line);
+}
+
+/* La carriera (percorso, formazione, pubblicazioni) è la parte che si legge
+   solo se la persona interessa: sta sotto, su due colonne dove c'è spazio. */
+.profilo__carriera {
+  display: grid;
+  gap: 0 1.75rem;
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line-soft);
+}
+.profilo__blocco { min-width: 0; }
+@media (min-width: 700px) {
+  /* non metà e metà: i titoli del percorso («Controllo qualità, documentazione
+     tecnica») sono più lunghi di quelli della formazione, e a colonne uguali
+     andavano a capo tre volte mentre l'altra colonna restava vuota */
+  .profilo__carriera { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 }
 
 @media (min-width: 900px) {
@@ -2947,7 +2989,9 @@ body.is-staff-view #sicurezza { display: none !important; }
 /* In stampa i profili sono un allegato: niente animazioni, niente ombre */
 @media print {
   .profilo { break-inside: avoid; box-shadow: none; }
+  .profilo__testata { flex-direction: row; align-items: flex-start; }
   .profilo__credenziali li { background: none; }
+  .profilo__metodo li::before { color: #000; }
   .profilo__percorso li::after { display: none; }
   .team-profiles { display: block; }
   .profilo + .profilo { margin-top: 14pt; }
@@ -2987,6 +3031,14 @@ body.is-staff-view #sicurezza { display: none !important; }
 .section--tessere .eyebrow { color: var(--accent-lime); }
 .section--tessere .muted { color: rgba(255, 255, 255, 0.5); }
 
+/* la nota sotto la griglia: dice che le tessere non sono documenti, in una
+   riga, invece di ripeterlo in un paragrafo di presentazione */
+.tessere__nota {
+  margin-top: 1.5rem;
+  max-width: 62ch;
+  color: rgba(255, 255, 255, 0.42);
+}
+
 .tessere {
   list-style: none;
   margin: 0;
@@ -2998,13 +3050,23 @@ body.is-staff-view #sicurezza { display: none !important; }
   grid-template-columns: 1fr;
 }
 
-.tessera {
+.tessera { display: flex; }
+
+/* La tessera è un link: è l'indice della pagina, non una galleria. Il link si
+   prende tutta la superficie del badge — senza questo l'ancora resterebbe un
+   elemento inline e il testo prenderebbe il blu e la sottolineatura di
+   default, che su fondo nero sarebbero illeggibili. */
+.tessera__link {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
   /* la proporzione di un badge: più alta che larga, ma non una carta */
   aspect-ratio: 4 / 5;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
   /* Il contenuto si distribuisce lungo tutta la tessera invece di ammucchiarsi
      in alto: su un badge il margine in mezzo è parte del disegno, uno spazio
      vuoto in fondo è un errore. `space-between` ripartisce lo scarto fra le
@@ -3021,7 +3083,7 @@ body.is-staff-view #sicurezza { display: none !important; }
 
 /* La filigrana: il marchio grande, ruotato, quasi invisibile. Dà profondità
    senza aggiungere un simbolo che possa essere letto come un emblema. */
-.tessera::after {
+.tessera__link::after {
   content: "T";
   position: absolute;
   right: -0.4rem;
@@ -3033,7 +3095,21 @@ body.is-staff-view #sicurezza { display: none !important; }
   pointer-events: none;
   z-index: 0;
 }
-.tessera > * { position: relative; z-index: 1; }
+.tessera__link > * { position: relative; z-index: 1; }
+
+/* Un badge cliccabile deve dirlo: al passaggio si solleva di un pixel e la
+   cornice si accende. Il focus da tastiera ha un contorno vero, non un
+   `outline: none` travestito. */
+.tessera__link:hover { transform: translateY(-2px); }
+.tessera__link:hover,
+.tessera__link:focus-visible { box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255,255,255,.12),
+  0 0 0 1px rgba(201, 242, 107, 0.45); }
+.tessera__link:focus-visible { outline: 2px solid var(--accent-lime); outline-offset: 3px; }
+.tessera__link:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .tessera__link { transition: none; }
+  .tessera__link:hover { transform: none; }
+}
 
 .tessera__alto {
   display: flex;
@@ -3196,14 +3272,14 @@ body.is-staff-view #sicurezza { display: none !important; }
   .section--tessere .h2, .section--tessere .lead,
   .section--tessere .eyebrow { color: #000; }
   .tessere { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8pt; }
-  .tessera {
+  .tessera__link {
     break-inside: avoid;
     box-shadow: none;
     background: #fff;
     border: 0.75pt solid #999;
     color: #000;
   }
-  .tessera::after { display: none; }
+  .tessera__link::after { display: none; }
   .tessera__marchio, .tessera__nome, .tessera__lingue b { color: #000; }
   .tessera__numero, .tessera__ruolo { color: #444; }
   .tessera__dal, .tessera__lingue, .tessera__avvertenza { color: #444; }

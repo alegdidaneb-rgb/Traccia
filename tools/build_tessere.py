@@ -113,7 +113,7 @@ def tessera(p: dict, numero: str) -> str:
     if p.get("revisione"):
         revisione = ('\n            <p class="tessera__revisione">'
                      f'{esc(p["revisione"])}</p>')
-    return f"""<li class="tessera" data-persona="{esc(p['id'])}">
+    return f"""<li class="tessera">\n        <a class="tessera__link" href="#{esc(p['id'])}" data-persona="{esc(p['id'])}">
           <div class="tessera__alto">
             <span class="tessera__marchio">Traccia</span>
             <span class="tessera__numero">{esc(numero)}</span>
@@ -129,6 +129,7 @@ def tessera(p: dict, numero: str) -> str:
             <span class="tessera__lingue">Lingue di lavoro <b>{esc(lingue)}</b></span>
             <span class="tessera__avvertenza">Tessera interna — non è un documento di identità</span>
           </div>
+        </a>
         </li>"""
 
 

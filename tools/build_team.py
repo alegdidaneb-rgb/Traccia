@@ -98,26 +98,57 @@ def ritratto(p: dict) -> str:
     )
 
 
-def profilo(p: dict) -> str:
+def profilo(p: dict, numero: str) -> str:
+    """Una scheda completa.
+
+    L'ordine non è arbitrario: prima chi è (ritratto, nome, ruolo, aree), poi
+    **cosa può dimostrare** (le credenziali, subito sotto la testata: è la
+    prima cosa che un cliente istituzionale cerca, e prima stava in fondo come
+    un dettaglio), poi cosa fa e come lavora, e in coda il percorso di carriera,
+    che è la parte che si legge solo se la persona interessa davvero.
+
+    La colonna di sinistra — ritratto, nome, aree, credenziali — è appiccicata
+    in alto su schermo largo: scorrendo il merito di un profilo lungo, il nome
+    resta a vista e non si perde di chi si sta leggendo.
+    """
     aree = "".join(
         f'<span class="member__tag">{esc(a)}</span>' for a in p.get("aree", [])
     )
-    lingue = "".join(
-        f'<li>{esc(l)}</li>' for l in p.get("lingue", [])
-    )
-    strumenti = "".join(
-        f"<li>{esc(s)}</li>" for s in p.get("strumenti", [])
-    )
-    revisione = ""
-    if p.get("revisione"):
-        revisione = (
-            '\n      <p class="profilo__revisione">'
-            '<span class="profilo__revisione-label">Ruolo di controllo</span>'
-            f"{esc(p['revisione'])}"
-            "</p>"
+
+    # ------------------------------------------------------- credenziali --
+    # In evidenza sotto la testata: tipo, ente per esteso, riferimento e stato.
+    # Lo stato non è decorazione — «in corso» e «aggiornata nel 2025» sono due
+    # situazioni diverse e chi legge ha diritto di distinguerle.
+    credenziali = ""
+    if p.get("credenziali"):
+        voci = "".join(
+            '<li class="profilo__credenziale">'
+            f'<span class="profilo__credenziale-tipo">{esc(c["tipo"])}</span>'
+            f'<strong class="profilo__credenziale-ente">{esc(c["ente"])}</strong>'
+            f'<span class="profilo__credenziale-dettaglio">{esc(c.get("numero", ""))}'
+            + (f' · <em>{esc(c["valida"])}</em>' if c.get("valida") else "")
+            + "</span></li>"
+            for c in p["credenziali"]
+        )
+        credenziali = (
+            '\n      <h4 class="profilo__sezione">Credenziali</h4>'
+            f'\n      <ul class="profilo__credenziali">{voci}</ul>'
         )
 
-    # ------------------------------------------------------ percorso --
+    # ----------------------------------------------------------- metodo --
+    # Tre criteri operativi. Prima qui c'era «Cosa ha fatto qui», tre aneddoti
+    # con i numeri: «ha bloccato sette consegne», «ha ridotto da nove a quattro
+    # giorni». Su persone inventate quei numeri fingevano una referenza. Il
+    # criterio si può leggere e giudicare; il numero no.
+    metodo = ""
+    if p.get("metodo"):
+        voci = "".join(f"<li>{esc(m)}</li>" for m in p["metodo"])
+        metodo = (
+            '\n      <h4 class="profilo__sezione">Ambito e metodo</h4>'
+            f'\n      <ul class="profilo__metodo">{voci}</ul>'
+        )
+
+    # ----------------------------------------------------------- percorso --
     percorso = ""
     if p.get("percorso"):
         voci = "".join(
@@ -127,11 +158,12 @@ def profilo(p: dict) -> str:
             for v in p["percorso"]
         )
         percorso = (
+            '\n        <div class="profilo__blocco">'
             '\n        <h4 class="profilo__sezione">Percorso</h4>'
-            f'\n        <ol class="profilo__percorso">{voci}</ol>'
+            f'\n        <ol class="profilo__percorso">{voci}</ol></div>'
         )
 
-    # ---------------------------------------------------- formazione --
+    # ---------------------------------------------------------- formazione --
     formazione = ""
     if p.get("formazione"):
         voci = "".join(
@@ -140,35 +172,12 @@ def profilo(p: dict) -> str:
             for v in p["formazione"]
         )
         formazione = (
+            '\n        <div class="profilo__blocco">'
             '\n        <h4 class="profilo__sezione">Formazione</h4>'
-            f'\n        <ul class="profilo__formazione">{voci}</ul>'
+            f'\n        <ul class="profilo__formazione">{voci}</ul></div>'
         )
 
-    # --------------------------------------------------- credenziali --
-    credenziali = ""
-    if p.get("credenziali"):
-        voci = "".join(
-            '<li><span class="profilo__credenziale-tipo">' + esc(c["tipo"]) + "</span>"
-            f'<strong>{esc(c["ente"])}</strong>'
-            f'<span class="profilo__credenziale-dettaglio">{esc(c.get("numero", ""))}'
-            f'{" · " + esc(c["valida"]) if c.get("valida") else ""}</span></li>'
-            for c in p["credenziali"]
-        )
-        credenziali = (
-            '\n        <h4 class="profilo__sezione">Credenziali</h4>'
-            f'\n        <ul class="profilo__credenziali">{voci}</ul>'
-        )
-
-    # ----------------------------------------------------- risultati --
-    risultati = ""
-    if p.get("risultati"):
-        voci = "".join(f"<li>{esc(r)}</li>" for r in p["risultati"])
-        risultati = (
-            '\n        <h4 class="profilo__sezione">Cosa ha fatto qui</h4>'
-            f'\n        <ul class="profilo__risultati">{voci}</ul>'
-        )
-
-    # ------------------------------------------------- pubblicazioni --
+    # ------------------------------------------------------- pubblicazioni --
     pubblicazioni = ""
     if p.get("pubblicazioni"):
         voci = "".join(
@@ -177,34 +186,47 @@ def profilo(p: dict) -> str:
             for x in p["pubblicazioni"]
         )
         pubblicazioni = (
+            '\n        <div class="profilo__blocco">'
             '\n        <h4 class="profilo__sezione">Pubblicazioni</h4>'
-            f'\n        <ul class="profilo__formazione">{voci}</ul>'
+            f'\n        <ul class="profilo__formazione">{voci}</ul></div>'
+        )
+
+    # ------------------------------------------------- dettagli operativi --
+    dettagli = (
+        '<dl class="profilo__dettagli">'
+        "<div><dt>Lingue di lavoro</dt><dd><ul class=\"profilo__elenco\">"
+        + "".join(f"<li>{esc(l)}</li>" for l in p.get("lingue", []))
+        + "</ul></dd></div>"
+        "<div><dt>Strumenti</dt><dd><ul class=\"profilo__elenco\">"
+        + "".join(f"<li>{esc(x)}</li>" for x in p.get("strumenti", []))
+        + "</ul></dd></div></dl>"
+    )
+
+    revisione = ""
+    if p.get("revisione"):
+        revisione = (
+            '\n      <p class="profilo__revisione">'
+            '<span class="profilo__revisione-label">Ruolo di controllo</span>'
+            f"{esc(p['revisione'])}</p>"
         )
 
     return f"""<article class="profilo" id="{esc(p['id'])}">
       <div class="profilo__testata">
       {ritratto(p)}
         <div class="profilo__anagrafica">
+          <p class="profilo__occhiello">{esc(numero)} · dal {p['dal']}</p>
           <h3 class="profilo__nome">{esc(p['nome'])}</h3>
           <p class="profilo__ruolo">{esc(p['ruolo'])}</p>
-          <p class="profilo__dal">Nell'ufficio dal {p['dal']}</p>
           <div class="member__tags profilo__aree">{aree}</div>
-        </div>
+        </div>{credenziali}
       </div>
 
       <div class="profilo__corpo">
-        <p class="profilo__bio">{esc(p['bio'])}</p>
+        <p class="profilo__bio">{esc(p['bio'])}</p>{metodo}{revisione}
 
-        <dl class="profilo__dettagli">
-          <div>
-            <dt>Lingue di lavoro</dt>
-            <dd><ul class="profilo__elenco">{lingue}</ul></dd>
-          </div>
-          <div>
-            <dt>Strumenti</dt>
-            <dd><ul class="profilo__elenco">{strumenti}</ul></dd>
-          </div>
-        </dl>{percorso}{formazione}{credenziali}{risultati}{pubblicazioni}{revisione}
+        <div class="profilo__carriera">{percorso}{formazione}{pubblicazioni}
+        </div>
+        {dettagli}
       </div>
     </article>"""
 
@@ -216,7 +238,9 @@ def costruisci() -> str:
         raise SystemExit(
             "team.html non contiene i marcatori " + INIZIO + " / " + FINE
         )
-    profili = "\n\n".join(profilo(p) for p in persone)
+    from build_tessere import numero_interno
+    numeri = numero_interno(persone)
+    profili = "\n\n".join(profilo(p, numeri[p["id"]]) for p in persone)
     prima, resto = attuale.split(INIZIO, 1)
     _, dopo = resto.split(FINE, 1)
     return prima + INIZIO + "\n" + profili + "\n      " + FINE + dopo

@@ -694,7 +694,12 @@ dice cosa siamo e cosa non siamo, e gli importi inventati (9,7 Mln €,
 
 Punti da rivedere, in ordine di rischio:
 
-1. **Team** (`chi-siamo.html` e sezione team in home): nomi, ruoli, biografie
+1. **Team** (`team.html`, `chi-siamo.html` e sezione team in home): nomi, ruoli,
+   biografie. La pagina `team.html` è generata da `assets/js/team.js`: formazione,
+   credenziali (ordini professionali, registri dei revisori) e pubblicazioni sono
+   inventate come i nomi, e su una pagina che dichiara «credenziali verificabili»
+   sono la parte più delicata. Sostituirle con i dati reali dell'ufficio prima
+   della pubblicazione — o togliere la sezione, che è peggio ma è onesto.
 2. **Risultati** (`casi.html`): i quattro casi con i loro importi
 3. **Recapiti**: `ciao@traccia.it`, `assistenza@traccia.it`, PEC, telefono
    (`tel:+3901100000000` è ancora un segnaposto)
