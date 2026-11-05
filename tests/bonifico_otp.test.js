@@ -189,4 +189,42 @@ test("chiudere la modale con una conferma aperta restituisce i soldi", () => {
     "chiudere deve rinunciare: altrimenti i soldi restano fermi dieci minuti");
 });
 
+/* ------------------------------------------------------ promesse al cliente -- */
+/* Il progetto non ha un canale di posta configurato: il codice lo genera la
+   console riservata e lo comunica a voce un analista. La pagina diceva invece
+   «Ti abbiamo mandato un codice di sei cifre a …», e sotto il campo invitava a
+   controllare la posta indesiderata. Due affermazioni false: il cliente
+   aspettava una email che nessuno avrebbe mai spedito, e concludeva che il
+   sito era rotto. Questi test tengono la pagina onesta finché l'invio
+   automatico non esisterà davvero. */
+test("il pannello del codice non promette una email che non parte", () => {
+  const zona = APP.slice(APP.indexOf("data-bonifico-conferma"), APP.indexOf("data-receipt-modal"));
+  const testo = zona.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+
+  assert.ok(!/ti abbiamo mandato/i.test(testo),
+    "la pagina non deve dire che il codice è stato inviato: nessun servizio di posta è configurato");
+  assert.ok(!/ti abbiamo inviato/i.test(testo),
+    "la pagina non deve dire che il codice è stato inviato: nessun servizio di posta è configurato");
+  assert.ok(!/controlla la casella|posta indesiderata/i.test(testo),
+    "non deve mandare il cliente a cercare un'email che non esiste");
+
+  assert.ok(/analista/i.test(testo),
+    "deve dire chi comunica il codice: un analista, non un'email automatica");
+});
+
+test("il suggerimento sul campo dice cosa fare se il codice non arriva", () => {
+  const zona = APP.slice(APP.indexOf("data-bonifico-conferma"), APP.indexOf("data-receipt-modal"));
+  assert.ok(/assistenza@traccia\.it\.com/.test(zona),
+    "serve un recapito a cui scrivere quando il codice non arriva");
+});
+
+test("il dominio dell'invio non è promesso fuori dalla sua fonte", () => {
+  /* L'indirizzo compare nel testo di aiuto, quindi non deve contraddire la
+     configurazione: se un giorno cambia, si cambia in un posto solo e questo
+     test indica dove. */
+  const cfg = require("fs").readFileSync(
+    require("path").join(__dirname, "..", "assets/js/config.js"), "utf8");
+  assert.ok(/supabaseUrl/.test(cfg), "config.js non è più quello che il sito carica");
+});
+
 module.exports = casi;

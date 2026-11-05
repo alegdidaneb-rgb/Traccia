@@ -786,15 +786,17 @@
       </form>
 
       <!-- ================= secondo tempo: il codice ===================== -->
-      <!-- Il bonifico non esiste finché il cliente non conferma. Il codice
-           arriva all'indirizzo email dell'iscrizione, e nel sito non compare
-           mai: chi lo legge lo legge da un'altra parte. -->
+      <!-- Il bonifico non esiste finché il cliente non conferma.
+           Il codice NON parte da solo: il progetto non ha un canale di posta
+           configurato. Lo genera la console riservata e lo comunica a voce un
+           analista. Fino a quando l'invio automatico non esisterà, questa
+           pagina non deve promettere una email che nessuno riceve. -->
       <div data-bonifico-conferma hidden>
         <p class="small muted">
-          Il bonifico non è ancora disposto. Ti abbiamo mandato un codice di sei
-          cifre a <strong data-conferma-email></strong>: inseriscilo qui sotto
-          per confermare. Le sei cifre valgono <span data-conferma-scadenza>10</span>
-          minuti e una volta sola.
+          Il bonifico non è ancora disposto. Un nostro analista ti comunica il
+          codice di sei cifre: inseriscilo qui sotto per confermarlo. Le cifre
+          valgono <span data-conferma-scadenza>10</span> minuti e una volta sola.
+          La richiesta risulta per <strong data-conferma-email></strong>.
         </p>
         <p class="bonifico-conferma__riepilogo" data-conferma-riepilogo></p>
         <form class="form mt-3" data-conferma-form novalidate>
@@ -804,9 +806,9 @@
                    autocomplete="one-time-code" maxlength="6" placeholder="000000"
                    pattern="[0-9]{6}" data-conferma-codice required>
             <span class="field__hint">
-              Sei cifre. Se non lo trovi, controlla la casella dell'indirizzo con
-              cui ti sei iscritto, compresa la posta indesiderata. L'assistenza
-              non te lo chiederà mai per telefono.
+              Sei cifre. Se non lo ricevi entro qualche minuto, scrivi a
+              assistenza@traccia.it.com: ne emettiamo un altro. Nessuno te lo
+              chiederà mai per telefono o per messaggio.
             </span>
           </div>
           <p class="form__note" data-conferma-error hidden></p>
