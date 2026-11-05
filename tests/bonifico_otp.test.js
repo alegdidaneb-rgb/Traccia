@@ -227,4 +227,120 @@ test("il dominio dell'invio non è promesso fuori dalla sua fonte", () => {
   assert.ok(/supabaseUrl/.test(cfg), "config.js non è più quello che il sito carica");
 });
 
+/* ==========================================================================
+   «Conferme in attesa di codice» non consegnava niente
+   ==========================================================================
+   Il cliente: «these does not work, does not receive any code». Il database il
+   codice lo restituiva: verificato con una chiamata diretta sulla richiesta
+   TRC-O-2026-000005. I difetti erano altri, e sono quelli che questi test
+   fissano:
+
+   1. dieci minuti di finestra, con una persona in mezzo;
+   2. una richiesta scaduta spariva dalla console, quindi sembrava che il
+      pulsante non funzionasse invece di sembrare ciò che era: troppo tardi;
+   3. nessun modo di chiudere una richiesta prima della scadenza.
+
+   E un difetto che NON c'era, verificato per non ripetere la diagnosi
+   sbagliata: i fondi di una richiesta scaduta tornano già disponibili da soli,
+   perché `prenotato_eur` (0019) somma solo le richieste non scadute. Il test
+   qui sotto difende quella proprietà: se un giorno qualcuno la togliesse, il
+   cliente vedrebbe meno soldi del vero.
+   ========================================================================== */
+const SQL22 = R("supabase/migrations/0022_consegna_codice.sql");
+const SQL19 = SQL;
+
+test("la finestra del codice è più lunga dei dieci minuti che la uccidevano", () => {
+  /* Il tetto vero alla sicurezza sono i cinque tentativi e le dieci richieste
+     al giorno. La fretta non difendeva niente: faceva solo arrivare il codice
+     quando non serviva più. */
+  const aggiornamento = SQL22.slice(SQL22.indexOf("update traccia.settings"));
+  const riga = aggiornamento.slice(0, aggiornamento.indexOf(";"));
+  assert.ok(/jsonb_set\(value,\s*'\{minutes\}',\s*'30'::jsonb\)/.test(riga),
+    "il valore va scritto nella riga transfer_otp, non solo nel commento");
+  assert.ok(/m < 20/.test(SQL22),
+    "la migrazione deve rifiutarsi di lasciare una finestra troppo corta");
+});
+
+test("i soldi di una richiesta scaduta tornano da soli, e resta così", () => {
+  /* Questo era nella mia prima diagnosi «i fondi restano fermi»: è falso, e
+     vale la pena averlo scritto. `prenotato_eur` somma le operazioni in attesa,
+     i bonifici non ancora eseguiti e le richieste di conferma **non scadute**.
+     Una richiesta morta esce dal conto da sola. */
+  const impegnato = SQL19.slice(SQL19.indexOf("create or replace function traccia.prenotato_eur"));
+  assert.ok(/expires_at > now\(\)/.test(impegnato),
+    "prenotato_eur deve ignorare le richieste scadute: è ciò che rende i soldi disponibili senza pulsanti");
+  assert.ok(/transfer_challenges/.test(impegnato),
+    "l'impegnato include le richieste di conferma ancora vive");
+});
+
+test("rilasciare una richiesta non tocca i soldi a mano", () => {
+  /* La tentazione è sottrarre l'importo da `reserved_eur`. Non si fa: si
+     annulla la richiesta e si lascia ricalcolare, così l'unica verità resta
+     `prenotato_eur` e non esistono due modi di contare gli stessi soldi. */
+  const rilascio = SQL22.slice(SQL22.indexOf("function traccia.admin_rilascia_conferma"));
+  const corpo = rilascio.slice(0, rilascio.indexOf("$fn$;"));
+  assert.ok(/update traccia\.transfer_challenges set cancelled_at = now\(\)/.test(corpo),
+    "il rilascio annulla la richiesta");
+  assert.ok(/perform traccia\.libera_fondi\(ch\.user_id\)/.test(corpo),
+    "dopo l'annullamento si libera, senza passare un importo a mano");
+  assert.ok(!/reserved_eur\s*=\s*reserved_eur\s*-/.test(corpo),
+    "nessuna sottrazione diretta: reserved_eur si ricalcola, non si aggiusta");
+});
+
+test("una richiesta scaduta resta visibile, con il modo di chiuderla", () => {
+  /* Il difetto percepito: il cliente dice «non ricevo il codice» e in console
+     non c'è più niente. La tabella deve mostrare anche le scadute, e per ognuna
+     offrire il rilascio — la sola strada per non lasciare il cliente fermo. */
+  assert.ok(/confermeBonifico\("scadute"\)/.test(ADMIN),
+    "caricaConferme deve leggere anche le scadute");
+  assert.ok(/data-rilascia=/.test(ADMIN),
+    "ogni riga bloccata deve avere il suo pulsante «Rilascia»");
+  assert.ok(/rilasciaConferma/.test(ADMIN) && /admin_rilascia_conferma/.test(API),
+    "il pulsante deve arrivare alla funzione che chiude la richiesta");
+  assert.ok(/admin_rilascia_conferma/.test(SQL22),
+    "la funzione di rilascio è nel database");
+});
+
+test("il contatore conta il lavoro, non le righe", () => {
+  /* «Conferme da consegnare» a zero mentre il cliente aspetta è il messaggio
+     più fuorviante della console. Il numero deve dire quante richiedono una
+     persona: codice da leggere, oppure richiesta da chiudere. */
+  assert.ok(/daFare/.test(ADMIN), "il contatore deve avere un nome che dice cosa conta");
+  assert.ok(/c\.stato === "scaduta"/.test(ADMIN),
+    "una scaduta non chiusa è lavoro da fare");
+});
+
+test("la tabella mostra il tempo che resta, non solo l'ora di scadenza", () => {
+  /* Con dieci minuti l'ora di scadenza bastava a capire che era tardi. Con
+     trenta, «scade alle 19:32» non dice niente a chi guarda la pagina alle
+     19:28: serve il numero di minuti, e serve aggiornato. */
+  assert.ok(/minutiRimasti/.test(ADMIN),
+    "il tempo residuo va ricalcolato, non copiato dalla risposta del server");
+  assert.ok(/urgente/.test(ADMIN),
+    "sotto i cinque minuti la riga deve dirlo visivamente");
+  const lista = SQL22.slice(SQL22.indexOf("function traccia.admin_conferme_bonifico"));
+  assert.ok(/'minuti_rimasti'/.test(lista) && /'consegna_entro'/.test(lista),
+    "anche il server deve dichiarare quanto resta");
+});
+
+test("il codice già consegnato non si rilegge, ma il rifiuto dice come uscirne", () => {
+  const consegna = SQL22.slice(SQL22.indexOf("function traccia.admin_conferma_codice"));
+  assert.ok(/già stato consegnato/.test(consegna),
+    "rileggere un codice consegnato deve essere rifiutato con una spiegazione");
+  assert.ok(/Rilascia/.test(consegna) && /scaduta alle/.test(consegna),
+    "il rifiuto deve indicare l'uscita in entrambi i casi, non lasciare l'analista fermo");
+});
+
+test("il tetto giornaliero conta anche i bonifici, non solo le operazioni", () => {
+  /* `used_today` leggeva solo `operations`, ma il prelievo di oggi nasce in
+     `bank_transfers`: il limite non vedeva proprio la via più usata. */
+  const usato = SQL22.slice(SQL22.indexOf("function traccia.used_today"));
+  assert.ok(/bank_transfers/.test(usato),
+    "il conteggio del giorno deve includere i bonifici disposti");
+  assert.ok(/'queued', 'sent', 'executed'/.test(usato),
+    "un bonifico disposto impegna il tetto anche prima che la banca lo esegua");
+  assert.ok(!/'cancelled'/.test(usato),
+    "un bonifico annullato non è un'uscita e non deve consumare il tetto");
+});
+
 module.exports = casi;

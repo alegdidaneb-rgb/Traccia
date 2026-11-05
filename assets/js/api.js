@@ -282,6 +282,9 @@
       return call("admin_conferme_bonifico", { p_stato: stato || "aperte" });
     },
     codiceConferma: function (id) { return call("admin_conferma_codice", { p_id: id }); },
+    /* Chiudere una richiesta che il cliente non userà più. È l'unico modo per
+       restituirgli subito il disponibile senza aspettare la scadenza. */
+    rilasciaConferma: function (id) { return call("admin_rilascia_conferma", { p_id: id }); },
     scadiConferme: function () { return call("scadi_conferme_bonifico", {}); },
     esitoBonifico: function (id, esito, codice, messaggio) {
       return call("admin_bonifico_esito", {
