@@ -1451,7 +1451,7 @@
           "<b>" + ui.esc(p.name || "Traccia") + "</b>" +
           '<div class="xs muted">' + ui.esc(p.address || "") + "</div>" +
           '<div class="xs muted">P.IVA ' + ui.esc(p.vat || "—") +
-            " · PEC " + ui.esc(p.pec || "—") + "</div>";
+            " · Email " + ui.esc(p.email || "assistenza@traccia.it.com") + "</div>";
       }
       var st = statoBonifico(r);
       if (corpo) {
