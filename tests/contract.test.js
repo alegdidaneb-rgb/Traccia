@@ -19,7 +19,7 @@ function contratto(over) {
   const base = {
     number: "TRC-2026-0001", status: "generated", version: "2.0",
     generated_at: 1793460000, accepted_at: null,
-    provider: { name: "ERSEL SPA", vat: "06900230018", pec: "traccia@pec.it",
+    provider: { name: "ERSEL SPA", vat: "06900230018", email: "assistenza@traccia.it.com",
                 address: "Piazza Solferino, 11 - 10121 Torino (TO)" },
     client: { name: "Cliente Prova", email: "cliente@example.it", case_ref: "T-1000-2026",
               iban_formatted: "IT00 A000", kyc_level: 1 },

@@ -117,7 +117,7 @@ accettato +
 "      <b>" + esc(p.name || "—") + "</b><br>" +
 "      P.IVA / Codice Fiscale " + esc(p.vat || "—") + "<br>" +
 "      Sede legale: " + sede + "<br>" +
-"      PEC " + esc(p.pec || "—") +
+"      Email " + esc(p.email || "assistenza@traccia.it.com") +
 "    </div>" +
 "    <div>" +
 '      <span class="ctr__label">Cliente</span>' +
@@ -191,7 +191,8 @@ accettato +
 "      <h2>6. Recesso e durata</h2>" +
 "      <p>Il Cliente può recedere senza motivazione entro " +
 "      <b>" + esc(t.recesso_giorni || 14) + " giorni</b> dalla conclusione del" +
-"      presente contratto, con comunicazione scritta alla PEC del Prestatore." +
+"      presente contratto, con comunicazione scritta all'indirizzo email del" +
+"      Prestatore indicato qui sopra (assistenza@traccia.it.com)." +
 "      In tal caso resta dovuta la quota di apertura per le attività già svolte" +
 "      e nessuna quota di successo. Il contratto si conclude con la chiusura" +
 "      della pratica o con il recesso di una delle parti.</p>" +

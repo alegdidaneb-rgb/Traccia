@@ -88,7 +88,7 @@ Da quel momento ogni push su `main` ripubblica il sito.
 
 ### 1. Imposta il dominio reale
 
-Nel progetto Vercel → **Settings → Domains** → aggiungi `traccia.it`.
+Nel progetto Vercel → **Settings → Domains** → aggiungi `traccia.it.com`.
 Poi, nel pannello del registrar:
 
 | Tipo | Nome | Valore |
@@ -96,7 +96,7 @@ Poi, nel pannello del registrar:
 | A | `@` | `76.76.21.21` |
 | CNAME | `www` | `cname.vercel-dns.com` |
 
-Verifica con `dig traccia.it` dopo qualche ora.
+Verifica con `dig traccia.it.com` dopo qualche ora.
 
 ### 2. Aggiorna gli URL assoluti
 
@@ -163,7 +163,7 @@ redirect di autenticazione Supabase, imposta il Site URL in
 
 Il sito **non pubblica più account di prova**. Fino al #16 la schermata di
 accesso elencava quattro indirizzi con la password accanto, compreso
-`master@traccia.it`: chiunque aprisse il link aveva la console degli analisti,
+`master@traccia.it.com`: chiunque aprisse il link aveva la console degli analisti,
 senza dover indovinare niente. Non era una funzione da nascondere con il CSS —
 le credenziali non devono stare in un file che il browser scarica.
 
@@ -172,7 +172,7 @@ Gli account dimostrativi (`luca.bianchi`, `giulia.rossi`, `elena.ferrari`,
 password erano state scritte su una pagina pubblica e non c'era modo di sapere
 chi le avesse lette. Le sessioni aperte sono state chiuse.
 
-Restano due account amministrativi: `master@traccia.it` e `ops@traccia.it`.
+Restano due account amministrativi: `master@traccia.it.com` e `ops@traccia.it.com`.
 
 **Le loro password non sono scritte qui, e non devono esserlo.** Questo file sta
 in un repository pubblico: qualunque password scritta in questo file è una
@@ -185,11 +185,11 @@ Per impostarle, dalla SQL Editor del progetto:
 ```sql
 update traccia.users
 set password_hash = extensions.crypt('LA-PASSWORD-SCELTA', extensions.gen_salt('bf', 10))
-where email = 'master@traccia.it';
+where email = 'master@traccia.it.com';
 
 -- e chiude le sessioni già aperte con la vecchia
 update traccia.sessions set expires_at = now()
-where user_id = (select id from traccia.users where email = 'master@traccia.it');
+where user_id = (select id from traccia.users where email = 'master@traccia.it.com');
 ```
 
 Conservale in un gestore di password. Se una di queste password finisce in un
@@ -273,7 +273,7 @@ l'obbligazione di mezzi e i limiti espliciti) e **pagamenti** (quota di apertura
 di 190 €, quota di successo del 12 % sulle sole somme incassate, pagamento
 esclusivamente a mezzo bonifico sull'IBAN dedicato).
 
-- Intestazione: **ERSEL SPA**, P.IVA 06900230018, PEC `traccia@pec.it`,
+- Intestazione: **ERSEL SPA**, P.IVA 06900230018, email `assistenza@traccia.it.com`,
   sede legale in Piazza Solferino, 11 - 10121 Torino (TO).
 - Numero progressivo: `TRC-<anno>-<numero>`. Non si riusa.
 - Le condizioni sono salvate come **fotografia** (`traccia.contracts.snapshot`):
@@ -681,7 +681,7 @@ ruolo e di KYC, modifiche ai limiti. Non ci sono endpoint per cancellarla.
 
 I numeri e i contenuti dei casi sono **dimostrativi**: 38,4 Mln €, 9,7 Mln €
 rientrati, 612 perizie, i quattro casi con i loro importi, i nomi e le
-biografie delle nove persone del team, gli indirizzi email su `traccia.it`.
+biografie delle nove persone del team, gli indirizzi email su `traccia.it.com`.
 
 Sono affermazioni verificabili. Vanno sostituite con dati reali prima della
 pubblicazione, altrimenti il sito dichiara cose non vere — ed è esattamente il
@@ -701,7 +701,7 @@ Punti da rivedere, in ordine di rischio:
    sono la parte più delicata. Sostituirle con i dati reali dell'ufficio prima
    della pubblicazione — o togliere la sezione, che è peggio ma è onesto.
 2. **Risultati** (`casi.html`): i quattro casi con i loro importi
-3. **Recapiti**: `ciao@traccia.it`, `assistenza@traccia.it`, PEC, telefono
+3. **Recapiti**: `assistenza@traccia.it.com`, `assistenza@traccia.it.com`, PEC, telefono
    (`tel:+3901100000000` è ancora un segnaposto)
 4. **WhatsApp**: `assets/js/config.js` → `whatsapp: ""` nasconde il pulsante;
    mettere il numero reale lo fa comparire ovunque

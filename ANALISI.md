@@ -136,7 +136,7 @@ Il sito fa **affermazioni fattuali, verificabili e molto specifiche**:
   **"Iscrizione Albo delle Banche n. 5573"**, **"Iscritta nei registri e vigilata
   da Banca d'Italia e CONSOB"**.
 - **Prezzi**: 190 € IVA inclusa + 12% sul recuperato.
-- Recapiti: `ciao@traccia.it`, `assistenza@traccia.it`, PEC `traccia@pec.it`.
+- Recapiti: `assistenza@traccia.it.com`.
 
 Lo stesso `README-DEPLOY.md` ammette che **tutti** questi dati sono dimostrativi.
 Ma nel codice non c'è nulla che lo dica al visitatore: nessun watermark "dati di

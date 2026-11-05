@@ -153,7 +153,7 @@ test("team: la pagina ha testata, piè di pagina e metadati sociali", () => {
   assert.ok(TEAM.indexOf("site-header") > -1, "manca la testata");
   assert.ok(TEAM.indexOf("site-footer") > -1, "manca il piè di pagina");
   assert.ok(/<title>[^<]*team/i.test(TEAM), "il titolo non nomina il team");
-  assert.ok(/rel="canonical" href="https:\/\/traccia.it\/team.html"/.test(TEAM),
+  assert.ok(/rel="canonical" href="https:\/\/traccia.it.com\/team.html"/.test(TEAM),
     "manca il canonical");
   assert.ok(/og:title/.test(TEAM), "mancano i metadati Open Graph");
   assert.ok(/assets\/js\/team\.js/.test(TEAM), "la pagina non carica i dati del team");

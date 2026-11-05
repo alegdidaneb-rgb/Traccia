@@ -5,4 +5,4 @@ Disallow: /admin
 Disallow: /app.html
 Disallow: /admin.html
 
-Sitemap: https://traccia.it/sitemap.xml
+Sitemap: https://traccia.it.com/sitemap.xml

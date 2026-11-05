@@ -39,7 +39,7 @@ NOINDEX = '<meta name="robots" content="noindex, nofollow">'
 NOINDEX_TARGETS = {"app.html", "admin.html", "404.html"}
 
 OG_IMAGE = (
-    '<meta property="og:image" content="https://traccia.it/assets/img/og-cover.jpg">\n'
+    '<meta property="og:image" content="https://traccia.it.com/assets/img/og-cover.jpg">\n'
     '  <meta property="og:image:width" content="1200">\n'
     '  <meta property="og:image:height" content="630">\n'
     '  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">'
