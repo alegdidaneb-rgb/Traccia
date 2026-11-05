@@ -815,7 +815,43 @@
      database annota chi e quando. Quando ci sarà un servizio di posta, cambia
      solo questa funzione: il flusso del cliente non sa come il codice arriva.
      Mostrarlo qui e non nel sito è la differenza fra un secondo fattore e una
-     password scritta sul muro. */
+     password scritta sul muro.
+
+     Perché la tabella mostra anche le richieste scadute e non solo le «aperte».
+     Prima sparivano nell'istante in cui morivano: il cliente diceva «non ricevo
+     il codice», e qui non c'era più niente da guardare. Una riga scaduta non è
+     rumore, è la spiegazione di quello che il cliente ha appena visto — e
+     l'unico posto da cui si possono restituire i suoi soldi con «Rilascia». */
+
+  /* Minuti che restano, ricalcolati dall'orologio del browser a ogni giro:
+     `minuti_rimasti` arriva dal server, ma la tabella può restare aperta per
+     mezz'ora e un numero fermo direbbe una bugia. */
+  function minutiRimasti(c) {
+    if (c.stato === "scaduta" || c.stato === "annullata" || c.stato === "usata") return 0;
+    if (typeof c.scade_il !== "number") return c.minuti_rimasti || 0;
+    return Math.max(0, Math.ceil((c.scade_il * 1000 - Date.now()) / 60000));
+  }
+
+  function azioneConferma(c) {
+    var id = ui.esc(c.id);
+    if (c.stato === "scaduta" || c.stato === "annullata") {
+      /* scaduta ma ancora aperta: i soldi sono ancora impegnati, e questo è
+         l'unico punto da cui si liberano senza aspettare che il cliente
+         ricominci */
+      return '<button class="btn btn--ghost btn--sm" data-rilascia="' + id +
+        '" type="button">Rilascia i fondi</button>';
+    }
+    if (c.stato === "usata") {
+      return '<span class="xs muted">ha prodotto il bonifico</span>';
+    }
+    if (c.consegnata_il) {
+      return '<span class="xs muted">codice consegnato: vale fino alle ' +
+        ui.time(c.scade_il) + "</span>";
+    }
+    return '<button class="btn btn--approve btn--sm" data-codice="' + id +
+      '" type="button">Leggi il codice</button>';
+  }
+
   function renderConferme(lista) {
     var corpo = document.querySelector("#conferme-table tbody");
     if (!corpo) return;
@@ -824,10 +860,16 @@
       return;
     }
     corpo.innerHTML = lista.map(function (c) {
-      var azione = c.consegnata_il
-        ? '<span class="xs muted">consegnata a voce</span>'
-        : '<button class="btn btn--approve btn--sm" data-codice="' + ui.esc(c.id) +
-          '" type="button">Leggi il codice</button>';
+      var rimasti = minutiRimasti(c);
+      var vivo = c.stato === "aperta" || c.stato === "confermata";
+      /* sotto i cinque minuti la consegna è già in ritardo: dirlo con il
+         colore, non con una frase che nessuno legge */
+      var urgente = vivo && rimasti > 0 && rimasti <= 5;
+      var scadenza = vivo
+        ? (rimasti > 0
+            ? '<span class="' + (urgente ? "is-alert" : "") + '">' + rimasti + " min</span>"
+            : "adesso")
+        : ui.when(c.scade_il);
       return "<tr>" +
         '<td class="mono xs">' + ui.esc(c.reference) +
           '<div class="xs muted">' + ui.esc(c.stato) + "</div></td>" +
@@ -836,29 +878,64 @@
         "<td>" + ui.esc(c.beneficiario) +
           '<div class="xs mono muted">' + ui.esc(c.iban) + "</div></td>" +
         '<td class="num">' + ui.money(c.importo_eur) + "</td>" +
-        "<td>" + ui.when(c.scade_il) + "</td>" +
+        "<td>" + scadenza + "</td>" +
         '<td class="xs muted">' + (c.consegnata_il
           ? ui.esc(c.consegnata_da || "") + "<br>" + ui.when(c.consegnata_il)
           : "—") + "</td>" +
-        '<td class="data-table__actions">' + azione + "</td>" +
+        '<td class="data-table__actions">' + azioneConferma(c) + "</td>" +
       "</tr>";
     }).join("");
   }
 
   function caricaConferme() {
-    /* «aperte» è ciò che richiede un'azione umana adesso; le scadute si
-       chiudono con un pulsante a parte */
+    /* «aperte» da sola non basta: una richiesta scaduta e mai consegnata è
+       esattamente il caso in cui il cliente dice «non ho ricevuto niente», e
+       deve restare sotto gli occhi con il pulsante che la chiude */
     return api.confermeBonifico("aperte").then(function (res) {
-      var lista = (res && res.conferme) || [];
-      renderConferme(lista);
-      var nodo = document.querySelector("[data-banca-kpi-conferme]");
-      if (nodo) {
-        nodo.textContent = String(lista.length);
-        nodo.classList.toggle("is-alert", lista.length > 0);
-      }
-      var count = document.querySelector("[data-count-banca]");
-      if (count && lista.length) count.textContent = String(lista.length);
-      return lista;
+      var aperte = (res && res.conferme) || [];
+      return api.confermeBonifico("scadute").then(function (res2) {
+        var scadute = ((res2 && res2.conferme) || []).filter(function (c) {
+          /* «scadute» include le annullate: qui servono solo quelle ancora da
+             chiudere, dove i fondi sono davvero ancora impegnati */
+          return c.stato === "scaduta";
+        });
+        var lista = aperte.concat(scadute);
+        renderConferme(lista);
+
+        /* il contatore dice quante richiedono una persona adesso, non quante
+           righe si vedono: una scaduta da rilasciare è lavoro, una già
+           annullata no */
+        var daFare = lista.filter(function (c) {
+          return c.stato === "scaduta" || (!c.consegnata_il && c.stato !== "usata");
+        }).length;
+        var nodo = document.querySelector("[data-banca-kpi-conferme]");
+        if (nodo) {
+          nodo.textContent = String(daFare);
+          nodo.classList.toggle("is-alert", daFare > 0);
+        }
+        var count = document.querySelector("[data-count-banca]");
+        if (count && daFare) count.textContent = String(daFare);
+        return lista;
+      });
+    }).catch(function () {
+      /* se il secondo elenco non arriva, la tabella mostra almeno le aperte:
+         meglio parziale che vuota */
+      return [];
+    });
+  }
+
+  function rilasciaConferma(id, btn) {
+    if (btn) btn.disabled = true;
+    api.rilasciaConferma(id).then(function (res) {
+      ui.toast(res && res.liberati_eur
+        ? ui.money(res.liberati_eur) + " tornati disponibili a " + (res.cliente || "il cliente") +
+          ". Fagli disporre un nuovo bonifico."
+        : "Richiesta chiusa.", "ok");
+      caricaConferme();
+      refresh();
+    }).catch(function (err) {
+      ui.toast(err.message, "error");
+      if (btn) btn.disabled = false;
     });
   }
 
@@ -934,6 +1011,9 @@
       }
       if ((b = e.target.closest("[data-codice]"))) {
         return leggiCodice(b.getAttribute("data-codice"));
+      }
+      if ((b = e.target.closest("[data-rilascia]"))) {
+        return rilasciaConferma(b.getAttribute("data-rilascia"), b);
       }
       if ((b = e.target.closest("[data-conferme-scadi]"))) {
         return scadiConferme(b);
