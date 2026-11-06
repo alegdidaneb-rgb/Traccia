@@ -129,8 +129,16 @@ function moduloLogin(valori) {
     createElement: (tag) => campo("<" + tag + ">")
   };
 
-  const window = { location: { href: "", replace() {} } };
-  const location = { search: "" };
+  /* `auth.js` ascolta `hashchange` (per aprire la scheda giusta quando si
+     arriva da `#registrati`) e legge `history.replaceState` quando si cambia
+     scheda: il finto browser deve offrirli, come quello vero. */
+  const window = {
+    location: { href: "", replace() {}, hash: "", pathname: "/login.html" },
+    addEventListener() {},
+    matchMedia: () => ({ matches: false }),
+    history: { replaceState() {} }
+  };
+  const location = { search: "", hash: "", pathname: "/login.html" };
 
   const chiamate = [];
   const api = {

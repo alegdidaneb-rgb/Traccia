@@ -18,6 +18,39 @@ non serve alcun processo lato server.
 
 ---
 
+## Le altre lingue: inglese, tedesco, spagnolo
+
+Ogni pagina pubblica esiste in quattro lingue: `index.html` (italiano) e
+`en/`, `de/`, `es/`. Le pagine tradotte **non si scrivono a mano**: si
+generano dal catalogo.
+
+    tools/i18n/it.json     le frasi italiane, una per chiave (fonte di verità)
+    tools/i18n/en.json     le stesse chiavi in inglese
+    tools/i18n/de.json     … in tedesco
+    tools/i18n/es.json     … in spagnolo
+
+**Aggiungere o cambiare una frase in una pagina italiana**
+
+1. modificala in `index.html` (o nell'altra pagina);
+2. `python3 tools/allinea_catalogo.py` dice cosa manca e cosa avanza: `--aggiungi`
+   crea le chiavi nuove, `--pota` toglie quelle che nessuna pagina usa più;
+3. traduci le chiavi nuove nei tre cataloghi;
+4. `python3 tools/build_i18n.py` riscrive `en/`, `de/`, `es/`;
+5. `node tests/run.js` deve finire con `0 falliti`.
+
+Il generatore traduce anche quello che non si vede leggendo la pagina:
+`<title>`, `<meta name="description">`, `og:title`, `og:description`,
+`og:image:alt`, i campi `twitter:`, la descrizione JSON-LD, e gli attributi
+`alt`, `aria-label`, `title`, `placeholder`. Restano fuori di proposito
+`app.html` e `admin.html`: sono l'area riservata e la console degli analisti,
+leggono e scrivono dati, e si traducono insieme ai messaggi che il database
+restituisce.
+
+`python3 tools/build_i18n.py --check` esce con errore se una pagina tradotta è
+disallineata dal catalogo: è il comando da mettere in CI.
+
+---
+
 ## Intestazione e piè di pagina: un solo posto
 
 L'intestazione e il piè di pagina non stanno più dentro le quattordici pagine
