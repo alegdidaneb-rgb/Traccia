@@ -99,7 +99,21 @@ def costruisci_header(pagina: str, lingua: str = "it") -> str:
             lambda m: f'href="/{lingua}/{m.group(1)}.html{m.group(2) or ""}"',
             corpo,
         )
-    return corpo
+    # La lingua in cui si sta leggendo è una pastiglia accesa, non un link: un
+    # `<a>` che punta alla pagina in corso si preme e non fa niente, e chi non
+    # lo sa conclude che il selettore è rotto. Si segna qui e non in
+    # `build_i18n.py` perché l'header lo costruisce questa funzione: marcarlo
+    # altrove significava perderlo a ogni rigenerazione delle pagine italiane.
+    def segna(m: re.Match[str]) -> str:
+        tag = m.group(0)
+        if f'data-lang="{lingua}"' not in tag or 'aria-current' in tag:
+            return tag
+        tag = re.sub(r'\s+href="[^"]*"', "", tag, count=1)
+        return tag.replace(
+            f'data-lang="{lingua}"', f'data-lang="{lingua}" aria-current="true"', 1
+        )
+
+    return re.sub(r'<a class="lang__opt"[^>]*>', segna, corpo)
 
 
 def sostituisci(html: str, inizio: str, fine: str, nuovo: str) -> str:

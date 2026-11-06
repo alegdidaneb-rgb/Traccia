@@ -46,6 +46,9 @@ function nodo(attributi) {
     setAttribute(k, v) {
       this.attributi[k] = String(v);
     },
+    removeAttribute(k) {
+      delete this.attributi[k];
+    },
     addEventListener(nome, fn) {
       (this.eventi[nome] = this.eventi[nome] || []).push(fn);
     },
@@ -60,7 +63,6 @@ function nodo(attributi) {
 
 /* Un ambiente con: pagina corrente, lingua del browser, memoria locale. */
 function ambiente({ percorso = "/", lingua = "it", browser = ["it-IT"], memoria = null }) {
-  const sigla = nodo({ "data-lang-current": "" });
   const voci = ["it", "en", "de", "es"].map((l) =>
     nodo({ "data-lang": l, href: l === "it" ? "/" : `/${l}/` })
   );
@@ -71,9 +73,7 @@ function ambiente({ percorso = "/", lingua = "it", browser = ["it-IT"], memoria 
   const document = {
     documentElement: { getAttribute: (k) => (k === "lang" ? lingua : null) },
     querySelectorAll(selettore) {
-      if (selettore === "[data-lang-current]") return [sigla];
       if (selettore === "[data-lang]") return voci;
-      if (selettore === ".lang") return [menu];
       return [];
     },
     addEventListener(nome, fn) {
@@ -107,23 +107,25 @@ function ambiente({ percorso = "/", lingua = "it", browser = ["it-IT"], memoria 
   const esegui = new Function("document", "window", "location", "navigator", BLOCCO);
   esegui(document, window, location, navigator);
 
-  return { sigla, voci, menu, document, memorizzati, sostituzioni };
+  return { voci, document, memorizzati, sostituzioni };
 }
 
 /* ------------------------------------------------------------------ sigla -- */
-test("la sigla dice la lingua della pagina", () => {
-  const a = ambiente({ percorso: "/de/", lingua: "de", browser: ["de-DE"] });
-  assert.equal(a.sigla.textContent, "DE");
-  assert.equal(a.voci.find((v) => v.getAttribute("data-lang") === "de").attributi["aria-current"], "true");
-  assert.equal(a.voci.filter((v) => v.attributi["aria-current"]).length, 1);
-});
-
-test("la voce della lingua corrente non ricarica la pagina", () => {
-  /* su `/de/`, il link tedesco deve portare a `/de/` — cioè a dove siamo già,
-     senza saltare alla home e perdere la pagina */
+test("la lingua in cui si è è accesa, e non è un link", () => {
   const a = ambiente({ percorso: "/de/", lingua: "de", browser: ["de-DE"] });
   const tedesco = a.voci.find((v) => v.getAttribute("data-lang") === "de");
-  assert.equal(tedesco.getAttribute("href"), "/de/");
+  const italiano = a.voci.find((v) => v.getAttribute("data-lang") === "it");
+
+  assert.equal(tedesco.getAttribute("aria-current"), "true");
+  /* niente href: un link che porta alla pagina in cui siamo già si preme e
+     non fa niente, e sembra un guasto */
+  assert.equal(tedesco.getAttribute("href"), null, "la voce corrente non deve essere un link");
+
+  /* le altre restano link veri, con il loro indirizzo intatto */
+  assert.equal(italiano.getAttribute("href"), "/");
+  assert.equal(italiano.getAttribute("aria-current"), null);
+
+  assert.equal(a.voci.filter((v) => v.attributi["aria-current"]).length, 1);
 });
 
 /* ------------------------------------------------------ lingua del browser -- */
@@ -173,27 +175,6 @@ test("scegliere una lingua la ricorda", () => {
   const a = ambiente({ percorso: "/", lingua: "it" });
   a.voci[2].clicca(); /* Deutsch */
   assert.equal(a.memorizzati["traccia.lingua"], "de");
-});
-
-/* --------------------------------------------------------------- chiusura -- */
-test("il menu si chiude cliccando fuori e con Esc", () => {
-  const a = ambiente({ percorso: "/", lingua: "it" });
-  a.menu.open = true;
-  a.document.invia("click", { target: {} });
-  assert.equal(a.menu.open, false, "il clic fuori deve chiudere il menu");
-
-  a.menu.open = true;
-  a.document.invia("keydown", { key: "Escape" });
-  assert.equal(a.menu.open, false, "Esc deve chiudere il menu");
-});
-
-test("un clic dentro il menu non lo chiude", () => {
-  const a = ambiente({ percorso: "/", lingua: "it" });
-  const dentro = nodo({});
-  dentro.dentro = a.menu;
-  a.menu.open = true;
-  a.document.invia("click", { target: dentro });
-  assert.equal(a.menu.open, true);
 });
 
 module.exports = caso;

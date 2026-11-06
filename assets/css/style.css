@@ -501,7 +501,7 @@ textarea:focus-visible {
 .nav__toggle[aria-expanded="true"] span::before { transform: translateY(6px) rotate(-90deg); }
 .nav__toggle[aria-expanded="true"] span::after { opacity: 0; }
 
-@media (max-width: 900px) {
+@media (max-width: 1360px) {
   .nav__toggle { display: inline-flex; }
   .nav__links {
     position: fixed;

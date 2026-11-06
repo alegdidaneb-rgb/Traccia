@@ -244,16 +244,31 @@ def intestazione_tradotta(lingua: str, catalogo: dict[str, str]) -> str:
     corpo = build_shell.costruisci_header("index.html", lingua)
     corpo, _ = traduci_corpo(corpo, catalogo, lingua)
 
-    # La sigla nel pulsante si scrive già giusta, senza aspettare main.js.
-    # Altrimenti per un istante — e per sempre, a chi ha JavaScript spento —
-    # una pagina tedesca mostra «IT» accanto al globo: sbagliato, e proprio
-    # nell'unico comando che dovrebbe dire in che lingua si sta leggendo.
-    codice = SIGLE.get(lingua, lingua.upper())
-    corpo = corpo.replace('data-lang-current>IT<', f'data-lang-current>{codice}<', 1)
-    # la voce corrente si marca già qui, non solo via script
-    corpo = corpo.replace(
-        f'data-lang="{lingua}"', f'data-lang="{lingua}" aria-current="true"', 1
-    )
+    # Il nome di una lingua non si traduce: «Deutsch» è «Deutsch» anche in una
+    # pagina spagnola — è così che lo cerca chi parla tedesco. Nel catalogo
+    # però «Italiano» diventa «Italian» nella pagina inglese, ed è giusto per
+    # il testo visibile ma sbagliato per il `title` e per l'`aria-label` del
+    # selettore: lì deve restare il nome che quella lingua dà a sé stessa,
+    # altrimenti un lettore di schermo legge «Spanish» a un madrileno che
+    # cerca «Español».
+    for codice, nome in (
+        ("it", "Italiano"), ("en", "English"), ("de", "Deutsch"), ("es", "Español")
+    ):
+        corpo = re.sub(
+            rf'(<a class="lang__opt"[^>]*data-lang="{codice}"[^>]*)',
+            lambda m, n=nome: re.sub(
+                r'(title|aria-label)="[^"]*"',
+                lambda a: f'{a.group(1)}="{n}"',
+                m.group(1),
+            ),
+            corpo,
+            count=1,
+        )
+
+    # La pastiglia della lingua corrente la segna `build_shell.costruisci_header`,
+    # che è l'unico a costruire l'header. Qui non si ripete: due punti che
+    # fanno la stessa cosa divergono, ed è già successo in questo file.
+
     return "<!-- shell:header -->\n" + corpo.rstrip("\n") + "\n  <!-- /shell:header -->"
 
 
