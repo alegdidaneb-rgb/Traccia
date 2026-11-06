@@ -195,11 +195,19 @@ grant execute on function public.auth_register(text, text, text, text, text, tex
    database. Telefono e importo dichiarato servono per richiamare il cliente,
    quindi entrano nel payload.
 
-   Il resto del corpo è copiato dalla 0015 **senza toccarlo**, comprese le
-   date in `extract(epoch …)` e i campi `iban_formatted`, `case_ref`,
+   Il resto del corpo è copiato dalla definizione **in esercizio** senza
+   toccarla, comprese le date in `extract(epoch …)`, `reserved_eur`,
+   `available_eur`, `holdings_value`, `iban_holder`, `iban_verified` e
    `contract_status`: riscriverla «pulita» avrebbe cambiato il formato delle
-   date e svuotato colonne della tabella, e la console si sarebbe rotta in un
-   modo che nei test del database non si vede.
+   date e svuotato metà tabella, e la console si sarebbe rotta in un modo che
+   nei test del database non si vede.
+
+   Le colonne elencate qui sotto sono quelle del database di produzione, non
+   quelle della 0015: fra la migrazione e l'esercizio c'è stata la 0016 (conto
+   operativo), che `supabase/migrations/` non contiene. Questo file non è più
+   ricostruibile da zero, quindi, e va letto come la fotografia della funzione
+   com'è: se un giorno si ricostruisce il database dalle migrazioni, è la
+   console a rompersi per prima, non il sito.
    -------------------------------------------------------------------------- */
 create or replace function traccia.admin_accounts(p_token text, p_status text default null)
 returns jsonb language plpgsql security definer
