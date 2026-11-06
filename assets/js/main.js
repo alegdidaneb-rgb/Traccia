@@ -149,3 +149,93 @@
     });
   });
 })();
+
+/* ============================================================================
+   Lingua
+   ============================================================================
+   Il selettore è HTML puro: ogni voce è un link vero a `/`, `/en/`, `/de/`,
+   `/es/`. Nessuna traduzione avviene nel browser — le pagine sono già scritte
+   nella lingua giusta — quindi qui c'è solo ciò che l'HTML non può fare da
+   solo: ricordare la scelta, correggere il bersaglio dei link quando serve, e
+   dire all'utente in che lingua si trova.
+
+   Perché la lingua sta nell'indirizzo e non in `localStorage` come fonte di
+   verità: un link `/de/` incollato in una chat deve aprire il tedesco anche a
+   chi non ha mai scelto niente. La memoria locale serve solo a riportare chi
+   torna sul sito nella lingua che aveva scelto. */
+(function () {
+  "use strict";
+
+  var LINGUE = ["it", "en", "de", "es"];
+  var CHIAVE = "traccia.lingua";
+
+  /* quale lingua sta servendo questa pagina: l'attributo lang è la verità */
+  var corrente = (document.documentElement.getAttribute("lang") || "it").slice(0, 2);
+  if (LINGUE.indexOf(corrente) === -1) corrente = "it";
+
+  function ricorda(lingua) {
+    try { window.localStorage.setItem(CHIAVE, lingua); } catch (e) { /* niente */ }
+  }
+
+  function ricordata() {
+    try {
+      var v = window.localStorage.getItem(CHIAVE);
+      return LINGUE.indexOf(v) === -1 ? null : v;
+    } catch (e) { return null; }
+  }
+
+  /* ------------------------------------------------------------------ sigla -- */
+  document.querySelectorAll("[data-lang-current]").forEach(function (nodo) {
+    nodo.textContent = corrente.toUpperCase();
+  });
+
+  /* la voce attiva si dichiara, così si vede dove si è e lo legge il lettore
+     di schermo */
+  document.querySelectorAll("[data-lang]").forEach(function (a) {
+    var sua = a.getAttribute("data-lang");
+    if (sua === corrente) {
+      a.setAttribute("aria-current", "true");
+      /* e non deve puntare alla pagina in cui siamo già: un link che ricarica
+         la stessa pagina sembra rotto */
+      a.setAttribute("href", location.pathname + location.hash);
+    }
+    a.addEventListener("click", function () { ricorda(sua); });
+  });
+
+  /* ------------------------------------------------------- lingua del browser -- */
+  /* Un visitatore nuovo che arriva dalla Germania deve trovare il tedesco senza
+     cercare il menu. Si guarda una volta sola, e solo sulla home italiana: se
+     scattasse a ogni pagina, chi ha scelto l'italiano verrebbe riportato al
+     tedesco dal browser a ogni ritorno, e la scelta non conterebbe niente. */
+  var percorso = location.pathname.replace(/\/+$/, "");
+  var sullaHomeItaliana = (percorso === "" || percorso === "/index.html");
+  if (sullaHomeItaliana && !ricordata()) {
+    var preferite = navigator.languages || [navigator.language || ""];
+    var scelta = null;
+    for (var i = 0; i < preferite.length && !scelta; i++) {
+      var codice = String(preferite[i] || "").slice(0, 2).toLowerCase();
+      if (codice !== "it" && LINGUE.indexOf(codice) !== -1) scelta = codice;
+    }
+    if (scelta) {
+      ricorda(scelta);
+      location.replace("/" + scelta + "/");
+      return;
+    }
+  }
+
+  /* chi non ha mai scelto niente e naviga in italiano: la scelta implicita è
+     l'italiano, così non gli si propone il tedesco al ritorno */
+  if (!ricordata()) ricorda(corrente);
+
+  /* ------------------------------------------------------------ chiusura -- */
+  /* `<details>` si chiude da solo con Esc e al clic fuori non si chiude: qui si
+     aggiunge il clic fuori, che è quello che tutti si aspettano da un menu. */
+  document.querySelectorAll(".lang").forEach(function (blocco) {
+    document.addEventListener("click", function (e) {
+      if (blocco.open && !blocco.contains(e.target)) blocco.open = false;
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && blocco.open) blocco.open = false;
+    });
+  });
+})();
