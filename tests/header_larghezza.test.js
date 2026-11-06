@@ -199,4 +199,45 @@ test("il foglio di stile è coerente: graffe pari, nessun blocco duplicato", () 
     "la regola del marchio è finita nel blocco dei KPI");
 });
 
+/* ------------------------------------------------- classi senza stile -- */
+test("ogni classe dell'header ha una regola che esiste", () => {
+  /* Questo test nasce dal guasto peggiore di questa serie: per due
+     pubblicazioni il selettore è andato in produzione **senza CSS**. Il markup
+     c'era, l'HTML era corretto, i test passavano — e la pagina mostrava quattro
+     collegamenti nudi incollati nella riga sbagliata. Nessuno se ne accorge
+     leggendo il codice: il difetto vive nel vuoto, non in una riga sbagliata.
+
+     La regola: se nell'header usi una classe, da qualche parte ci deve essere
+     un selettore che la nomina. */
+  /* Due fogli, non uno: `.nav__links` e `.nav-user` stanno in `style.css` — il
+     foglio base — e cercarli solo in `premium.css` darebbe un allarme falso su
+     dieci classi sane. Il difetto vero era che `lang__opt` non stava in
+     nessuno dei due. */
+  const tutti = (CSS + CSS_BASE).replace(/\/\*[\s\S]*?\*\//g, "");
+  const classi = new Set();
+  for (const m of HEADER.matchAll(/class="([^"]+)"/g)) {
+    m[1].split(/\s+/).forEach((c) => c && classi.add(c));
+  }
+  /* le classi utilitarie non hanno bisogno di una regola propria */
+  const UTILITA = new Set(["sr-only"]);
+  const orfane = [...classi].filter(
+    (c) => !UTILITA.has(c) && !new RegExp(`\\.${c.replace(/[-]/g, "\\-")}(?![\\w-])`).test(tutti)
+  );
+  assert.equal(orfane.length, 0, `classi senza alcuna regola: ${orfane.join(", ")}`);
+});
+
+test("il selettore ha il suo blocco, non solo il markup", () => {
+  /* le classi che rendono il selettore quello che è: senza una di queste, o
+     torna a essere una lista di link, o perde la pastiglia accesa */
+  const senzaCommenti = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+  [".nav__lang", ".lang {", ".lang__opt {", '[aria-current="true"]'].forEach((regola) => {
+    assert.ok(senzaCommenti.includes(regola), `manca la regola «${regola}»`);
+  });
+  /* e le misure che i test di ingombro si aspettano di trovare */
+  assert.ok(/\.lang__opt \{[^}]*min-width: \d+px/.test(senzaCommenti),
+    "la pastiglia non ha una larghezza minima: collassa sulla sigla");
+  assert.ok(/\.lang__opt \{[^}]*height: \d+px/.test(senzaCommenti),
+    "la pastiglia non ha un'altezza: la barra si alza e si abbassa con il font");
+});
+
 module.exports = caso;
