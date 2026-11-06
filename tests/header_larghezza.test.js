@@ -44,6 +44,35 @@ function bloccoMedia(css, soglia) {
   return css.slice(i);
 }
 
+/* Tutti i blocchi `@media (max-width: Npx) { … }`, non solo il primo: un
+   foglio di stile ne ha più d'uno e cercare «quello giusto» sbagliando blocco
+   produce test che passano per il motivo sbagliato. */
+function tuttiIMedia(css, soglia) {
+  const aperti = [];
+  const trovati = [];
+  const marcatore = `@media (max-width: ${soglia}px)`;
+  let i = 0;
+  while ((i = css.indexOf(marcatore, i)) !== -1) {
+    aperti.push(i);
+    i += marcatore.length;
+  }
+  for (const inizio of aperti) {
+    let j = css.indexOf("{", inizio);
+    let profondita = 0;
+    for (let k = j; k < css.length; k++) {
+      if (css[k] === "{") profondita++;
+      else if (css[k] === "}") {
+        profondita--;
+        if (profondita === 0) {
+          trovati.push(css.slice(j, k + 1));
+          break;
+        }
+      }
+    }
+  }
+  return trovati;
+}
+
 const misura = (larghezze = []) =>
   execFileSync("python3", ["tools/misura_header.py", ...larghezze.map(String)], {
     cwd: RADICE,
@@ -125,6 +154,49 @@ test("la lingua corrente non è un link", () => {
     assert.equal(accese.length, 1, `${file}: deve esserci una sola lingua accesa`);
     assert.ok(!/\shref=/.test(accese[0]), `${file}: la lingua accesa è ancora un link`);
   }
+});
+
+/* ------------------------------------------------------- il foglio di stile -- */
+test("il foglio di stile è coerente: graffe pari, nessun blocco duplicato", () => {
+  /* Questo test nasce da un danno vero, pubblicato in produzione: una mia
+     sostituzione aveva infilato la regola del marchio dentro il blocco
+     `@media (max-width: 480px)` dei KPI, e il blocco non si chiudeva più.
+     Il CSS non è un errore che si vede: il browser ignora le regole rotte e
+     tira avanti, quindi la pagina sembra a posto. Peggio, una rimozione
+     successiva aveva lasciato il file con due copie di sé stesso. */
+  const senzaCommenti = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const css = senzaCommenti(CSS);
+  const aperte = (css.match(/\(/g) || []).length;
+
+  /* graffe bilanciate, e mai sotto zero a metà file */
+  let profondita = 0;
+  [...css].forEach((ch, i) => {
+    if (ch === "{") profondita++;
+    if (ch === "}") profondita--;
+    assert.ok(
+      profondita >= 0,
+      `chiusura in eccesso alla riga ${css.slice(0, i).split("\n").length}`
+    );
+  });
+  assert.equal(profondita, 0, "il foglio di stile ha graffe non chiuse");
+
+  /* nessuna sezione due volte: è il segno che qualcuno ha incollato il file
+     dentro sé stesso invece di modificarlo */
+  const sezioni = [...CSS.matchAll(/^   (\d+)\. ([^\n]+)$/gm)].map((m) => m[1]);
+  const doppie = sezioni.filter((n, i) => sezioni.indexOf(n) !== i);
+  assert.equal(doppie.length, 0, `sezioni ripetute: ${[...new Set(doppie)].join(", ")}`);
+
+  /* e la regola che protegge l'header sta nel blocco giusto: c'è più di un
+     `@media (max-width: 480px)` nel foglio, e quello che conta è quello che
+     contiene `.lang__opt`, non il primo che s'incontra */
+  const blocchi480 = tuttiIMedia(CSS, 480);
+  const selettore = blocchi480.find((b) => /\.lang__opt\s*\{/.test(senzaCommenti(b)));
+  assert.ok(selettore, "manca il blocco a 480 che stringe le pastiglie");
+  assert.ok(!/\.kpi/.test(senzaCommenti(selettore)),
+    "nel blocco del selettore non devono esserci regole dei KPI");
+  const kpi = blocchi480.find((b) => /\.kpi\s*\{/.test(senzaCommenti(b)));
+  assert.ok(kpi && !/span:last-child/.test(senzaCommenti(kpi)),
+    "la regola del marchio è finita nel blocco dei KPI");
 });
 
 module.exports = caso;
