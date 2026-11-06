@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://traccia.it.com/</loc>
-    <lastmod>2026-10-31</lastmod>
+    <lastmod>2026-11-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="it" href="https://traccia.it.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://traccia.it.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://traccia.it.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://traccia.it.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://traccia.it.com/"/>
   </url>
   <url>
     <loc>https://traccia.it.com/come-funziona</loc>
@@ -51,5 +57,32 @@
   <url>
     <loc>https://traccia.it.com/note-legali</loc>
     <lastmod>2026-10-31</lastmod>
+  </url>
+  <url>
+    <loc>https://traccia.it.com/en/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="it" href="https://traccia.it.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://traccia.it.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://traccia.it.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://traccia.it.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://traccia.it.com/"/>
+  </url>
+  <url>
+    <loc>https://traccia.it.com/de/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="it" href="https://traccia.it.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://traccia.it.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://traccia.it.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://traccia.it.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://traccia.it.com/"/>
+  </url>
+  <url>
+    <loc>https://traccia.it.com/es/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="it" href="https://traccia.it.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://traccia.it.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://traccia.it.com/de/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://traccia.it.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://traccia.it.com/"/>
   </url>
 </urlset>

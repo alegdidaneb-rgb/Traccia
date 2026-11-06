@@ -3627,3 +3627,68 @@ body.is-staff-view #sicurezza { display: none !important; }
   .rail-sublist li { grid-template-columns: minmax(0, 1fr) auto auto; }
   .card-visual { aspect-ratio: 1.55 / 1; }
 }
+
+/* ============================================================================
+   Selettore lingua
+   ============================================================================
+   Sta nella riga dell'header, prima dei pulsanti di accesso. Sigle invece di
+   bandiere: «EN» non offende nessuno, la Union Jack sì. Su mobile scende sotto
+   il menu, perché a 360px non ci sta accanto all'hamburger.
+
+   `<details>` invece di un dropdown in JavaScript: si apre senza script, si
+   chiude con Esc da solo, e se il JS non parte il menu resta usabile. Il
+   piccolo script in i18n.js serve solo a mostrare la sigla giusta. */
+.nav__lang { list-style: none; display: flex; align-items: center; }
+.lang { position: relative; }
+.lang__toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600; letter-spacing: .06em;
+  color: inherit; background: transparent;
+  border: 1px solid rgba(255, 255, 255, .16);
+  transition: border-color .18s ease, background-color .18s ease;
+  list-style: none;
+}
+.lang__toggle::-webkit-details-marker { display: none; }
+.lang__toggle::marker { content: ""; }
+.lang__toggle:hover { border-color: rgba(255, 255, 255, .34); background: rgba(255, 255, 255, .05); }
+.lang[open] > .lang__toggle { border-color: rgba(201, 242, 107, .55); }
+.lang__caret { opacity: .6; transition: transform .18s ease; }
+.lang[open] .lang__caret { transform: rotate(180deg); }
+.lang__code { line-height: 1; }
+
+.lang__menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 80;
+  min-width: 168px; margin: 0; padding: 6px;
+  list-style: none; border-radius: 14px;
+  background: #14141c;
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .55);
+}
+.lang__menu a {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 11px; border-radius: 9px;
+  font-size: 14px; text-decoration: none; color: rgba(255, 255, 255, .82);
+}
+.lang__menu a:hover,
+.lang__menu a:focus-visible { background: rgba(255, 255, 255, .07); color: #fff; }
+.lang__menu a[aria-current="true"] { color: var(--accent, #c9f26b); }
+.lang__menu a[aria-current="true"]::after { content: "✓"; font-size: 12px; }
+
+/* l'header di una pagina tradotta non è quello della home: il brand torna
+   alla radice della lingua, non alla radice del sito */
+.lang-page .brand { color: inherit; }
+
+@media (max-width: 860px) {
+  .nav__lang {
+    order: 3; width: 100%; margin: 4px 0 2px;
+    padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, .09);
+  }
+  .lang { width: 100%; }
+  .lang__toggle { width: 100%; justify-content: flex-start; }
+  .lang__caret { margin-left: auto; }
+  .lang__menu {
+    position: static; min-width: 0; margin-top: 8px;
+    box-shadow: none; background: rgba(255, 255, 255, .03);
+  }
+}

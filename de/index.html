@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="de" class="lang-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Traccia — Forensische Untersuchungen zu Finanz- und Krypto-Betrug</title>
+  <meta name="description" content="Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it.com/de/">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Traccia — Indagini forensi su truffe finanziarie e criptovalute">
+  <meta property="og:description" content="Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.">
+  <meta property="og:url" content="https://traccia.it.com/de/">
+  <meta property="og:image" content="https://traccia.it.com/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/inter-var.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/display-serif.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261102d">
+  <link rel="stylesheet" href="/assets/css/premium.css?v=20261102d">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="/assets/js/config.js?v=20261102d" defer></script>
+  <script src="/assets/js/api.js?v=20261102d" defer></script>
+  <script src="/assets/js/session.js?v=20261102d" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it.com",
+    "description": "Ricostruiamo il percorso dei fondi sottratti in truffe online, produciamo perizie tecniche utilizzabili in sede civile e penale e assistiamo nella denuncia. Prima valutazione gratuita.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "assistenza@traccia.it.com",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+  <link rel="alternate" hreflang="it" href="https://traccia.it.com/">
+  <link rel="alternate" hreflang="en" href="https://traccia.it.com/en/">
+  <link rel="alternate" hreflang="de" href="https://traccia.it.com/de/">
+  <link rel="alternate" hreflang="es" href="https://traccia.it.com/es/">
+  <link rel="alternate" hreflang="x-default" href="https://traccia.it.com/">
+</head>
+<body class="">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <!-- shell:header -->
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principale">
+      <a class="brand" href="/de/">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="/de/come-funziona">So funktioniert es</a></li>
+        <li><a class="nav-link" data-nav="casi" href="/de/casi">Bearbeitete Fälle</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="/de/crypto">Krypto-Betrug</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="/de/chi-siamo">Über uns</a></li>
+        <li><a class="nav-link" data-nav="team" href="/de/team">Das Team</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="/de/onorari">Honorare</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="/de/supporto">Hilfe</a></li>
+
+        <li class="nav__lang" data-lang-switch>
+          <!-- Selettore lingua. Le sigle al posto delle bandiere: una bandiera
+               dice «Regno Unito» quando la lingua è l'inglese, e «Spagna»
+               quando è lo spagnolo. Il codice non sbaglia e sta in 34px. -->
+          <details class="lang">
+            <summary class="lang__toggle" aria-label="Lingua / Language">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M1.9 8h12.2M8 1.8c1.9 1.7 3 3.9 3 6.2s-1.1 4.5-3 6.2c-1.9-1.7-3-3.9-3-6.2s1.1-4.5 3-6.2z"
+                      stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <span class="lang__code" data-lang-current>DE</span>
+              <svg class="lang__caret" width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6.5l4 4 4-4" stroke="currentColor" stroke-width="1.6"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <ul class="lang__menu" role="menu">
+              <li><a role="menuitem" href="/" hreflang="it" lang="it" data-lang="it">Italiano</a></li>
+              <li><a role="menuitem" href="/en/" hreflang="en" lang="en" data-lang="en">English</a></li>
+              <li><a role="menuitem" href="/de/" hreflang="de" lang="de" data-lang="de" aria-current="true">Deutsch</a></li>
+              <li><a role="menuitem" href="/es/" hreflang="es" lang="es" data-lang="es">Español</a></li>
+            </ul>
+          </details>
+        </li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="/de/login" data-auth-guest>Anmelden</a>
+          <a class="btn btn--sm" href="/de/login" data-auth-guest>Fall melden</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="/de/app">Mein Fall</a>
+            <a class="nav-user__link nav-user__link--admin" href="/de/admin" data-auth-admin hidden>Admin-Konsole</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Abmelden
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+  <!-- /shell:header -->
+
+
+  <main id="main">
+    <!-- ============================ HERO ============================ -->
+<section class="hero hero--cinema grain">
+  <div class="hero--cinema__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/hero-trace-900.webp 900w, assets/img/hero-trace-1600.webp 1600w" sizes="100vw">
+      <img src="/assets/img/hero-trace-1600.jpg"
+           srcset="assets/img/hero-trace-900.jpg 900w, assets/img/hero-trace-1600.jpg 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" fetchpriority="high" decoding="async">
+    </picture>
+  </div>
+
+  <div class="container container--wide">
+    <div class="hero__inner">
+      <div>
+        <div class="hero__badge hero__badge--glass" data-reveal="up" data-reveal-delay="60">
+          <b>Kostenlose Ersteinschätzung</b>
+          <span>Antwort innerhalb von 48 Arbeitsstunden</span>
+        </div>
+
+        <h1 class="display hero__title hero__title--svc balance" data-reveal="fade" data-reveal-delay="140">
+          <span class="mask-line"><span>Wohin das Geld</span></span><br>
+          <span class="mask-line"><span>aus Online-Betrug</span></span><br>
+          <span class="mask-line"><span><em>verschwindet.</em></span></span>
+        </h1>
+
+        <p class="lead mt-3" style="max-width:50ch" data-reveal="up" data-reveal-delay="240">
+          Forensische Untersuchungen zu Finanz- und Krypto-Betrug: Wir rekonstruieren den Weg des Geldes, identifizieren die benennbaren Beteiligten und erstellen <strong>technische Gutachten, die in Zivil- und Strafverfahren verwendbar sind</strong>.
+        </p>
+
+        <div class="btn-row mt-4" data-reveal="up" data-reveal-delay="330">
+          <a class="btn btn--accent btn--lg" href="/de/login" data-magnetic>Einschätzung anfordern</a>
+          <a class="btn btn--glass btn--lg" href="/de/casi">Fälle und Ergebnisse</a>
+        </div>
+
+        <p class="small mt-4" style="max-width:56ch;color:rgba(255,255,255,.5)" data-reveal="up" data-reveal-delay="420">
+          Startbeitrag 190 € inkl. MwSt. · 12 % auf tatsächlich zurückgeholte Beträge · keine Kosten, wenn das Gutachten jeden Weg ausschließt.
+        </p>
+      </div>
+
+      <!-- pannello "tracciamento" in vetro sopra la fotografia -->
+      <div class="device-wrap trace-wrap" data-reveal="scale" data-reveal-delay="240">
+        <div class="trace-card glass" aria-hidden="true">
+          <div class="trace-card__head">
+            <span class="trace-card__label">Geldweg</span>
+            <span class="trace-card__chip">Fall T-2418</span>
+          </div>
+
+          <ol class="trace-path">
+            <li class="trace-path__step trace-path__step--ok">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Überweisung 14.900 €</b>
+                <em>Ausgangskonto · 12. Mär</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--ok">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Zwischenbörse</b>
+                <em>Hot Wallet · 13. Mär</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--warn">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>3 weitere Wallets</b>
+                <em>Bündelung · 14.–19. Mär</em>
+              </span>
+            </li>
+            <li class="trace-path__step trace-path__step--stop">
+              <span class="trace-path__dot"></span>
+              <span class="trace-path__body">
+                <b>Börse mit KYC</b>
+                <em>Hier ist etwas möglich · 21. Mär</em>
+              </span>
+            </li>
+          </ol>
+
+          <div class="trace-card__foot">
+            <span>Anknüpfungspunkte gefunden</span>
+            <b>2</b>
+          </div>
+        </div>
+
+        <div class="device-chip device-chip--b">
+          <span class="device-chip__dot"></span>
+          Gutachten in 10 Tagen
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ BANDA NUMERICA ============================ -->
+<section class="metric-band-wrap" aria-label="I nostri numeri">
+  <div class="container container--wide">
+   <div class="metric-band">
+    <div class="metric-band__cell">
+      <span class="metric-band__value">—</span>
+      <span class="metric-band__label">Beträge, deren Weg wir rekonstruiert haben</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value">—</span>
+      <span class="metric-band__label">vom Büro analysierte Fälle</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value">—</span>
+      <span class="metric-band__label">übergebene und unterzeichnete Gutachten</span>
+    </div>
+    <div class="metric-band__cell">
+      <span class="metric-band__value"><span data-count="27" data-suffix=" %">27 %</span></span>
+      <span class="metric-band__label">der Fälle hatten noch einen Anknüpfungspunkt</span>
+    </div>
+   </div>
+  </div>
+</section>
+<div class="container container--wide">
+  <p class="metric-band__note">
+    Zahlen zur Tätigkeit unseres Analysebüros. «Anknüpfungspunkt» heißt, dass ein Teil des Geldes noch einer identifizierbaren Person zugeordnet werden konnte: Das bedeutet weder zurückgeholte Beträge noch eine Prognose.
+  </p>
+</div>
+
+<!-- ============================ AVVISO ============================ -->
+<section class="alert-band">
+  <div class="container">
+    <div class="alert-band__inner">
+      <span class="alert-band__icon" aria-hidden="true">!</span>
+      <p>
+        <strong>Wenn jemand weiteres Geld verlangt, um Ihre Auszahlung zu «entsperren», zahlen Sie nicht.</strong> Das ist die zweite Stufe desselben Betrugs. Kein seriöser Anbieter verlangt eine Vorauszahlung, eine Steueranzahlung oder die Schlüssel Ihrer Wallet.
+        <a href="/de/supporto">Was jetzt zu tun ist →</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ METODO / FOTOGRAFIA ============================ -->
+<section class="section section--tight">
+  <div class="container">
+    <div class="split split--editorial">
+      <figure class="figure" style="margin:0">
+        <div class="frame frame--wide" data-reveal="up">
+          <picture>
+            <source type="image/webp" srcset="assets/img/network-nodes-800.webp 800w, assets/img/network-nodes-1400.webp 1400w" sizes="(max-width: 900px) 100vw, 55vw">
+            <img src="/assets/img/network-nodes-1400.jpg"
+                 srcset="assets/img/network-nodes-800.jpg 800w, assets/img/network-nodes-1400.jpg 1400w"
+                 sizes="(max-width: 900px) 100vw, 55vw"
+                 alt="Grafo di transazioni: nodi luminosi collegati da linee su fondo scuro"
+                 width="1400" height="788" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <figcaption>
+          Jede Überweisung ist ein Knoten. Die Arbeit besteht darin, herauszufinden, hinter welchen Knoten ein Name steht.
+        </figcaption>
+      </figure>
+
+      <div data-reveal="up" data-reveal-delay="120">
+        <span class="kicker">Die Methode</span>
+        <h2 class="h2 balance">Es gibt keinen Knopf<br>der Ihr Geld zurückbringt.<br><em>Es gibt eine Reihenfolge.</em></h2>
+        <p class="lead mt-3">
+          Fünf Schritte, immer in derselben Reihenfolge. Bleibt nach dem zweiten nichts, worauf man aufbauen kann, hören wir auf und verlangen den Beitrag nicht: Das passiert in etwa einem von drei Fällen.
+        </p>
+        <dl class="mini-facts mt-4">
+          <div>
+            <dt>10 Tage</dt>
+            <dd>für das unterzeichnete technische Gutachten</dd>
+          </div>
+          <div>
+            <dt>48 Stunden</dt>
+            <dd>für die erste Antwort an Werktagen</dd>
+          </div>
+          <div>
+            <dt>1 von 3</dt>
+            <dd>Fälle kostenlos beendet, in Stufe 2</dd>
+          </div>
+        </dl>
+        <a class="link-arrow mt-4" href="/de/come-funziona">
+          Die fünf Stufen im Einzelnen
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SETTORI ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Arbeitsbereiche</span>
+        <h2 class="h2 balance mt-2">Jeder Betrug hinterlässt eine andere Spur.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Die Methode ist dieselbe; es ändert sich, wo man sucht. Wir arbeiten an den fünf Mustern, die uns am häufigsten begegnen, mit je eigenen Werkzeugen und Ansprechpartnern.
+      </p>
+    </div>
+
+    <div class="sectors" data-reveal-group="settori">
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17l5-5 3.5 3.5L21 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6h6v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <b>Falsche Broker und Handelsplattformen</b>
+        <p>Gefälschte Websites, «Berater» im Chat, garantierte Renditen. Wir beginnen bei den Überweisungen auf ausländische IBAN.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5v9M14.8 9.8c0-1.1-1.3-1.9-2.8-1.9s-2.8.8-2.8 1.9c0 2.7 5.6 1.4 5.6 4.1 0 1.1-1.3 1.9-2.8 1.9s-2.8-.8-2.8-1.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <b>Betrug mit Kryptowährungen</b>
+        <p>Falsche Börsen, nicht existierendes Staking, leergeräumte Wallets. Das öffentliche Register ist unsere wichtigste Quelle.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7.5 2.9v5.6c0 4.3-3.1 8-7.5 9-4.4-1-7.5-4.7-7.5-9V5.9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <b>Falsche Rückholfirmen</b>
+        <p>Wer die Rückzahlung gegen eine Vorauszahlung verspricht. Oft sind es dieselben Leute wie beim ersten Betrug.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 14.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <b>Betrug mit Zahlungen und Karten</b>
+        <p>Unbefugte Abbuchungen, Bank-Phishing, Chargebacks, die nur kurze Zeit offenstehen.</p>
+      </div>
+      <div class="sector reveal">
+        <svg class="sector__svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20V9.5M9.3 20V4M14.7 20v-7M20 20V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <b>«Alternative» Erträge und Anlagen</b>
+        <p>Immobilien, Wälder, Forderungen, Gold: feste Renditeversprechen ohne ein Produkt dahinter.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CASI RISOLTI ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Fälle und Ergebnisse</span>
+        <h2 class="h2 balance mt-2">Was wir erreicht haben<br>und was wir nicht erreichen konnten.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Jeder Fall endet auf eine von drei Weisen: Geld zurückverfolgt und Verfahren eröffnet, teilweise Rückholung, oder kein Weg. Wir veröffentlichen alle drei.
+      </p>
+    </div>
+
+    <div class="story-grid" data-reveal-group="casi">
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Zurückverfolgt · zivil</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Diagramma del flusso dei fondi">
+            <defs>
+              <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0H0v20" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="320" height="180" fill="url(#grid1)"/>
+            <g fill="none" stroke="#c8f169" stroke-width="1.6" opacity=".9">
+              <path d="M28 90h44"/><path d="M96 90h52"/><path d="M172 90h56"/><path d="M252 90h40"/>
+            </g>
+            <g fill="#fff">
+              <circle cx="24" cy="90" r="5"/><circle cx="92" cy="90" r="5"/>
+              <circle cx="168" cy="90" r="5"/><circle cx="248" cy="90" r="5"/>
+            </g>
+            <g fill="#c8f169">
+              <circle cx="248" cy="90" r="8"/><circle cx="92" cy="90" r="7" opacity=".55"/>
+            </g>
+            <g fill="rgba(255,255,255,.5)" font-family="monospace" font-size="8">
+              <text x="14" y="112">Konto</text><text x="80" y="112">Börse</text>
+              <text x="152" y="112">Wallet</text><text x="232" y="112">KYC</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Falscher CFD-Broker</span>
+          <h3 class="story__title">38.400 € bis zu einer Börse mit Identitätsprüfung zurückverfolgt</h3>
+          <p class="story__text">
+            Vier Überweisungen an zwei ausländische Gesellschaften, in USDT umgetauscht. Zwei Anknüpfungspunkte gefunden; Gutachten nach 9 Tagen übergeben und der Fall für die Zivilklage an den Anwalt weitergegeben.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>2</b><span>Anknüpfungspunkte</span></div>
+            <span class="pill pill--active">Laufend</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Teilweise</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Recupero parziale del capitale">
+            <rect width="320" height="180" fill="none"/>
+            <g stroke="rgba(255,255,255,.12)" stroke-width="1">
+              <path d="M40 140h240M40 100h240M40 60h240"/>
+            </g>
+            <rect x="72" y="52" width="46" height="88" fill="rgba(255,255,255,.16)"/>
+            <rect x="137" y="52" width="46" height="88" fill="rgba(255,255,255,.16)"/>
+            <rect x="202" y="98" width="46" height="42" fill="#c8f169"/>
+            <g fill="rgba(255,255,255,.55)" font-family="monospace" font-size="8">
+              <text x="72" y="154">eingezahlt</text><text x="137" y="154">abgeflossen</text><text x="202" y="154">zurückgeholt</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Social Trading</span>
+          <h3 class="story__title">12.400 € verloren, 4.100 € nach Kontosperre zurückgeholt</h3>
+          <p class="story__text">
+            Ein Teil des Geldes lag noch auf einem Konto bei einem italienischen Institut: auf unsere Meldung hin gesperrt und zurückgegeben. Der Rest war bereits in Bargeld abgehoben.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>33 %</b><span>des Kapitals zurückgeholt</span></div>
+            <span class="pill pill--pending">Abgeschlossen</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="story reveal">
+        <div class="story__visual">
+          <span class="story__tag">Keine Spur</span>
+          <svg viewBox="0 0 320 180" role="img" aria-label="Traccia interrotta">
+            <g fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6">
+              <path d="M24 110h48"/><path d="M96 110h48"/>
+            </g>
+            <g fill="none" stroke="#ff8fa3" stroke-width="1.6" stroke-dasharray="5 5">
+              <path d="M168 110h48"/>
+            </g>
+            <circle cx="24" cy="110" r="5" fill="#fff"/>
+            <circle cx="92" cy="110" r="5" fill="#fff"/>
+            <circle cx="164" cy="110" r="5" fill="#fff"/>
+            <g stroke="#ff8fa3" stroke-width="2" stroke-linecap="round">
+              <path d="M240 96l26 26M266 96l-26 26"/>
+            </g>
+            <g fill="rgba(255,255,255,.5)" font-family="monospace" font-size="8">
+              <text x="18" y="132">Konto</text><text x="88" y="132">Wallet</text>
+              <text x="146" y="132">Mixer</text><text x="228" y="132">Spur endet</text>
+            </g>
+          </svg>
+        </div>
+        <div class="story__body">
+          <span class="story__kicker">Falsche Rückholfirma</span>
+          <h3 class="story__title">6.900 € über einen Mixer abgeflossen: Fall kostenlos beendet</h3>
+          <p class="story__text">
+            Der Kunde war bereits von einer zweiten Gruppe kontaktiert worden, die eine Vorauszahlung verlangte. Das Geld war nicht mehr nachvollziehbar: kein Anknüpfungspunkt, kein Beitrag verlangt.
+          </p>
+          <div class="story__foot">
+            <div class="story__stat"><b>0 €</b><span>angerechnete Gebühren</span></div>
+            <span class="pill pill--denied">In Stufe 2 beendet</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="mt-4">
+      <a class="link-arrow" href="/de/casi">Alle Fälle und unsere Zahlen →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ IL PROCESSO (banda scura) ============================ -->
+<section class="band-dark band-dark--process grain">
+  <div class="band-dark__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/process-desk-800.webp 800w, assets/img/process-desk-1400.webp 1400w" sizes="100vw">
+      <img src="/assets/img/process-desk-1400.jpg"
+           srcset="assets/img/process-desk-800.jpg 800w, assets/img/process-desk-1400.jpg 1400w"
+           sizes="100vw" alt="" width="1400" height="933" loading="lazy" decoding="async">
+    </picture>
+  </div>
+
+  <div class="container">
+    <div class="band-dark__head" data-reveal="up">
+      <div>
+        <span class="kicker">Der Ablauf</span>
+        <h2 class="h2 balance">Von der Meldung zum Gutachten,<br><em>ohne Abkürzungen.</em></h2>
+      </div>
+      <p class="lead">
+        Jede Stufe hat ein überprüfbares Ergebnis: ein Dokument, eine Adressliste, ein eingereichter Schriftsatz. Bringt eine Stufe nichts, endet der Fall dort.
+      </p>
+    </div>
+
+    <ol class="flow flow--dark flow--two">
+      <li class="flow__step" data-reveal="up" data-reveal-delay="40">
+        <span class="flow__num" aria-hidden="true">01</span>
+        <div class="flow__body">
+          <h3>Erfassung</h3>
+          <p>Gespräch, Unterlagen, Kontoauszug, Überweisungsbelege. Damit klären wir, was wann passiert ist.</p>
+          <div class="flow__meta"><span><b>1–3 Tage</b> ab Eröffnung</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="120">
+        <span class="flow__num" aria-hidden="true">02</span>
+        <div class="flow__body">
+          <h3>Rekonstruktion</h3>
+          <p>Wir verfolgen die Ströme über Überweisungen und Blockchain. Hier zeigt sich, ob ein Anknüpfungspunkt bleibt.</p>
+          <div class="flow__meta"><span><b>31 %</b> enden hier, ohne Kosten</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="200">
+        <span class="flow__num" aria-hidden="true">03</span>
+        <div class="flow__body">
+          <h3>Gutachten</h3>
+          <p>Unterzeichnetes technisches Dokument mit Quellenangaben: Hash, Datum, Institut, Transaktionsnummer.</p>
+          <div class="flow__meta"><span><b>10 Tage</b> Werktage</span></div>
+        </div>
+      </li>
+      <li class="flow__step" data-reveal="up" data-reveal-delay="280">
+        <span class="flow__num" aria-hidden="true">04</span>
+        <div class="flow__body">
+          <h3>Anzeigen und Recht</h3>
+          <p>Wir bereiten die Unterlagen für die Anzeige vor und übergeben sie dem Anwalt, der die Rückholung begleitet.</p>
+          <div class="flow__meta"><span><b>12 %</b> nur auf das Zurückgeholte</span></div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="band-dark__foot" data-reveal="up" data-reveal-delay="340">
+      <a class="btn btn--accent" href="/de/come-funziona">So funktioniert es, Stufe für Stufe</a>
+      <a class="link-arrow" style="color:rgba(255,255,255,.75)" href="/de/onorari">
+        Honorare und Grenzen
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PERCHÉ NOI ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Die Methode</span>
+        <h2 class="h2 balance mt-2">Warum ein Gutachten mehr wert ist als ein Versprechen.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Ein Versprechen kann man nicht bei Gericht einreichen. Ein datiertes, unterzeichnetes technisches Dokument schon.
+      </p>
+    </div>
+
+    <div class="pillars pillars--4" data-reveal-group="pilastri">
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7.5 2.9v5.6c0 4.3-3.1 8-7.5 9-4.4-1-7.5-4.7-7.5-9V5.9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="h3">Überprüfbare Analyse</h3>
+        <p>
+          Jeder Schritt des Gutachtens nennt die Quelle: Hash, Datum, Institut, Transaktionsnummer. Jeder kann es nachprüfen, auch der Anwalt der Gegenseite.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.8V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="h3">Angegebene Fristen</h3>
+        <p>
+          Zehn Werktage für das Gutachten, achtundvierzig Stunden für die erste Antwort. Verzögert es sich, schreiben wir es in die Akte, bevor Sie fragen müssen.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="h3">Angegebene Ergebnisse</h3>
+        <p>
+          31 % der Fälle enden in der Rekonstruktionsphase und werden nicht berechnet. Wir veröffentlichen es, weil kein Wettbewerber diese Zahl zeigt.
+        </p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".25"/><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="16" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg>
+        </div>
+        <h3 class="h3">Ein Netz von Fachleuten</h3>
+        <p>
+          Wir arbeiten mit Anwälten, Sachverständigen und Kollegen in anderen Rechtsordnungen. Das Gutachten ist dafür geschrieben, von ihnen genutzt zu werden, nicht für die Schublade.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TEAM ============================ -->
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-head" data-reveal="up">
+      <div>
+        <span class="eyebrow">Das Team</span>
+        <h2 class="h2 balance mt-2">Wer Ihren Fall analysiert.</h2>
+      </div>
+      <p class="lead section-head__aside">
+        Neun Personen in Blockchain-Analyse, Finanzermittlung und Fallbearbeitung. Keine Verkäufer, kein Callcenter.
+        <a href="/de/chi-siamo">Das Team kennenlernen →</a>
+      </p>
+    </div>
+
+    <figure class="figure team-photo" style="margin:0 0 2rem">
+      <div class="frame frame--wide" data-reveal="up">
+        <picture>
+          <source type="image/webp" srcset="assets/img/team-room-900.webp 900w, assets/img/team-room-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 1200px">
+          <img src="/assets/img/team-room-1600.jpg"
+               srcset="assets/img/team-room-900.jpg 900w, assets/img/team-room-1600.jpg 1600w"
+               sizes="(max-width: 900px) 100vw, 1200px"
+               alt="Ufficio di analisi a Torino al tramonto: scrivanie, monitor con grafi di transazioni e la Mole sullo sfondo"
+               width="1600" height="1067" loading="lazy" decoding="async">
+        </picture>
+        <div class="frame__scrim frame__scrim--side" aria-hidden="true"></div>
+        <div class="frame__cap">
+          <span class="kicker">Turin · Piazza Solferino</span>
+          <h3 style="max-width:24ch">Das Analysebüro, in dem Akten zu Gutachten werden.</h3>
+        </div>
+      </div>
+    </figure>
+
+    <div class="team-grid" data-reveal-group="team">
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar">MB</span>
+          <div>
+            <div class="member__name">Marta Bellini</div>
+            <div class="member__role">Leitung forensische Analyse</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Fünfzehn Jahre zwischen Wirtschaftsprüfung und Rechtsstreit. Sie koordiniert die Gutachten und unterzeichnet die Dokumente für das Gericht.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Gutachten</span>
+          <span class="member__tag">Rechtsstreit</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar member__avatar--accent">AC</span>
+          <div>
+            <div class="member__name">Andrea Costa</div>
+            <div class="member__role">Blockchain Intelligence</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Verfolgung von Transaktionen auf Bitcoin, Ethereum und Stablecoins. Er erkennt Börsen, Mixing-Dienste und Bündelungsmuster.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">On-Chain</span>
+          <span class="member__tag">USDT</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar member__avatar--soft">SF</span>
+          <div>
+            <div class="member__name">Sara Ferrero</div>
+            <div class="member__role">Finanzermittlung</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Ehemalige Bank-Betrugsanalystin. Sie verfolgt Geldströme über Überweisungen, Karten und Konten von Strohmännern sowie die Anfragen an die Institute.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Überweisungen</span>
+          <span class="member__tag">Chargeback</span>
+        </div>
+      </article>
+
+      <article class="member reveal">
+        <div class="member__head">
+          <span class="member__avatar">GR</span>
+          <div>
+            <div class="member__name">Giulia Rinaldi</div>
+            <div class="member__role">Fallbearbeitung</div>
+          </div>
+        </div>
+        <p class="member__bio">
+          Einzige Ansprechpartnerin zwischen Melder, Analysten und Anwälten. Sie führt die Chronologie des Falls und die Fristen.
+        </p>
+        <div class="member__tags">
+          <span class="member__tag">Fälle</span>
+          <span class="member__tag">Meldungen</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REGISTRO / FIDUCIA ============================ -->
+<section class="section section--dark">
+  <div class="container">
+    <div class="split">
+      <div class="reveal reveal--left">
+        <span class="eyebrow">Transparenz</span>
+        <h2 class="h2 balance mt-2">Was wir nicht tun<br>und was niemand Ihnen versprechen sollte.</h2>
+        <p class="lead mt-3">
+          Die Branche der «Geldrückholung» ist voll von Menschen, die aus Verzweiflung Gewinn schlagen. Das sind die Grenzen, die wir uns gesetzt haben — im Vertrag festgehalten, nicht nur auf der Website.
+        </p>
+        <a class="btn btn--on-dark mt-4" href="/de/onorari">
+          Die Grenzen des Angebots lesen
+        </a>
+      </div>
+
+      <div class="reveal reveal--right">
+        <ul class="no-list">
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Wir garantieren keine Rückholung.</b> Wer sie garantiert, verkauft Hoffnung, keine Dienstleistung.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Wir verlangen keine Vorauszahlungen, um eine Rückzahlung zu «entsperren».</b> Der Startbeitrag deckt die Analyse ab und wird einmal gezahlt.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Wir verlangen keine privaten Schlüssel, Seed Phrases oder Fernzugriff</b> auf Ihren Computer oder Ihr Online-Banking.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Wir beauftragen keine Hacker.</b> Es gibt keine «ethischen Hacker», die Wallets gegen Bezahlung zurückholen: Das ist ein zweiter Betrug.</span>
+          </li>
+          <li class="no-list__item">
+            <span class="no-list__x" aria-hidden="true">✕</span>
+            <span><b>Wir versprechen keine festen Fristen.</b> Die italienische Justiz hat ihre eigenen, und wir bestimmen sie nicht.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="section section--soft" id="faq">
+  <div class="container container--narrow">
+    <div class="text-center" data-reveal="up">
+      <span class="eyebrow">Fragen</span>
+      <h2 class="h2 balance mt-2">Die Fragen, die uns alle stellen.</h2>
+    </div>
+
+    <div class="faq mt-5" data-reveal-group="faq">
+      <details class="faq__item reveal">
+        <summary><span>Was kostet ein Versuch?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Die erste Einschätzung ist kostenlos: Wir lesen die Unterlagen und sagen Ihnen, ob der Fall Sinn ergibt. Entscheiden wir uns weiterzumachen, beträgt der Startbeitrag 190 € inkl. MwSt. und deckt Analyse und Gutachten ab; die 12 % gelten nur für tatsächlich zurückgeholte Beträge. Sagt das Gutachten, dass nichts zu machen ist, verlangen wir nichts weiter.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Wie lange dauert es?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Das Gutachten dauert im Schnitt zehn Werktage ab vollständiger Übergabe der Unterlagen. Die folgenden Phasen — Anzeige, Anfragen an die Institute, eine mögliche Klage — bemessen sich in Monaten oder Jahren und liegen nicht bei uns.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Stimmt es, dass Kryptowährungen nicht zurückzuholen sind?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Nein, aber es stimmt, dass oft nichts mehr zu verfolgen bleibt. Sind die Gelder bei einer Börse gelandet, die ihre Kunden identifiziert, gibt es eine Adresse; sind sie über einen Mixer oder über Dienste ohne Prüfungen gelaufen, endet der Weg. Das prüfen wir zuerst.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Sind Sie Anwälte?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Nein. Wir sind Analysten: Wir erstellen technische Gutachten und helfen bei der Vorbereitung der Meldungen. Rechtliche Schriftsätze unterzeichnet ein Anwalt — Ihrer oder einer unserer Partner. Wir übernehmen die technische Seite, nicht die Vertretung vor Gericht.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq__item reveal">
+        <summary><span>Haben Sie mich angerufen? Ich habe nie etwas angefragt.</span><span class="faq__icon" aria-hidden="true"></span></summary>
+        <div class="faq__answer">
+          <p>
+            Wir rufen nicht kalt an und senden keine unerwünschten Nachrichten. Stellt sich jemand als unser Mitarbeiter vor, ohne dass Sie uns kontaktiert haben, ist er es nicht. Schreiben Sie an
+            <a href="mailto:assistenza@traccia.it.com">assistenza@traccia.it.com</a> und melden Sie es.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div class="cta-band__inner">
+        <div>
+          <span class="eyebrow">Erster Schritt</span>
+          <h2 class="h2 balance mt-2">Erzählen Sie uns, was passiert ist.<br>Wir sagen Ihnen, ob es einen Weg gibt.</h2>
+          <p class="lead mt-2" style="max-width:52ch">
+            Fünf Minuten für die erste Meldung, Antwort innerhalb von 48 Arbeitsstunden. Ist der Fall nicht unserer, sagen wir es sofort und verlangen nichts.
+          </p>
+        </div>
+        <div class="cta-band__actions">
+          <a class="btn btn--accent btn--lg" href="/de/login">Fall melden</a>
+          <a class="btn btn--ghost btn--lg" href="/de/supporto">Sprechen Sie mit uns</a>
+          <p class="xs muted mt-2">
+            Wir verlangen niemals private Schlüssel oder Fernzugriff.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- shell:footer -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="index.html" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Forensische Analyse von Online-Anlagebetrug. Wir rekonstruieren den Weg Ihres Geldes, wenn eine Anlageplattform Ihr Kapital nicht mehr zurückzahlt.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Leistung</h4>
+        <ul>
+          <li><a href="come-funziona.html">So funktioniert es</a></li>
+          <li><a href="come-funziona.html#fasi">Die fünf Stufen</a></li>
+          <li><a href="casi.html">Bearbeitete Fälle</a></li>
+          <li><a href="crypto.html">Krypto-Betrug</a></li>
+          <li><a href="chi-siamo.html">Über uns</a></li>
+          <li><a href="team.html">Das Team</a></li>
+          <li><a href="onorari.html">Honorare</a></li>
+          <li><a href="onorari.html#cosa-non-facciamo">Was wir nicht tun</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Bevor Sie beginnen</h4>
+        <ul>
+          <li><a href="supporto.html#mai-pagare">Man verlangt weiteres Geld?</a></li>
+          <li><a href="supporto.html#segnalare">Wo Sie es melden</a></li>
+          <li><a href="supporto.html#documenti">Aufzubewahrende Unterlagen</a></li>
+          <li><a href="supporto.html#faq">Häufige Fragen</a></li>
+          <li><a href="login.html">Mein Fall</a></li>
+          <li><a href="supporto.html#contatti">Kontakt</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Rechtliches</h4>
+        <ul>
+          <li><a href="privacy.html">Datenschutz</a></li>
+          <li><a href="termini.html">Allgemeine Geschäftsbedingungen</a></li>
+          <li><a href="cookie.html">Cookie-Richtlinie</a></li>
+          <li><a href="note-legali.html">Impressum</a></li>
+          <li><a href="privacy.html#reclami">Beschwerden</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Erforderlicher Hinweis.</strong> Traccia führt technische und dokumentarische Analysen durch und unterstützt bei der Rekonstruktion von Geldströmen. <strong>Wir sind weder Anwalt noch Anwaltskanzlei, weder Kreditinstitut noch ein nach Art. 115 TULPS zugelassenes Inkassounternehmen und auch kein Finanzintermediär.</strong> Wir können die Rückholung der Beträge nicht garantieren: Das Ergebnis hängt von Faktoren ab, die wir nicht kontrollieren — ob die Gelder nachvollziehbar sind, ob die beteiligten Institute mitarbeiten und wie schnell die Gerichte arbeiten. Kein Anbieter kann eine garantierte Rückzahlung versprechen: Wer es tut, betreibt einen Betrug im Betrug. Unsere WhatsApp-Nummer ist ausschließlich die auf dieser Website veröffentlichte: Wir schreiben nie zuerst und verlangen im Chat kein Geld.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Betrugsschutz.</strong> Wir verlangen niemals Geld im Voraus, um eine Rückzahlung zu «entsperren», niemals Steuervorauszahlungen, die Installation von Fernzugriffssoftware oder die Weitergabe von OTP-Codes und privaten Schlüsseln. Jede solche Aufforderung melden Sie bitte sofort an
+        <a href="mailto:assistenza@traccia.it.com">assistenza@traccia.it.com</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sitz und Hauptniederlassung: Piazza Solferino, 11 - 10121 Turin (TO), Italien · USt-IdNr. / Steuernummer 06900230018 · Technische und dokumentarische Analyse, nicht zugelassenen Finanzintermediären vorbehalten. Wir sind weder Bank noch Finanzintermediär und unterliegen nicht der Aufsicht der Banca d'Italia oder der CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Alle Rechte vorbehalten. USt-IdNr. 06900230018
+        </span>
+        <span>
+          <a href="note-legali.html">Impressum</a> ·
+          <a href="privacy.html">Datenschutz</a> ·
+          <a href="cookie.html">Cookies</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+  <!-- /shell:footer -->
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <p>
+    Wir verwenden technisch notwendige Cookies und, mit Ihrer Einwilligung, Mess-Cookies. Sie können zustimmen, ablehnen oder die
+    <a href="cookie.html" style="text-decoration:underline">Cookie-Richtlinie</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Alle akzeptieren</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Nur notwendige</button>
+    <a class="btn btn--ghost" href="cookie.html">Einstellungen</a>
+  </div>
+</div>
+
+
+  <script src="/assets/js/main.js?v=20261102d" defer></script>
+  <script src="/assets/js/market.js?v=20261102d" defer></script>
+  <script src="/assets/js/premium.js?v=20261102d" defer></script>
+  <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
+       pulsante non compare affatto -->
+  <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
+     aria-label="Scrivici su WhatsApp" hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
+    <span class="wa-fab__label">Schreiben Sie uns auf WhatsApp</span>
+  </a>
+  <script src="/assets/js/whatsapp.js?v=20261102d" defer></script>
+</body>
+</html>

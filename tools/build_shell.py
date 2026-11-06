@@ -46,6 +46,10 @@ PAGINE_PUBBLICHE = [
     "404.html", "admin.html",
 ]
 
+# Le pagine tradotte (`en/`, `de/`, `es/`) non passano da qui: le scrive
+# `build_i18n.py`, che è l'unico proprietario di quei file. Due script che
+# riscrivono lo stesso header si sovrascriverebbero a vicenda a ogni giro.
+
 # L'area riservata ha una barra propria: non è un errore che sia diversa,
 # ma deve comunque venire da un solo posto.
 PAGINE_AREA = ["app.html"]
@@ -81,8 +85,19 @@ def nav_links(pagina: str) -> str:
     return "\n".join(righe)
 
 
-def costruisci_header(pagina: str) -> str:
-    return leggi("header.html").replace("{{nav_links}}", nav_links(pagina))
+def costruisci_header(pagina: str, lingua: str = "it") -> str:
+    # Una pagina tradotta vive in `<lingua>/`: i link del menu devono restare in
+    # quella lingua, altrimenti il primo clic riporta il visitatore all'italiano
+    # e la lingua scelta dura una pagina sola.
+    corpo = leggi("header.html").replace("{{nav_links}}", nav_links(pagina))
+    if lingua != "it":
+        corpo = corpo.replace('href="index.html"', f'href="/{lingua}/"')
+        corpo = re.sub(
+            r'href="(?!https?:|/|#|mailto:|tel:)([a-z0-9\-]+)\.html(#[^"]*)?"',
+            lambda m: f'href="/{lingua}/{m.group(1)}"',
+            corpo,
+        )
+    return corpo
 
 
 def sostituisci(html: str, inizio: str, fine: str, nuovo: str) -> str:

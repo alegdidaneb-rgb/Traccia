@@ -92,6 +92,32 @@
         <li><a class="nav-link" data-nav="onorari" href="onorari.html">Onorari</a></li>
         <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
 
+        <li class="nav__lang" data-lang-switch>
+          <!-- Selettore lingua. Le sigle al posto delle bandiere: una bandiera
+               dice «Regno Unito» quando la lingua è l'inglese, e «Spagna»
+               quando è lo spagnolo. Il codice non sbaglia e sta in 34px. -->
+          <details class="lang">
+            <summary class="lang__toggle" aria-label="Lingua / Language">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M1.9 8h12.2M8 1.8c1.9 1.7 3 3.9 3 6.2s-1.1 4.5-3 6.2c-1.9-1.7-3-3.9-3-6.2s1.1-4.5 3-6.2z"
+                      stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <span class="lang__code" data-lang-current>IT</span>
+              <svg class="lang__caret" width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6.5l4 4 4-4" stroke="currentColor" stroke-width="1.6"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <ul class="lang__menu" role="menu">
+              <li><a role="menuitem" href="/" hreflang="it" lang="it" data-lang="it">Italiano</a></li>
+              <li><a role="menuitem" href="/en/" hreflang="en" lang="en" data-lang="en">English</a></li>
+              <li><a role="menuitem" href="/de/" hreflang="de" lang="de" data-lang="de">Deutsch</a></li>
+              <li><a role="menuitem" href="/es/" hreflang="es" lang="es" data-lang="es">Español</a></li>
+            </ul>
+          </details>
+        </li>
+
         <li class="nav__actions" data-auth-slot>
           <!-- visitatore -->
           <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
