@@ -184,22 +184,22 @@
     } catch (e) { return null; }
   }
 
-  /* ------------------------------------------------------------------ sigla -- */
-  document.querySelectorAll("[data-lang-current]").forEach(function (nodo) {
-    nodo.textContent = corrente.toUpperCase();
-  });
-
-  /* la voce attiva si dichiara, così si vede dove si è e lo legge il lettore
-     di schermo */
+  /* ------------------------------------------------- voce della lingua attiva -- */
+  /* Le quattro lingue sono sempre in vista: quella corrente non è un link ma
+     la pastiglia accesa, e non è nemmeno cliccabile. Prima era un `<a>` che
+     puntava alla pagina in cui si era già: si premeva e non succedeva niente,
+     che è il difetto che fa dire «non riesco a cambiare lingua». Un `<a>`
+     senza `href` resta raggiungibile da tastiera e annunciato come «link
+     corrente» dai lettori di schermo, quindi tanto vale togliere il link. */
   document.querySelectorAll("[data-lang]").forEach(function (a) {
     var sua = a.getAttribute("data-lang");
     if (sua === corrente) {
       a.setAttribute("aria-current", "true");
-      /* e non deve puntare alla pagina in cui siamo già: un link che ricarica
-         la stessa pagina sembra rotto */
-      a.setAttribute("href", location.pathname + location.hash);
+      a.removeAttribute("href");
+      a.removeAttribute("role");
+    } else {
+      a.addEventListener("click", function () { ricorda(sua); });
     }
-    a.addEventListener("click", function () { ricorda(sua); });
   });
 
   /* ------------------------------------------------------- lingua del browser -- */
@@ -227,15 +227,4 @@
      l'italiano, così non gli si propone il tedesco al ritorno */
   if (!ricordata()) ricorda(corrente);
 
-  /* ------------------------------------------------------------ chiusura -- */
-  /* `<details>` si chiude da solo con Esc e al clic fuori non si chiude: qui si
-     aggiunge il clic fuori, che è quello che tutti si aspettano da un menu. */
-  document.querySelectorAll(".lang").forEach(function (blocco) {
-    document.addEventListener("click", function (e) {
-      if (blocco.open && !blocco.contains(e.target)) blocco.open = false;
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && blocco.open) blocco.open = false;
-    });
-  });
 })();

@@ -217,14 +217,24 @@ test("il selettore lingua c'è su tutte le pagine pubbliche", () => {
     `pagine senza selettore lingua: ${senza.join(", ")}`);
 });
 
-test("il selettore offre tutte e quattro le lingue, con link veri", () => {
+test("il selettore offre tutte e quattro le lingue, sempre in vista", () => {
   const header = R("partials/header.html");
+  /* Il difetto da impedire è il contrario di quello di prima: non «manca una
+     lingua», ma «la lingua è nascosta dietro un menu». Chi arriva su una
+     pagina che non sa leggere deve vedere l'uscita senza aprirla. */
+  /* solo il markup: il commento che spiega perché non c'è più un `<details>`
+     contiene la parola, e non è un menu */
+  const senzaCommenti = header.replace(/<!--[\s\S]*?-->/g, "");
+  assert.ok(!/<details/.test(senzaCommenti),
+    "il selettore non deve tornare a essere un menu da aprire");
+  assert.ok(!/lang__toggle|lang__menu/.test(header), "resti del vecchio menu a tendina");
+  const voci = header.match(/class="lang__opt"[^>]*data-lang="([a-z]{2})"/g) || [];
+  assert.equal(voci.length, 4, "le lingue in vista devono essere quattro");
   assert.ok(/href="\/"/.test(header), "manca il link all'italiano");
   TRADOTTE.forEach((l) => {
-    assert.ok(new RegExp(`hreflang="${l}"`).test(header), `manca l'inglese in hreflang=${l}`);
+    assert.ok(new RegExp(`hreflang="${l}"`).test(header), `manca hreflang=${l}`);
     assert.ok(new RegExp(`href="/${l}/"`).test(header), `manca il link a /${l}/`);
   });
-  assert.ok(/data-lang-current/.test(header), "manca il posto dove mostrare la sigla attiva");
 });
 
 test("la lingua non si sceglie con le bandiere", () => {
@@ -234,23 +244,41 @@ test("la lingua non si sceglie con le bandiere", () => {
   const header = R("partials/header.html");
   /* il controllo è sui link delle lingue, non su tutte le icone dell'header:
      il globo e la freccia sono <svg> inline e vanno benissimo */
-  const voci = header.match(/<a[^>]*data-lang="[^"]*"[^>]*>[\s\S]*?<\/a>/g) || [];
+  const voci = header.match(/<a class="lang__opt"[\s\S]*?<\/a>/g) || [];
   assert.ok(voci.length >= 4, "mancano le voci delle lingue");
   voci.forEach((v) => {
     assert.ok(!/<img|flag|bandiera|\.png|\.jpg/i.test(v),
       "una voce lingua usa un'immagine: " + v.slice(0, 80));
   });
-  assert.ok(/data-lang-current/.test(header), "la sigla testuale è l'unica indicazione ammessa");
-  assert.ok(/data-lang-current/.test(header), "la sigla testuale è l'unica indicazione ammessa");
+  assert.ok(/<span aria-hidden="true">[A-Z]{2}<\/span>/.test(header),
+    "la sigla testuale è l'unica indicazione ammessa");
 });
 
-test("cambiare lingua non ricarica la stessa pagina", () => {
-  /* Un link che punta alla pagina in cui siamo già sembra rotto: si clicca
-     «Deutsch» dentro `/de/` e non succede niente. main.js lo corregge. */
-  const js = R("assets/js/main.js");
-  assert.ok(/aria-current/.test(js), "la voce attiva va dichiarata");
-  assert.ok(/setAttribute\("href", location\.pathname/.test(js),
-    "la voce della lingua corrente deve puntare a sé stessa, non altrove");
+test("sulla lingua in cui si è già non c'è un link che non fa niente", () => {
+  /* Prima la voce attiva era un `<a>` che puntava alla pagina in corso: si
+     premeva e non succedeva nulla, e chi non lo sa conclude che il selettore
+     non funziona. Ora la voce corrente è una pastiglia accesa, senza href. */
+  const tagLingua = (blocco, l) =>
+    [...blocco.matchAll(/<a class="lang__opt"[\s\S]*?>/g)]
+      .map((m) => m[0])
+      .filter((t) => t.includes(`data-lang="${l}"`))
+      .filter((t) => (t.match(/data-lang="/g) || []).length === 1);
+
+  ["it"].concat(TRADOTTE).forEach((l) => {
+    const file = l === "it" ? "index.html" : `${l}/index.html`;
+    const h = R(file);
+    const blocco = h.slice(h.indexOf("data-lang-switch"), h.indexOf('class="nav__actions"'));
+    const corrente = tagLingua(blocco, l)[0];
+    assert.ok(corrente, `${l}: manca la voce della lingua corrente`);
+    assert.ok(/aria-current="true"/.test(corrente), `${l}: la voce corrente non è dichiarata`);
+    assert.ok(!/href=/.test(corrente), `${l}: la voce corrente è ancora un link`);
+    /* e le altre tre sono link veri */
+    const altre = ["it"].concat(TRADOTTE).filter((x) => x !== l);
+    altre.forEach((x) => {
+      const t = tagLingua(blocco, x)[0];
+      assert.ok(t && /href="/.test(t), `${l}: «${x}» non è un link`);
+    });
+  });
 });
 
 test("la lingua scelta si ricorda, e si propone quella del browser", () => {
@@ -307,22 +335,17 @@ test("dalla pagina tradotta non si torna all'italiano per sbaglio", () => {
 /* Senza JavaScript la sigla deve già dire la lingua giusta: altrimenti una
    pagina tedesca mostra «IT» accanto al globo, e sbaglia proprio nel comando
    che dovrebbe dire in che lingua si sta leggendo. */
-test("la sigla del selettore è scritta già giusta nell'HTML", () => {
-  const attese = { en: "EN", de: "DE", es: "ES" };
-  Object.entries(attese).forEach(([l, sigla]) => {
+test("la lingua corrente è dichiarata nell'HTML, non solo dallo script", () => {
+  TRADOTTE.forEach((l) => {
     const h = R(`${l}/index.html`);
-    assert.ok(!h.includes("data-lang-current>IT<"), `${l}: la sigla dice ancora IT`);
-    assert.ok(h.includes(`data-lang-current>${sigla}<`), `${l}: manca la sigla ${sigla}`);
-    assert.ok(
-      h.includes(`data-lang="${l}" aria-current="true"`),
-      `${l}: la voce corrente non è marcata`
-    );
-    /* una sola voce corrente, non due */
-    assert.equal(
-      (h.match(/aria-current="true"/g) || []).length,
-      1,
-      `${l}: più di una voce marcata come corrente`
-    );
+    const blocco = h.slice(h.indexOf('data-lang-switch'), h.indexOf('class="nav__actions"'));
+    /* una sola voce accesa, e non è l'italiano */
+    assert.equal((blocco.match(/aria-current="true"/g) || []).length, 1, `${l}: voci accese`);
+    const corrente = blocco.match(/<a class="lang__opt"[\s\S]*?aria-current="true"[^>]*>/);
+    assert.ok(corrente && corrente[0].includes(`data-lang="${l}"`), `${l}: accesa la lingua sbagliata`);
+    /* le sigle: quattro, una per lingua */
+    const sigle = [...blocco.matchAll(/<span aria-hidden="true">([A-Z]{2})<\/span>/g)].map((m) => m[1]);
+    assert.deepEqual(sigle, ["IT", "EN", "DE", "ES"], `${l}: sigle ${sigle.join(" ")}`);
   });
 });
 
@@ -339,7 +362,13 @@ test("anche i testi invisibili sono tradotti", () => {
     const it = CAT("it");
     const rimasti = attrs.filter((v) => it[v] === v || Object.keys(it).includes(v));
     /* le eccezioni vere: nomi propri, sigle, parole identiche nelle due lingue */
-    const ammessi = ["Traccia", "WhatsApp", "MB", "AC", "SF", "GR", "IT", "EN", "DE", "ES"];
+    /* «Italiano» nella pagina inglese è voluto: è il nome che quella lingua dà
+       a sé stessa, ed è quello che cerca chi parla italiano. Stessa cosa per
+       le altre tre. Non sono stringhe rimaste indietro: sono l'eccezione. */
+    const ammessi = [
+      "Traccia", "WhatsApp", "MB", "AC", "SF", "GR", "IT", "EN", "DE", "ES",
+      "Italiano", "English", "Deutsch", "Español",
+    ];
     const colpevoli = rimasti.filter((v) => !ammessi.includes(v) && it[v] === v);
     assert.equal(
       colpevoli.length,

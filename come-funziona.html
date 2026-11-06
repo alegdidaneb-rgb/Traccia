@@ -93,29 +93,29 @@
         <li><a class="nav-link" data-nav="supporto" href="supporto.html">Supporto</a></li>
 
         <li class="nav__lang" data-lang-switch>
-          <!-- Selettore lingua. Le sigle al posto delle bandiere: una bandiera
-               dice «Regno Unito» quando la lingua è l'inglese, e «Spagna»
-               quando è lo spagnolo. Il codice non sbaglia e sta in 34px. -->
-          <details class="lang">
-            <summary class="lang__toggle" aria-label="Lingua / Language">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.2"/>
-                <path d="M1.9 8h12.2M8 1.8c1.9 1.7 3 3.9 3 6.2s-1.1 4.5-3 6.2c-1.9-1.7-3-3.9-3-6.2s1.1-4.5 3-6.2z"
-                      stroke="currentColor" stroke-width="1.2"/>
-              </svg>
-              <span class="lang__code" data-lang-current>IT</span>
-              <svg class="lang__caret" width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M4 6.5l4 4 4-4" stroke="currentColor" stroke-width="1.6"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </summary>
-            <ul class="lang__menu" role="menu">
-              <li><a role="menuitem" href="/" hreflang="it" lang="it" data-lang="it">Italiano</a></li>
-              <li><a role="menuitem" href="/en/" hreflang="en" lang="en" data-lang="en">English</a></li>
-              <li><a role="menuitem" href="/de/" hreflang="de" lang="de" data-lang="de">Deutsch</a></li>
-              <li><a role="menuitem" href="/es/" hreflang="es" lang="es" data-lang="es">Español</a></li>
-            </ul>
-          </details>
+          <!-- Cambio lingua: quattro pulsanti in fila, non un menu a tendina.
+               Prima era un `<details>` con dentro una lista: due clic per
+               cambiare lingua, un clic che non faceva niente quando si
+               sceglieva la lingua in cui si era già, e su mobile il selettore
+               finiva dentro l'hamburger — cioè invisibile a chi non sa dove
+               cercarlo. Ora le quattro lingue si vedono sempre, con un clic
+               solo e nessun clic a vuoto: la lingua corrente non è un link,
+               è la pastiglia accesa.
+
+               Le sigle sono l'unica forma visibile; il nome intero della
+               lingua sta nel `title` e nell'`aria-label`. `hreflang` dice ai
+               motori che quella è la stessa pagina in un'altra lingua. -->
+          <div class="lang" role="group" aria-labelledby="lang-label" data-lang-group>
+            <span class="sr-only" id="lang-label" data-lang-label>Lingua</span>
+            <a class="lang__opt" hreflang="it" lang="it" data-lang="it" aria-current="true"
+               title="Italiano" aria-label="Italiano"><span aria-hidden="true">IT</span></a>
+            <a class="lang__opt" href="/en/" hreflang="en" lang="en" data-lang="en"
+               title="English" aria-label="English"><span aria-hidden="true">EN</span></a>
+            <a class="lang__opt" href="/de/" hreflang="de" lang="de" data-lang="de"
+               title="Deutsch" aria-label="Deutsch"><span aria-hidden="true">DE</span></a>
+            <a class="lang__opt" href="/es/" hreflang="es" lang="es" data-lang="es"
+               title="Español" aria-label="Español"><span aria-hidden="true">ES</span></a>
+          </div>
         </li>
 
         <li class="nav__actions" data-auth-slot>
