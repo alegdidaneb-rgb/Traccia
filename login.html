@@ -224,21 +224,51 @@
       </p>
 
       <form class="form mt-3" id="register-form" hidden novalidate>
-        <div class="field">
-          <label for="reg-name">Nome e cognome</label>
-          <input id="reg-name" name="name" type="text" autocomplete="name"
-                 placeholder="Mario Rossi" required>
+        <!-- Richiesta di informazioni: i cinque dati che servono per
+             ricontattare qualcuno e capire se il caso è nostro. Nome e
+             cognome separati perché il contratto di incarico li vuole
+             distinti; il telefono perché chi ha appena perso dei soldi non
+             aspetta un'email; l'importo perché dice subito di che ordine di
+             grandezza si parla. Password e tipo di truffa restano: senza
+             password non c'è area riservata in cui caricare i documenti. -->
+        <div class="form-row">
+          <div class="field">
+            <label for="reg-first-name">Nome</label>
+            <input id="reg-first-name" name="first_name" type="text"
+                   autocomplete="given-name" placeholder="Mario"
+                   maxlength="60" required>
+          </div>
+          <div class="field">
+            <label for="reg-last-name">Cognome</label>
+            <input id="reg-last-name" name="last_name" type="text"
+                   autocomplete="family-name" placeholder="Rossi"
+                   maxlength="60" required>
+          </div>
         </div>
-        <div class="field">
+        <div class="field mt-3">
           <label for="reg-email">Email</label>
           <input id="reg-email" name="email" type="email" autocomplete="email"
                  placeholder="nome@esempio.it" required>
+          <span class="field__hint">È l'indirizzo su cui riceverai le risposte.</span>
         </div>
-        <div class="field">
+        <div class="field mt-3">
+          <label for="reg-phone">Telefono per essere contattato</label>
+          <input id="reg-phone" name="phone" type="tel" autocomplete="tel"
+                 inputmode="tel" placeholder="+39 333 123 4567"
+                 maxlength="25" required>
+          <span class="field__hint">Con il prefisso: così possiamo chiamarti anche dall'estero.</span>
+        </div>
+        <div class="field mt-3">
+          <label for="reg-amount">Importo approssimativo perso</label>
+          <input id="reg-amount" name="amount_eur" type="text" inputmode="decimal"
+                 autocomplete="off" placeholder="12.500" required>
+          <span class="field__hint">In euro, anche approssimativo. Serve a capire di che caso si tratta.</span>
+        </div>
+        <div class="field mt-3">
           <label for="reg-password">Password</label>
           <input id="reg-password" name="password" type="password"
                  autocomplete="new-password" minlength="8" placeholder="Almeno 8 caratteri" required>
-          <span class="field__hint">Almeno 8 caratteri.</span>
+          <span class="field__hint">Almeno 8 caratteri: serve per entrare nell'area riservata.</span>
         </div>
         <div class="field mt-3">
           <label for="reg-tipo">Che cosa ti è successo</label>
@@ -254,8 +284,9 @@
         <button class="btn btn--accent btn--block btn--lg" type="submit">Invia richiesta</button>
         <p class="form__note">
           La pratica resta <strong>in attesa</strong> finché un analista non la
-          prende in carico: riceverai un'email con i documenti da preparare.
-          Aprire una segnalazione non comporta alcun costo.
+          prende in carico: ti ricontattiamo entro 48 ore lavorative, al
+          telefono o per email. Aprire una segnalazione non comporta alcun
+          costo.
         </p>
       </form>
 

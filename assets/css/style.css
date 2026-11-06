@@ -1129,6 +1129,35 @@ textarea:focus-visible {
 }
 .field textarea { resize: vertical; min-height: 130px; }
 .field__hint { font-size: var(--fs-xs); color: var(--muted); }
+
+/* Errore su un campo: il messaggio sta sotto il campo che lo riguarda, non in
+   fondo al modulo. Con sei campi, un errore in fondo è un errore che non si
+   trova: chi ha sbagliato il telefono deve vedere sulla casella del telefono
+   che c'è qualcosa da correggere. Il bordo rosso e il testo accessibile
+   (`aria-invalid`) dicono la stessa cosa a chi guarda e a chi ascolta. */
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--down, #c2334d);
+  box-shadow: 0 0 0 3px rgba(194, 51, 77, 0.12);
+}
+.field__error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--fs-xs);
+  color: var(--down, #c2334d);
+  font-weight: 500;
+  line-height: 1.4;
+}
+/* La conferma dopo l'invio: senza questo paragrafo la pagina sembra immobile e
+   chi ha premuto «Invia» preme di nuovo. Sta sotto il pulsante, dove lo
+   sguardo è già arrivato. */
+.form__status {
+  margin-top: var(--space-3, 1rem);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.form__status:empty { margin-top: 0; }
 .field--check { flex-direction: row; align-items: flex-start; gap: 0.6rem; }
 .field--check input { margin-top: 0.25rem; }
 .form__note { font-size: var(--fs-xs); color: var(--muted); }

@@ -54,6 +54,18 @@
   }
 
   /* ------------------------------------------------------------ accounts -- */
+  /* «Importo segnalato»: quanto il cliente dichiara di aver perso. Prima
+     questa colonna mostrava il saldo del conto, che è un'altra cosa — per una
+     pratica appena aperta vale zero, e l'analista leggeva «0,00 €» dove il
+     cliente aveva scritto dodicimilacinquecento. Il saldo resta visibile nella
+     tabella dei conti (`renderAllAccounts`), dove significa qualcosa. */
+  function importoSegnalato(user) {
+    var dichiarato = Number(user.case_amount_eur) || 0;
+    if (dichiarato > 0) return ui.money(dichiarato);
+    var saldo = Number(user.balance_eur) || 0;
+    return saldo > 0 ? ui.money(saldo) : '<span class="xs muted">—</span>';
+  }
+
   function renderAccounts() {
     var list = state.accounts;
     if (!list.length) {
@@ -99,13 +111,18 @@
             return '<option value="' + lvl + '"' +
               (Number(user.kyc_level) === lvl ? " selected" : "") + ">KYC " + lvl + "</option>";
           }).join("") + "</select>";
+      /* Il telefono sta sotto nome ed email, non in una colonna sua: è il
+         dato per cui si apre questa tabella — si guarda una riga e si chiama.
+         Nella tabella larga duecento righe il numero servirebbe a poco. */
       return "<tr>" +
         "<td><strong>" + ui.esc(user.name) + "</strong>" +
-        '<div class="xs muted">' + ui.esc(user.email) + "</div></td>" +
+        '<div class="xs muted">' + ui.esc(user.email) + "</div>" +
+        (user.phone ? '<div class="xs muted">' + ui.esc(user.phone) + "</div>" : "") +
+        "</td>" +
         "<td>" + ui.when(user.created_at) + "</td>" +
         "<td>" + kyc + "</td>" +
         "<td>" + fase + "</td>" +
-        '<td class="num">' + ui.money(user.balance_eur) + "</td>" +
+        '<td class="num">' + importoSegnalato(user) + "</td>" +
         '<td class="num">' + user.operations_count + "</td>" +
         "<td>" + ui.pill(user.status, badgeFor(user)) + "</td>" +
         '<td class="data-table__actions">' + actions.join("") + "</td>" +
@@ -136,8 +153,13 @@
         '" data-open-name="' + ui.esc(user.name) +
         '" type="button">Apri pratica</button>';
 
+      /* Il telefono accanto all'email: è l'altro modo con cui si contatta una
+         persona, e cercarlo in un'altra schermata mentre si ha la pratica
+         aperta è il momento in cui si smette di chiamare. */
       return "<tr>" +
-        "<td><strong>" + ui.esc(user.name) + "</strong></td>" +
+        "<td><strong>" + ui.esc(user.name) + "</strong>" +
+        (user.phone ? '<div class="xs muted">' + ui.esc(user.phone) + "</div>" : "") +
+        "</td>" +
         '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
         '<td class="xs mono">' + (user.iban_formatted
           ? ui.esc(user.iban_formatted) +

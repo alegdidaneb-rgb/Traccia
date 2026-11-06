@@ -85,6 +85,56 @@
   }
 
   /* -------------------------------------------------- modulo contatti -- */
+  /* Il modulo di contatto chiede gli stessi cinque dati della richiesta di
+     informazioni: nome, cognome, email, telefono e importo approssimativo
+     perso. Non è una ripetizione: è la stessa domanda posta due volte, in due
+     punti del sito, e deve avere la stessa risposta — chi scrive da `supporto`
+     senza account deve poter essere richiamato e deve poter dire quanto ha
+     perso, altrimenti la prima telefonata comincia con due domande.
+
+     I controlli sono gli stessi del modulo di registrazione, scritti qui
+     perché `main.js` non dipende da `auth.js` (che sta solo nella pagina di
+     accesso). La regola però è una: se cambia là, deve cambiare qui, e
+     `tests/richiesta.test.js` confronta i due file per accorgersene. */
+  var regolaTelefono = /^[+0-9][0-9 ()-]{5,24}$/;
+
+  function importoInEuro(testo) {
+    var grezzo = String(testo || "");
+    if (/[-\u2212]/.test(grezzo)) return null;
+    var t = grezzo.replace(/[^0-9.,]/g, "");
+    if (!t) return null;
+    if (t.indexOf(",") > -1 && t.indexOf(".") > -1) {
+      if (t.lastIndexOf(",") > t.lastIndexOf(".")) {
+        t = t.replace(/\./g, "").replace(",", ".");
+      } else {
+        t = t.replace(/,/g, "");
+      }
+    } else if (t.indexOf(",") > -1) {
+      t = t.replace(",", ".");
+    } else if ((t.match(/\./g) || []).length > 1) {
+      t = t.replace(/\./g, "");
+    } else if (/^\d{1,3}\.\d{3}$/.test(t)) {
+      t = t.replace(".", "");
+    }
+    var n = Number(t);
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  function segnalaCampo(campo, messaggio) {
+    if (!campo) return false;
+    campo.setAttribute("aria-invalid", "true");
+    var avviso = campo.parentElement.querySelector("[data-field-error]");
+    if (!avviso) {
+      avviso = document.createElement("span");
+      avviso.className = "field__error";
+      avviso.setAttribute("data-field-error", "");
+      campo.parentElement.appendChild(avviso);
+    }
+    avviso.textContent = messaggio;
+    campo.focus();
+    return false;
+  }
+
   var form = document.querySelector("[data-demo-form]");
   if (form) {
     form.addEventListener("submit", function (e) {
@@ -97,15 +147,58 @@
         return el ? el.value.trim() : "";
       };
 
-      if (button) { button.disabled = true; button.textContent = "Invio…"; }
+      form.querySelectorAll("[aria-invalid]").forEach(function (campo) {
+        campo.removeAttribute("aria-invalid");
+      });
+      form.querySelectorAll("[data-field-error]").forEach(function (avviso) {
+        avviso.remove();
+      });
       if (status) { status.classList.add("sr-only"); status.textContent = ""; }
 
+      var nome = field('[name="nome"], #c-nome');
+      var cognome = field('[name="cognome"], #c-cognome');
+      var email = field('[name="email"], #c-email');
+      var telefono = field('[name="telefono"], #c-telefono');
+      var importo = importoInEuro(field('[name="importo"], #c-importo'));
+      var messaggio = field('[name="messaggio"], #c-messaggio');
+
+      /* un campo solo per nome e cognome, se la pagina ha solo quello:
+         si accetta la forma completa e si divide sulla prima spazio */
+      if (!cognome && nome.indexOf(" ") > 0) {
+        cognome = nome.slice(nome.indexOf(" ") + 1).trim();
+        nome = nome.slice(0, nome.indexOf(" ")).trim();
+      }
+
+      if (nome.length < 2) {
+        return segnalaCampo(form.querySelector('[name="nome"], #c-nome'), "Inserisci il nome.");
+      }
+      if (cognome.length < 2) {
+        return segnalaCampo(form.querySelector('[name="cognome"], #c-cognome'), "Inserisci il cognome.");
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) {
+        return segnalaCampo(form.querySelector('[name="email"], #c-email'), "Inserisci un indirizzo email valido.");
+      }
+      if (!regolaTelefono.test(telefono) || telefono.replace(/\D/g, "").length < 8) {
+        return segnalaCampo(form.querySelector('[name="telefono"], #c-telefono'),
+          "Inserisci un numero di telefono con il prefisso, per esempio +39 333 123 4567.");
+      }
+      if (importo === null) {
+        return segnalaCampo(form.querySelector('[name="importo"], #c-importo'),
+          "Indica l'importo approssimativo che hai perso, per esempio 12.500.");
+      }
+      if (!messaggio) {
+        return segnalaCampo(form.querySelector('[name="messaggio"], #c-messaggio'),
+          "Racconta in due righe cosa è successo: serve a capire da dove partire.");
+      }
+
+      if (button) { button.disabled = true; button.textContent = "Invio…"; }
+
       api.contact({
-        name: field('[name="nome"], #c-nome'),
-        email: field('[name="email"], #c-email'),
-        phone: field('[name="telefono"], #c-telefono'),
-        amount_eur: Number(field('[name="importo"], #c-importo').replace(/\./g, "").replace(",", ".")) || null,
-        message: field('[name="messaggio"], #c-messaggio'),
+        name: nome + " " + cognome,
+        email: email,
+        phone: telefono,
+        amount_eur: importo,
+        message: messaggio,
         source: "supporto"
       }).then(function (res) {
         if (status) {
