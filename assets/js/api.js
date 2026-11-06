@@ -174,21 +174,18 @@
         });
     },
     register: function (payload) {
-      /* Nome e cognome viaggiano anche separati: `p_name` resta la forma
-         completa perché è quella che l'area riservata mostra, mentre il
-         contratto di incarico ha bisogno delle due parti distinte.
-         Telefono e importo sono obbligatori lato database: se mancano, la
-         funzione risponde con il nome del campo mancante e il modulo lo
-         mostra. Vuoto viaggia come `null`, non come stringa vuota: così il
-         messaggio parla di un campo mancante e non di cifre sbagliate. */
+      /* Una richiesta di informazioni, non un account: non c'è password da
+         mandare, e non c'è un utente da creare. L'account nasce dopo, quando
+         un analista prende in carico la pratica (vedi `admin_richieste`). */
       return rpc("auth_register", {
-        p_name: payload.name,
+        p_first_name: payload.first_name,
+        p_last_name: payload.last_name,
         p_email: payload.email,
-        p_password: payload.password,
-        p_first_name: payload.first_name || null,
-        p_last_name: payload.last_name || null,
         p_phone: payload.phone || null,
-        p_amount_eur: payload.amount_eur || null
+        p_amount_eur: payload.amount_eur || null,
+        p_situation: payload.situation || null,
+        p_message: payload.message || null,
+        p_origine: payload.origine || "login"
       });
     },
     logout: function () {

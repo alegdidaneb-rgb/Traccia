@@ -139,7 +139,7 @@
       var email = valore("reg-email");
       var telefono = valore("reg-phone");
       var importo = importoInEuro(valore("reg-amount"));
-      var password = valore("reg-password");
+      var situazione = valore("reg-tipo");
 
       /* i cinque dati richiesti, nell'ordine in cui compaiono */
       if (nome.length < 2) {
@@ -160,29 +160,28 @@
         return segnalaCampo(document.getElementById("reg-amount"),
           "Indica l'importo approssimativo che hai perso, per esempio 12.500.");
       }
-      if (password.length < 8) {
-        return segnalaCampo(document.getElementById("reg-password"),
-          "La password deve avere almeno 8 caratteri.");
-      }
-
       var button = registerForm.querySelector('button[type="submit"]');
       busy(button, true);
 
+      /* Nessuna password: non stiamo creando un account ma una richiesta.
+         L'account lo crea un analista quando prende in carico la pratica. */
       api.register({
-        name: nome + " " + cognome,
         first_name: nome,
         last_name: cognome,
         email: email,
         phone: telefono,
         amount_eur: importo,
-        password: password
-      }).then(function () {
+        situation: situazione,
+        origine: "login"
+      }).then(function (res) {
         busy(button, false);
         registerForm.reset();
         registerForm.hidden = true;
         loginForm.hidden = false;
         setMode("login");
-        showError(loginError, "Richiesta inviata: ti ricontattiamo entro 48 ore lavorative.");
+        showError(loginError,
+          (res && res.message) ||
+          "Richiesta ricevuta. Ti ricontattiamo entro 48 ore lavorative.");
         if (loginError) loginError.style.color = "var(--accent)";
       }).catch(function (err) {
         showError(registerError, err.message || "Invio non riuscito. Riprova.");
@@ -198,8 +197,8 @@
   function setMode(mode) {
     if (!titleEl) return;
     if (mode === "register") {
-      titleEl.textContent = "Apri un conto";
-      if (subtitleEl) subtitleEl.textContent = "Bastano pochi dati: l'approvazione è manuale.";
+      titleEl.textContent = "Segnala il tuo caso";
+      if (subtitleEl) subtitleEl.textContent = "Bastano pochi dati. Ti ricontattiamo noi, senza password da scegliere.";
     } else {
       titleEl.textContent = "Accedi";
       if (subtitleEl) subtitleEl.textContent = "Inserisci le credenziali del tuo conto.";

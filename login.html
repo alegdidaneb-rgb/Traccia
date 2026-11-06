@@ -229,8 +229,9 @@
              cognome separati perché il contratto di incarico li vuole
              distinti; il telefono perché chi ha appena perso dei soldi non
              aspetta un'email; l'importo perché dice subito di che ordine di
-             grandezza si parla. Password e tipo di truffa restano: senza
-             password non c'è area riservata in cui caricare i documenti. -->
+             grandezza si parla. Il tipo di truffa resta: dice all'analista
+             quale parte dell'ufficio aprire. La password no — vedi la nota in
+             fondo al modulo. -->
         <div class="form-row">
           <div class="field">
             <label for="reg-first-name">Nome</label>
@@ -265,28 +266,28 @@
           <span class="field__hint">In euro, anche approssimativo. Serve a capire di che caso si tratta.</span>
         </div>
         <div class="field mt-3">
-          <label for="reg-password">Password</label>
-          <input id="reg-password" name="password" type="password"
-                 autocomplete="new-password" minlength="8" placeholder="Almeno 8 caratteri" required>
-          <span class="field__hint">Almeno 8 caratteri: serve per entrare nell'area riservata.</span>
-        </div>
-        <div class="field mt-3">
           <label for="reg-tipo">Che cosa ti è successo</label>
-          <select id="reg-tipo" name="tipo">
-            <option>Finto broker o piattaforma di trading</option>
-            <option>Truffa con criptovalute</option>
-            <option>Mi hanno chiesto soldi per sbloccare il prelievo</option>
-            <option>Sono stato contattato da un finto recupero fondi</option>
-            <option>Non lo so ancora</option>
+          <select id="reg-tipo" name="situation">
+            <option value="broker">Finto broker o piattaforma di trading</option>
+            <option value="crypto">Truffa con criptovalute</option>
+            <option value="unlock">Mi hanno chiesto soldi per sbloccare il prelievo</option>
+            <option value="recovery">Sono stato contattato da un finto recupero fondi</option>
+            <option value="altro">Non lo so ancora</option>
           </select>
         </div>
         <p class="form__note" data-form-error hidden></p>
         <button class="btn btn--accent btn--block btn--lg" type="submit">Invia richiesta</button>
+        <!-- Niente password e niente «crea account»: chi ha appena perso dei
+             soldi non deve scegliere una password per un accesso che non esiste
+             ancora. Il modulo apre una richiesta; l'account lo crea un analista
+             quando prende in carico la pratica, e la password si sceglie allora.
+             Dirlo qui evita la domanda che altrimenti arriva al telefono:
+             «ma io ho un account?». -->
         <p class="form__note">
-          La pratica resta <strong>in attesa</strong> finché un analista non la
-          prende in carico: ti ricontattiamo entro 48 ore lavorative, al
-          telefono o per email. Aprire una segnalazione non comporta alcun
-          costo.
+          Mandi una richiesta, non apri un conto: <strong>non serve una
+          password</strong> e non c'è nulla da ricordare. Un analista legge
+          quello che hai scritto e ti ricontatta entro 48 ore lavorative al
+          numero che ci hai indicato.
         </p>
       </form>
 

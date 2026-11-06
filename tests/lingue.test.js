@@ -393,12 +393,84 @@ test("nessun link interno riporta all'italiano", () => {
       0,
       `${l}: ${interni.length} link relativi (riportano all'italiano), il primo è «${interni[0] || ""}»`
     );
-    /* e i link assoluti interni stanno nella propria lingua */
+    /* e i link assoluti interni stanno nella propria lingua — tranne l'area
+       riservata e la console, che esistono in un solo esemplare e non sono
+       state tradotte: mandare a `/de/app.html` sarebbe un 404, e un 404 è
+       peggio di una pagina italiana. */
+    const riservate = /^\/(app|admin)\.html/;
     const fuori = [...h.matchAll(/href="\/(en|de|es|it)?\/?([a-z0-9\-]*\.html[^"]*)"/g)]
-      .filter((m) => m[1] !== l)
+      .filter((m) => m[1] !== l && !riservate.test(m[0].replace('href="', "")))
       .map((m) => m[0]);
     assert.equal(fuori.length, 0, `${l}: ${fuori.length} link in un'altra lingua («${fuori[0] || ""}»)`);
   });
+});
+
+/* Il difetto che il committente ha visto: da una pagina tedesca si preme
+   «segnala un caso» e si arriva a «pagina non trovata». Una lingua non è tradotta
+   perché la home lo è: è tradotta quando ogni link della home porta a una
+   pagina che esiste. */
+test("ogni pagina pubblica esiste in ogni lingua, e ogni link porta a qualcosa", () => {
+  const ITALIANE = fs.readdirSync(path.join(__dirname, ".."))
+    .filter((f) => /\.html$/.test(f))
+    .filter((f) => !/^(app|admin)\.html$/.test(f));
+  const mancanti = [];
+
+  TRADOTTE.forEach((l) => {
+    ITALIANE.forEach((pagina) => {
+      const percorso = path.join(__dirname, "..", l, pagina);
+      if (!fs.existsSync(percorso)) { mancanti.push(l + "/" + pagina); return; }
+      const html = R(l + "/" + pagina);
+      const rotti = [...html.matchAll(/href="\/(?:en|de|es|it)\/([^"#]*)"/g)]
+        .map((m) => m[1])
+        .filter((f) => f && !fs.existsSync(path.join(__dirname, "..", l, f)));
+      if (rotti.length) mancanti.push(l + "/" + pagina + " → " + rotti[0]);
+    });
+  });
+
+  assert.deepEqual(mancanti, [],
+    "pagine o link mancanti: " + mancanti.slice(0, 6).join(", ") +
+    (mancanti.length > 6 ? " e altri " + (mancanti.length - 6) : ""));
+});
+
+/* Una pagina tradotta che parla ancora italiano. È il controllo che rende
+   utile tutto il resto: `build_i18n.py` non si lamenta delle frasi che resta
+   da tradurre, le elenca; questo test trasforma quell'elenco in un guasto. */
+test("nessuna pagina tradotta contiene frasi italiane rimaste indietro", () => {
+  const catalogo = JSON.parse(R("tools/i18n/it.json"));
+  delete catalogo._meta;
+
+  /* Frasi italiane che non devono mai comparire in una pagina tradotta: sono
+     le più frequenti e le più visibili — un paragrafo, non una parola. */
+  const sospette = [
+    /\b(che|della|delle|degli|nella|nelle|questo|questa|questi|queste|anche|senza|sopra|sotto|sono|essere|abbiamo|viene|vengono|dopo|prima|sempre|mai|ogni|tutti|tutte)\b/gi
+  ];
+  /* parole che restano identiche in italiano e in inglese/tedesco/spagnolo */
+  const neutre = new Set(["che", "sono", "ogni", "prima", "dopo", "sempre", "mai", "anche",
+                          "essere", "viene", "tutti", "tutte", "questo", "questa", "sotto"]);
+
+  const sporche = [];
+  TRADOTTE.forEach((l) => {
+    fs.readdirSync(path.join(__dirname, "..", l)).filter((f) => /\.html$/.test(f)).forEach((f) => {
+      const html = R(l + "/" + f);
+      const testo = html.replace(/<script[\s\S]*?<\/script>/gi, " ")
+                        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+                        .replace(/<[^>]+>/g, " ");
+      /* conta le parole italiane che non sono nel catalogo come traduzione */
+      let italiane = 0;
+      const visti = new Set();
+      (testo.match(sospette[0]) || []).forEach((parola) => {
+        const p = parola.toLowerCase();
+        if (neutre.has(p) || visti.has(p)) return;
+        visti.add(p);
+        italiane++;
+      });
+      if (italiane > 3) sporche.push(`${l}/${f} (${italiane} parole italiane)`);
+    });
+  });
+
+  assert.deepEqual(sporche, [],
+    "pagine tradotte con testo italiano: " + sporche.slice(0, 8).join(", ") +
+    (sporche.length > 8 ? " e altre " + (sporche.length - 8) : ""));
 });
 
 module.exports = casi;
