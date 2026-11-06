@@ -78,31 +78,31 @@
   <!-- shell:header -->
   <header class="site-header">
   <div class="container">
-    <nav class="nav" aria-label="Principale">
+    <nav class="nav" aria-label="Principal">
       <a class="brand" href="/es/">
         <span class="brand__mark" aria-hidden="true">T</span>
         <span>Traccia</span>
       </a>
 
-      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Abrir el menú">
         <span></span>
       </button>
 
       <ul class="nav__links" id="nav-links">
-        <li><a class="nav-link" data-nav="come-funziona" href="/es/come-funziona">Cómo funciona</a></li>
-        <li><a class="nav-link" data-nav="casi" href="/es/casi">Casos llevados</a></li>
-        <li><a class="nav-link" data-nav="crypto" href="/es/crypto">Estafas cripto</a></li>
-        <li><a class="nav-link" data-nav="chi-siamo" href="/es/chi-siamo">Quiénes somos</a></li>
-        <li><a class="nav-link" data-nav="team" href="/es/team">El equipo</a></li>
-        <li><a class="nav-link" data-nav="onorari" href="/es/onorari">Honorarios</a></li>
-        <li><a class="nav-link" data-nav="supporto" href="/es/supporto">Soporte</a></li>
+        <li><a class="nav-link" data-nav="come-funziona" href="/es/come-funziona.html">Cómo funciona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="/es/casi.html">Casos llevados</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="/es/crypto.html">Estafas cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="/es/chi-siamo.html">Quiénes somos</a></li>
+        <li><a class="nav-link" data-nav="team" href="/es/team.html">El equipo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="/es/onorari.html">Honorarios</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="/es/supporto.html">Soporte</a></li>
 
         <li class="nav__lang" data-lang-switch>
           <!-- Selettore lingua. Le sigle al posto delle bandiere: una bandiera
                dice «Regno Unito» quando la lingua è l'inglese, e «Spagna»
                quando è lo spagnolo. Il codice non sbaglia e sta in 34px. -->
           <details class="lang">
-            <summary class="lang__toggle" aria-label="Lingua / Language">
+            <summary class="lang__toggle" aria-label="Idioma">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.2"/>
                 <path d="M1.9 8h12.2M8 1.8c1.9 1.7 3 3.9 3 6.2s-1.1 4.5-3 6.2c-1.9-1.7-3-3.9-3-6.2s1.1-4.5 3-6.2z"
@@ -125,13 +125,13 @@
 
         <li class="nav__actions" data-auth-slot>
           <!-- visitatore -->
-          <a class="btn btn--ghost btn--sm" href="/es/login" data-auth-guest>Iniciar sesión</a>
-          <a class="btn btn--sm" href="/es/login" data-auth-guest>Denunciar un caso</a>
+          <a class="btn btn--ghost btn--sm" href="/es/login.html" data-auth-guest>Iniciar sesión</a>
+          <a class="btn btn--sm" href="/es/login.html#registrati" data-auth-guest>Denunciar un caso</a>
 
           <!-- sessione attiva -->
           <div class="nav-user" data-auth-member hidden>
-            <a class="nav-user__link" href="/es/app">Mi expediente</a>
-            <a class="nav-user__link nav-user__link--admin" href="/es/admin" data-auth-admin hidden>Consola de administración</a>
+            <a class="nav-user__link" href="/es/app.html">Mi expediente</a>
+            <a class="nav-user__link nav-user__link--admin" href="/es/admin.html" data-auth-admin hidden>Consola de administración</a>
             <span class="nav-user__id">
               <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
               <span class="nav-user__name" data-auth-user></span>
@@ -183,8 +183,8 @@
         </p>
 
         <div class="btn-row mt-4" data-reveal="up" data-reveal-delay="330">
-          <a class="btn btn--accent btn--lg" href="/es/login" data-magnetic>Solicitar una valoración</a>
-          <a class="btn btn--glass btn--lg" href="/es/casi">Casos y resultados</a>
+          <a class="btn btn--accent btn--lg" href="/es/login.html#registrati" data-magnetic>Solicitar una valoración</a>
+          <a class="btn btn--glass btn--lg" href="/es/casi.html">Casos y resultados</a>
         </div>
 
         <p class="small mt-4" style="max-width:56ch;color:rgba(255,255,255,.5)" data-reveal="up" data-reveal-delay="420">
@@ -247,7 +247,7 @@
 </section>
 
 <!-- ============================ BANDA NUMERICA ============================ -->
-<section class="metric-band-wrap" aria-label="I nostri numeri">
+<section class="metric-band-wrap" aria-label="Nuestras cifras">
   <div class="container container--wide">
    <div class="metric-band">
     <div class="metric-band__cell">
@@ -282,7 +282,7 @@
       <span class="alert-band__icon" aria-hidden="true">!</span>
       <p>
         <strong>Si te están pidiendo más dinero para «desbloquear» el retiro, no pagues.</strong> Es la segunda fase de la misma estafa. Ningún operador serio pide un anticipo, un anticipo fiscal ni las claves de tu wallet.
-        <a href="/es/supporto">Qué hacer ahora →</a>
+        <a href="/es/supporto.html#mai-pagare">Qué hacer ahora →</a>
       </p>
     </div>
   </div>
@@ -299,7 +299,7 @@
             <img src="/assets/img/network-nodes-1400.jpg"
                  srcset="assets/img/network-nodes-800.jpg 800w, assets/img/network-nodes-1400.jpg 1400w"
                  sizes="(max-width: 900px) 100vw, 55vw"
-                 alt="Grafo di transazioni: nodi luminosi collegati da linee su fondo scuro"
+                 alt="Grafo de transacciones: nodos luminosos conectados por líneas sobre fondo oscuro"
                  width="1400" height="788" loading="lazy" decoding="async">
           </picture>
         </div>
@@ -328,7 +328,7 @@
             <dd>expedientes cerrados sin coste, en la fase 2</dd>
           </div>
         </dl>
-        <a class="link-arrow mt-4" href="/es/come-funziona">
+        <a class="link-arrow mt-4" href="/es/come-funziona.html">
           Las cinco fases, en detalle
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -398,7 +398,7 @@
       <article class="story reveal">
         <div class="story__visual">
           <span class="story__tag">Rastreado · civil</span>
-          <svg viewBox="0 0 320 180" role="img" aria-label="Diagramma del flusso dei fondi">
+          <svg viewBox="0 0 320 180" role="img" aria-label="Diagrama del flujo de fondos">
             <defs>
               <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M20 0H0v20" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
@@ -437,7 +437,7 @@
       <article class="story reveal">
         <div class="story__visual">
           <span class="story__tag">Parcial</span>
-          <svg viewBox="0 0 320 180" role="img" aria-label="Recupero parziale del capitale">
+          <svg viewBox="0 0 320 180" role="img" aria-label="Recuperación parcial del capital">
             <rect width="320" height="180" fill="none"/>
             <g stroke="rgba(255,255,255,.12)" stroke-width="1">
               <path d="M40 140h240M40 100h240M40 60h240"/>
@@ -466,7 +466,7 @@
       <article class="story reveal">
         <div class="story__visual">
           <span class="story__tag">Ningún rastro</span>
-          <svg viewBox="0 0 320 180" role="img" aria-label="Traccia interrotta">
+          <svg viewBox="0 0 320 180" role="img" aria-label="Rastro interrumpido">
             <g fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6">
               <path d="M24 110h48"/><path d="M96 110h48"/>
             </g>
@@ -501,7 +501,7 @@
     </div>
 
     <div class="mt-4">
-      <a class="link-arrow" href="/es/casi">Todos los casos y nuestras cifras →</a>
+      <a class="link-arrow" href="/es/casi.html">Todos los casos y nuestras cifras →</a>
     </div>
   </div>
 </section>
@@ -564,8 +564,8 @@
     </ol>
 
     <div class="band-dark__foot" data-reveal="up" data-reveal-delay="340">
-      <a class="btn btn--accent" href="/es/come-funziona">Cómo funciona, fase por fase</a>
-      <a class="link-arrow" style="color:rgba(255,255,255,.75)" href="/es/onorari">
+      <a class="btn btn--accent" href="/es/come-funziona.html">Cómo funciona, fase por fase</a>
+      <a class="link-arrow" style="color:rgba(255,255,255,.75)" href="/es/onorari.html">
         Honorarios y límites
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
@@ -637,7 +637,7 @@
       </div>
       <p class="lead section-head__aside">
         Nueve personas entre análisis blockchain, investigación financiera y gestión de expedientes. Ningún vendedor, ningún centro de llamadas.
-        <a href="/es/chi-siamo">Conoce al equipo →</a>
+        <a href="/es/chi-siamo.html">Conoce al equipo →</a>
       </p>
     </div>
 
@@ -648,7 +648,7 @@
           <img src="/assets/img/team-room-1600.jpg"
                srcset="assets/img/team-room-900.jpg 900w, assets/img/team-room-1600.jpg 1600w"
                sizes="(max-width: 900px) 100vw, 1200px"
-               alt="Ufficio di analisi a Torino al tramonto: scrivanie, monitor con grafi di transazioni e la Mole sullo sfondo"
+               alt="Oficina de análisis en Turín al atardecer: escritorios, monitores con grafos de transacciones y la Mole al fondo"
                width="1600" height="1067" loading="lazy" decoding="async">
         </picture>
         <div class="frame__scrim frame__scrim--side" aria-hidden="true"></div>
@@ -741,7 +741,7 @@
         <p class="lead mt-3">
           El sector de la «recuperación de fondos» está lleno de quien lucra con la desesperación. Estos son los límites que nos hemos puesto, escritos en el contrato y no solo en la web.
         </p>
-        <a class="btn btn--on-dark mt-4" href="/es/onorari">
+        <a class="btn btn--on-dark mt-4" href="/es/onorari.html#cosa-non-facciamo">
           Lee los límites del servicio
         </a>
       </div>
@@ -845,8 +845,8 @@
           </p>
         </div>
         <div class="cta-band__actions">
-          <a class="btn btn--accent btn--lg" href="/es/login">Abrir un aviso</a>
-          <a class="btn btn--ghost btn--lg" href="/es/supporto">Habla con nosotros</a>
+          <a class="btn btn--accent btn--lg" href="/es/login.html#registrati">Abrir un aviso</a>
+          <a class="btn btn--ghost btn--lg" href="/es/supporto.html#contatti">Habla con nosotros</a>
           <p class="xs muted mt-2">
             Nunca pedimos claves privadas ni accesos remotos.
           </p>
@@ -863,7 +863,7 @@
   <div class="container">
     <div class="footer__top">
       <div class="footer__col">
-        <a class="brand" href="index.html" style="margin-bottom:1rem">
+        <a class="brand" href="/es/" style="margin-bottom:1rem">
           <span class="brand__mark" aria-hidden="true">T</span>
           <span>Traccia</span>
         </a>
@@ -875,37 +875,37 @@
       <div class="footer__col">
         <h4>Servicio</h4>
         <ul>
-          <li><a href="come-funziona.html">Cómo funciona</a></li>
-          <li><a href="come-funziona.html#fasi">Las cinco fases</a></li>
-          <li><a href="casi.html">Casos llevados</a></li>
-          <li><a href="crypto.html">Estafas cripto</a></li>
-          <li><a href="chi-siamo.html">Quiénes somos</a></li>
-          <li><a href="team.html">El equipo</a></li>
-          <li><a href="onorari.html">Honorarios</a></li>
-          <li><a href="onorari.html#cosa-non-facciamo">Lo que no hacemos</a></li>
+          <li><a href="/es/come-funziona.html">Cómo funciona</a></li>
+          <li><a href="/es/come-funziona.html#fasi">Las cinco fases</a></li>
+          <li><a href="/es/casi.html">Casos llevados</a></li>
+          <li><a href="/es/crypto.html">Estafas cripto</a></li>
+          <li><a href="/es/chi-siamo.html">Quiénes somos</a></li>
+          <li><a href="/es/team.html">El equipo</a></li>
+          <li><a href="/es/onorari.html">Honorarios</a></li>
+          <li><a href="/es/onorari.html#cosa-non-facciamo">Lo que no hacemos</a></li>
         </ul>
       </div>
 
       <div class="footer__col">
         <h4>Antes de empezar</h4>
         <ul>
-          <li><a href="supporto.html#mai-pagare">¿Te piden más dinero?</a></li>
-          <li><a href="supporto.html#segnalare">Dónde denunciar</a></li>
-          <li><a href="supporto.html#documenti">Documentos que conservar</a></li>
-          <li><a href="supporto.html#faq">Preguntas frecuentes</a></li>
-          <li><a href="login.html">Mi expediente</a></li>
-          <li><a href="supporto.html#contatti">Contacto</a></li>
+          <li><a href="/es/supporto.html#mai-pagare">¿Te piden más dinero?</a></li>
+          <li><a href="/es/supporto.html#segnalare">Dónde denunciar</a></li>
+          <li><a href="/es/supporto.html#documenti">Documentos que conservar</a></li>
+          <li><a href="/es/supporto.html#faq">Preguntas frecuentes</a></li>
+          <li><a href="/es/login.html">Mi expediente</a></li>
+          <li><a href="/es/supporto.html#contatti">Contacto</a></li>
         </ul>
       </div>
 
       <div class="footer__col">
         <h4>Legal</h4>
         <ul>
-          <li><a href="privacy.html">Privacidad</a></li>
-          <li><a href="termini.html">Términos y condiciones</a></li>
-          <li><a href="cookie.html">Política de cookies</a></li>
-          <li><a href="note-legali.html">Aviso legal</a></li>
-          <li><a href="privacy.html#reclami">Reclamaciones</a></li>
+          <li><a href="/es/privacy.html">Privacidad</a></li>
+          <li><a href="/es/termini.html">Términos y condiciones</a></li>
+          <li><a href="/es/cookie.html">Política de cookies</a></li>
+          <li><a href="/es/note-legali.html">Aviso legal</a></li>
+          <li><a href="/es/privacy.html#reclami">Reclamaciones</a></li>
         </ul>
       </div>
     </div>
@@ -931,9 +931,9 @@
           © <span data-year>2026</span> ERSEL SPA — Todos los derechos reservados. NIF 06900230018
         </span>
         <span>
-          <a href="note-legali.html">Aviso legal</a> ·
-          <a href="privacy.html">Privacidad</a> ·
-          <a href="cookie.html">Cookies</a>
+          <a href="/es/note-legali.html">Aviso legal</a> ·
+          <a href="/es/privacy.html">Privacidad</a> ·
+          <a href="/es/cookie.html">Cookies</a>
         </span>
       </div>
     </div>
@@ -941,15 +941,15 @@
 </footer>
   <!-- /shell:footer -->
 
-  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferencias de cookies">
   <p>
     Usamos cookies técnicas necesarias para el funcionamiento del sitio y, con tu consentimiento, cookies de medición. Puedes aceptar, rechazar o leer la
-    <a href="cookie.html" style="text-decoration:underline">política de cookies</a>.
+    <a href="/es/cookie.html" style="text-decoration:underline">política de cookies</a>.
   </p>
   <div class="cookie-bar__actions">
     <button class="btn" data-cookie-choice="all" type="button">Aceptar todas</button>
     <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necesarias</button>
-    <a class="btn btn--ghost" href="cookie.html">Preferencias</a>
+    <a class="btn btn--ghost" href="/es/cookie.html">Preferencias</a>
   </div>
 </div>
 
@@ -960,7 +960,7 @@
   <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
-     aria-label="Scrivici su WhatsApp" hidden>
+     aria-label="Escríbenos por WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Escríbenos por WhatsApp</span>
   </a>

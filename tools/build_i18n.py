@@ -144,6 +144,39 @@ def traduci_corpo(corpo: str, catalogo: dict[str, str], lingua: str) -> tuple[st
     return "".join(pezzi), non_tradotti
 
 
+ATTRIBUTI_VISIBILI = ("alt", "aria-label", "title", "placeholder")
+
+
+def traduci_attributi(pagina: str, catalogo: dict[str, str], lingua: str) -> tuple[str, list[str]]:
+    """Traduce `alt`, `aria-label`, `title`, `placeholder`.
+
+    Questi testi non sono fra `>` e `<`, quindi `traduci_corpo` non li vede.
+    E sono proprio quelli che nessuno rilegge: il testo alternativo di
+    un'immagine resta in italiano per anni, invisibile a chi guarda la pagina
+    e presente a chi la ascolta con un lettore di schermo. Verificato in
+    produzione su `/de/`: l'immagine del grafo annunciava ancora
+    «Grafo di transazioni…».
+    """
+    non_tradotti: list[str] = []
+
+    def sostituisci(m: re.Match[str]) -> str:
+        attributo, valore = m.group(1), m.group(2)
+        centro = valore.strip()
+        if not centro or not re.search(r"[^\W\d_]", centro):
+            return m.group(0)
+        tradotto = catalogo.get(centro)
+        if tradotto is None:
+            normalizzato = " ".join(centro.split())
+            tradotto = catalogo.get(normalizzato) or catalogo.get(centro.strip().rstrip("."))
+        if tradotto is None:
+            non_tradotti.append(centro)
+            return m.group(0)
+        return f'{attributo}="{tradotto}"'
+
+    modello = r'\b(' + "|".join(ATTRIBUTI_VISIBILI) + r')="([^"]*)"'
+    return re.sub(modello, sostituisci, pagina), non_tradotti
+
+
 def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None = None) -> str:
     """`lang`, `canonical`, `og:locale`, `hreflang` e Open Graph."""
     base = "https://traccia.it.com"
@@ -254,14 +287,39 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     # resterebbero senza CSS e senza uno script, e sembrerebbero solo «un po'
     # diverse» invece che rotte. Verificato servendole da un server locale.
 
-    # brand e link interni: dalla lingua non si esce per sbaglio
+    pagina = testata + corpo + dopo
+
+    # I link interni si riscrivono sulla pagina **intera**, non solo su `<main>`:
+    # il banner cookie (che sta dopo `</main>`) e il piè di pagina portavano a
+    # `/cookie.html` e `/privacy.html`, cioè all'italiano, da ogni lingua.
+    # L'anchor si conserva: `/de/supporto#faq` deve aprire la FAQ, non la cima
+    # della pagina. `index.html` diventa la radice della lingua, che è
+    # l'indirizzo canonico (`/de/`, non `/de/index.html`).
+    # L'italiano è l'unica lingua senza cartella, e Vercel qui gira con
+    # `cleanUrls: true`: `/de/casi` esiste solo finché qualcuno non crea un
+    # file `de/casi` vero accanto a `de/casi.html`. L'estensione resta
+    # (`/de/casi.html`), che funziona sempre, anche servendo il sito da una
+    # cartella qualsiasi per provarlo.
     if lingua != SORGENTE:
-        corpo = re.sub(
+        def riscrivi(m: re.Match[str]) -> str:
+            nome, anchor = m.group(1), m.group(2) or ""
+            if nome == "index":
+                return f'href="/{lingua}/{anchor}"'
+            return f'href="/{lingua}/{nome}.html{anchor}"'
+
+        pagina = re.sub(
             r'href="(?!https?:|/|#|mailto:|tel:)([a-z0-9\-]+)\.html(#[^"]*)?"',
-            lambda m: f'href="/{lingua}/{m.group(1)}"',
-            corpo,
+            riscrivi,
+            pagina,
         )
-    return testata + corpo + dopo, non_tradotti
+
+    # Gli attributi si traducono **alla fine**, sulla pagina già assemblata:
+    # l'header viene ricostruito più sotto da `partials/`, e traducendo prima
+    # si traducevano gli attributi di un header che poi veniva buttato via —
+    # `aria-label="Apri il menu"` restava italiano su tutte e tre le pagine.
+    pagina, attr_non_tradotti = traduci_attributi(pagina, catalogo, lingua)
+    non_tradotti += [f"[attributo] {a}" for a in attr_non_tradotti]
+    return pagina, non_tradotti
 
 
 def main() -> int:

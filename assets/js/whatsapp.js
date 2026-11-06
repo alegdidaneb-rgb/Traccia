@@ -7,7 +7,19 @@
   "use strict";
 
   var CFG = global.TRACCIA_CONFIG || {};
-  var TEXT = CFG.whatsappText || "Buongiorno, vi scrivo dal sito Traccia.";
+  function lingua() {
+    var l = (document.documentElement.getAttribute("lang") || "it").slice(0, 2);
+    return /^(it|en|de|es)$/.test(l) ? l : "it";
+  }
+
+  /* il testo precompilato segue la lingua della pagina, non quella del
+     programmatore: su `/de/` la chat deve aprirsi in tedesco */
+  function testoBase() {
+    var perLingua = CFG.whatsappTextLingue || {};
+    return perLingua[lingua()] || CFG.whatsappText || "Buongiorno, vi scrivo dal sito Traccia.";
+  }
+
+  var TEXT = testoBase();
 
   /* Il numero si scrive come lo si legge (+1 539 215 1268); `wa.me` vuole
      solo cifre, quindi il "+" e gli spazi si tolgono qui e in nessun altro
@@ -54,7 +66,14 @@
       frasi = frasi.map(function (f) { return f.replace("{pratica}", pratica); });
     } else {
       frasi = frasi.filter(function (f) { return f.indexOf("{pratica}") === -1; });
-      if (!frasi.length) frasi = ["Buongiorno, vi scrivo dal sito Traccia."];
+      if (!frasi.length) {
+        /* Il testo configurato è una frase sola e contiene il codice pratica.
+           Prima qui c'era una frase italiana scritta nel codice: il risultato
+           era che su ogni pagina pubblica — dove una pratica non c'è — il
+           messaggio ignorava `config.js` e usciva sempre in italiano, in
+           qualunque lingua fosse la pagina. Ora si toglie solo il segnaposto. */
+        frasi = [testo.replace(/\{pratica\}/g, "").replace(/\s{2,}/g, " ").trim()];
+      }
     }
 
     testo = frasi.join(" ").replace(/\s{2,}/g, " ").trim();
