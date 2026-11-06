@@ -49,6 +49,22 @@ SORGENTE = "it"
 # la sigla nel pulsante: due lettere, maiuscole, come le legge il visitatore
 SIGLE = {"it": "IT", "en": "EN", "de": "DE", "es": "ES"}
 
+# Le pagine che hanno una versione in ogni lingua. Sono tutte quelle che
+# `build_shell.py` tratta come pubbliche, più `404.html` — che è il posto in
+# cui si atterra quando un indirizzo non esiste, e che in tedesco deve parlare
+# tedesco come tutte le altre.
+#
+# Restano fuori di proposito `app.html` e `admin.html`: sono l'area riservata e
+# la console degli analisti, cioè schermate che leggono e scrivono dati, e
+# tradurle significa tradurre ogni messaggio che il database restituisce. Si
+# fanno dopo, con il loro giro di prove: qui si sta chiudendo il sito pubblico.
+PAGINE = [
+    "index.html", "come-funziona.html", "casi.html", "crypto.html",
+    "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
+    "privacy.html", "termini.html", "cookie.html", "note-legali.html",
+    "404.html",
+]
+
 # Dati che non sono testo: non vanno toccati nemmeno dentro il corpo.
 SALTA = ("script", "style", "code", "pre")
 
@@ -177,10 +193,21 @@ def traduci_attributi(pagina: str, catalogo: dict[str, str], lingua: str) -> tup
     return re.sub(modello, sostituisci, pagina), non_tradotti
 
 
-def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None = None) -> str:
-    """`lang`, `canonical`, `og:locale`, `hreflang` e Open Graph."""
+def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None = None,
+                     pagina: str = "index.html") -> str:
+    """`lang`, `canonical`, `og:locale`, `hreflang` e Open Graph.
+
+    `pagina` è il nome del file italiano da cui si parte. Prima questa funzione
+    conosceva solo la radice, perché l'unica pagina tradotta era la home: con
+    dodici pagine per lingua, un canonical che punta tutte a `/de/` dice a
+    Google che `/de/supporto` è un duplicato della home tedesca. Si vede poco
+    dal sito e molto dai risultati di ricerca.
+    """
     base = "https://traccia.it.com"
     prefisso = "" if lingua == SORGENTE else f"/{lingua}"
+    # l'indirizzo canonico della home è la cartella, quello delle altre pagine
+    # è il file: `/de/` e `/de/supporto.html`
+    coda = "" if pagina == "index.html" else pagina
 
     testata = re.sub(r'<html lang="[^"]*"', f'<html lang="{lingua}"', testata, count=1)
     testata = re.sub(r'(<html lang="[^"]*")', rf'\1 class="lang-page"', testata, count=1)
@@ -188,12 +215,12 @@ def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None 
     # canonical e og:url vanno sull'indirizzo di questa lingua
     testata = re.sub(
         r'<link rel="canonical" href="[^"]*"',
-        f'<link rel="canonical" href="{base}{prefisso}/"',
+        f'<link rel="canonical" href="{base}{prefisso}/{coda}"',
         testata,
     )
     testata = re.sub(
         r'<meta property="og:url" content="[^"]*"',
-        f'<meta property="og:url" content="{base}{prefisso}/"',
+        f'<meta property="og:url" content="{base}{prefisso}/{coda}"',
         testata,
     )
     # la descrizione è un attributo, quindi non passa da `traduci_corpo`:
@@ -216,16 +243,17 @@ def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None 
         for codice in ["it"] + LINGUE:
             p = "" if codice == "it" else f"/{codice}"
             righe.append(
-                f'  <link rel="alternate" hreflang="{codice}" href="{base}{p}/">'
+                f'  <link rel="alternate" hreflang="{codice}" href="{base}{p}/{coda}">'
             )
-        righe.append(f'  <link rel="alternate" hreflang="x-default" href="{base}/">')
+        righe.append(f'  <link rel="alternate" hreflang="x-default" href="{base}/{coda}">')
         testata = testata.replace(
             "</head>", "\n".join(righe) + "\n</head>", 1
         )
     return testata
 
 
-def intestazione_tradotta(lingua: str, catalogo: dict[str, str]) -> str:
+def intestazione_tradotta(lingua: str, catalogo: dict[str, str],
+                          pagina_nome: str = "index.html") -> str:
     """L'header per una pagina in `lingua/`: link nella lingua, voci tradotte.
 
     Si riparte da `partials/header.html` — la fonte di verità — invece di
@@ -241,7 +269,7 @@ def intestazione_tradotta(lingua: str, catalogo: dict[str, str]) -> str:
     _sys.path.insert(0, str(ROOT / "tools"))
     import build_shell  # stesse voci di menu, stesso markup
 
-    corpo = build_shell.costruisci_header("index.html", lingua)
+    corpo = build_shell.costruisci_header(pagina_nome, lingua)
     corpo, _ = traduci_corpo(corpo, catalogo, lingua)
 
     # Il nome di una lingua non si traduce: «Deutsch» è «Deutsch» anche in una
@@ -287,12 +315,12 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     intera = re.sub(r'(src|href)="assets/', r'\1="/assets/', intera)
 
     prima, corpo, dopo = parti_della_pagina(intera)
-    testata = attributi_lingua(prima, lingua, catalogo)
+    testata = attributi_lingua(prima, lingua, catalogo, pagina_nome)
 
     # l'header si ricostruisce da `partials/`, con i link che restano in lingua
     testata = re.sub(
         r"(<!-- shell:header -->).*?(<!-- /shell:header -->)",
-        lambda _m: intestazione_tradotta(lingua, catalogo),
+        lambda _m: intestazione_tradotta(lingua, catalogo, pagina_nome),
         testata,
         flags=re.S,
     )
@@ -328,12 +356,32 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
             pagina,
         )
 
+        # L'area riservata (`app.html`) e la console (`admin.html`) restano in
+        # italiano, e restano alla radice: non esiste `/de/app.html`, e un link
+        # che ci punta porta al 404 — il difetto che questa generazione doveva
+        # chiudere, riaperto dalla parte più facile da dimenticare. Il link
+        # porta alla pagina vera, che è una sola e non ha una lingua da
+        # scegliere (per ora).
+        pagina = re.sub(r'href="/(?:en|de|es)/(app|admin)\.html((?:#[^"]*)?)"',
+                        r'href="/\1.html\2"', pagina)
+
     # Gli attributi si traducono **alla fine**, sulla pagina già assemblata:
     # l'header viene ricostruito più sotto da `partials/`, e traducendo prima
     # si traducevano gli attributi di un header che poi veniva buttato via —
     # `aria-label="Apri il menu"` restava italiano su tutte e tre le pagine.
     pagina, attr_non_tradotti = traduci_attributi(pagina, catalogo, lingua)
     non_tradotti += [f"[attributo] {a}" for a in attr_non_tradotti]
+
+    # `<title>` e la descrizione social sono testo che il visitatore legge —
+    # nella scheda del browser e quando il link viene incollato in una chat —
+    # ma non stanno fra `>` e `<`, quindi `traduci_corpo` non li tocca. Senza
+    # questa riga ogni pagina tedesca si presenta con il titolo italiano.
+    def titolo(m: re.Match[str]) -> str:
+        centro = " ".join(m.group(2).split())
+        tradotto = catalogo.get(centro)
+        return f"<{m.group(1)}>{tradotto}</{m.group(1)}>" if tradotto else m.group(0)
+
+    pagina = re.sub(r"<(title)>([^<]*)</\1>", titolo, pagina)
     return pagina, non_tradotti
 
 
@@ -342,9 +390,10 @@ def main() -> int:
     solo_lingua = None
     if "--lingua" in sys.argv:
         solo_lingua = sys.argv[sys.argv.index("--lingua") + 1]
-    solo_pagina = "index.html"
     if "--pagina" in sys.argv:
-        solo_pagina = sys.argv[sys.argv.index("--pagina") + 1]
+        pagine = [sys.argv[sys.argv.index("--pagina") + 1]]
+    else:
+        pagine = PAGINE
 
     italiano = leggi_catalogo(SORGENTE)
     lingue = [solo_lingua] if solo_lingua else LINGUE
@@ -359,20 +408,23 @@ def main() -> int:
             problemi.append(
                 f"{lingua}: {len(mancanti)} chiavi mancanti (es. «{mancanti[0][:60]}»)"
             )
-        nuova, non_tradotti = costruisci(solo_pagina, lingua, catalogo)
-        destinazione = ROOT / lingua / "index.html"
-        vecchia = destinazione.read_text(encoding="utf-8") if destinazione.exists() else ""
-        if nuova != vecchia:
-            disallineate.append(f"{lingua}/index.html")
-            if not check:
-                destinazione.parent.mkdir(parents=True, exist_ok=True)
-                destinazione.write_text(nuova, encoding="utf-8")
-                scritti.append(f"{lingua}/index.html")
-        if non_tradotti:
-            problemi.append(
-                f"{lingua}: {len(non_tradotti)} testi senza traduzione "
-                f"(es. «{non_tradotti[0][:60]}»)"
-            )
+        for pagina_nome in pagine:
+            nuova, non_tradotti = costruisci(pagina_nome, lingua, catalogo)
+            relativo = f"{lingua}/{pagina_nome}"
+            destinazione = ROOT / lingua / pagina_nome
+            vecchia = (destinazione.read_text(encoding="utf-8")
+                       if destinazione.exists() else "")
+            if nuova != vecchia:
+                disallineate.append(relativo)
+                if not check:
+                    destinazione.parent.mkdir(parents=True, exist_ok=True)
+                    destinazione.write_text(nuova, encoding="utf-8")
+                    scritti.append(relativo)
+            if non_tradotti:
+                problemi.append(
+                    f"{relativo}: {len(non_tradotti)} testi senza traduzione "
+                    f"(es. «{non_tradotti[0][:60]}»)"
+                )
 
     for p in problemi:
         print("  · " + p)

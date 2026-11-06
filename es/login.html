@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es" class="lang-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accedi alla tua pratica — Traccia</title>
+  <meta name="description" content="Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://traccia.it.com/es/login.html">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:site_name" content="Traccia">
+  <meta property="og:title" content="Accedi alla tua pratica — Traccia">
+  <meta property="og:description" content="Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.">
+  <meta property="og:url" content="https://traccia.it.com/es/login.html">
+  <meta property="og:image" content="https://traccia.it.com/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/inter-var.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/display-serif.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261102d">
+  <link rel="stylesheet" href="/assets/css/premium.css?v=20261102d">
+  <!-- applica la classe prima del primo paint: evita il lampo di contenuto
+       a piena opacità prima che parta l'animazione d'ingresso -->
+  <script>
+    (function(){
+      var d = document.documentElement;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) d.classList.add('js-anim');
+      else d.classList.add('no-anim');
+    })();
+  </script>
+
+  <script src="/assets/js/config.js?v=20261102d" defer></script>
+  <script src="/assets/js/api.js?v=20261102d" defer></script>
+  <script src="/assets/js/session.js?v=20261102d" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "name": "Traccia",
+    "url": "https://traccia.it.com",
+    "description": "Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.",
+    "areaServed": "IT",
+    "currenciesAccepted": "EUR",
+    "email": "assistenza@traccia.it.com",
+    "legalName": "ERSEL SPA",
+    "vatID": "06900230018",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Piazza Solferino, 11",
+      "postalCode": "10121",
+      "addressLocality": "Torino",
+      "addressRegion": "TO",
+      "addressCountry": "IT"
+    }
+  }
+  </script>
+  <link rel="alternate" hreflang="it" href="https://traccia.it.com/login.html">
+  <link rel="alternate" hreflang="en" href="https://traccia.it.com/en/login.html">
+  <link rel="alternate" hreflang="de" href="https://traccia.it.com/de/login.html">
+  <link rel="alternate" hreflang="es" href="https://traccia.it.com/es/login.html">
+  <link rel="alternate" hreflang="x-default" href="https://traccia.it.com/login.html">
+</head>
+<body class="is-auth">
+    <div class="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Ir al contenido</a>
+
+  <!-- shell:header -->
+  <header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Principal">
+      <a class="brand" href="/es/">
+        <span class="brand__mark" aria-hidden="true">T</span>
+        <span>Traccia</span>
+      </a>
+
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Abrir el menú">
+        <span></span>
+      </button>
+
+      <ul class="nav__links" id="nav-links">
+        <li><a class="nav-link" data-nav="come-funziona" href="/es/come-funziona.html">Cómo funciona</a></li>
+        <li><a class="nav-link" data-nav="casi" href="/es/casi.html">Casos llevados</a></li>
+        <li><a class="nav-link" data-nav="crypto" href="/es/crypto.html">Estafas cripto</a></li>
+        <li><a class="nav-link" data-nav="chi-siamo" href="/es/chi-siamo.html">Quiénes somos</a></li>
+        <li><a class="nav-link" data-nav="team" href="/es/team.html">El equipo</a></li>
+        <li><a class="nav-link" data-nav="onorari" href="/es/onorari.html">Honorarios</a></li>
+        <li><a class="nav-link" data-nav="supporto" href="/es/supporto.html">Soporte</a></li>
+
+        <li class="nav__lang" data-lang-switch>
+          <!-- Cambio lingua: quattro pulsanti in fila, non un menu a tendina.
+               Prima era un `<details>` con dentro una lista: due clic per
+               cambiare lingua, un clic che non faceva niente quando si
+               sceglieva la lingua in cui si era già, e su mobile il selettore
+               finiva dentro l'hamburger — cioè invisibile a chi non sa dove
+               cercarlo. Ora le quattro lingue si vedono sempre, con un clic
+               solo e nessun clic a vuoto: la lingua corrente non è un link,
+               è la pastiglia accesa.
+
+               Le sigle sono l'unica forma visibile; il nome intero della
+               lingua sta nel `title` e nell'`aria-label`. `hreflang` dice ai
+               motori che quella è la stessa pagina in un'altra lingua. -->
+          <div class="lang" role="group" aria-labelledby="lang-label" data-lang-group>
+            <span class="sr-only" id="lang-label" data-lang-label>Idioma</span>
+            <a class="lang__opt" href="/" hreflang="it" lang="it" data-lang="it"
+               title="Italiano" aria-label="Italiano"><span aria-hidden="true">IT</span></a>
+            <a class="lang__opt" href="/en/" hreflang="en" lang="en" data-lang="en"
+               title="English" aria-label="English"><span aria-hidden="true">EN</span></a>
+            <a class="lang__opt" href="/de/" hreflang="de" lang="de" data-lang="de"
+               title="Deutsch" aria-label="Deutsch"><span aria-hidden="true">DE</span></a>
+            <a class="lang__opt" hreflang="es" lang="es" data-lang="es" aria-current="true"
+               title="Español" aria-label="Español"><span aria-hidden="true">ES</span></a>
+          </div>
+        </li>
+
+        <li class="nav__actions" data-auth-slot>
+          <!-- visitatore -->
+          <a class="btn btn--ghost btn--sm" href="/es/login.html" data-auth-guest>Iniciar sesión</a>
+          <a class="btn btn--sm" href="/es/login.html#registrati" data-auth-guest>Denunciar un caso</a>
+
+          <!-- sessione attiva -->
+          <div class="nav-user" data-auth-member hidden>
+            <a class="nav-user__link" href="/app.html">Mi expediente</a>
+            <a class="nav-user__link nav-user__link--admin" href="/admin.html" data-auth-admin hidden>Consola de administración</a>
+            <span class="nav-user__id">
+              <span class="nav-user__avatar" data-auth-initials aria-hidden="true"></span>
+              <span class="nav-user__name" data-auth-user></span>
+            </span>
+            <button class="nav-user__exit" type="button" data-logout data-auth-member hidden>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6.5 2.5H3.5a1 1 0 00-1 1v9a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Salir
+            </button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+  <!-- /shell:header -->
+
+
+  <main id="main">
+<section class="auth-shell auth-shell--photo grain">
+  <div class="auth-shell__bg" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/img/hero-trace-900.webp 900w, assets/img/hero-trace-1600.webp 1600w" sizes="100vw">
+      <img src="/assets/img/hero-trace-1600.jpg" srcset="assets/img/hero-trace-900.jpg 900w, assets/img/hero-trace-1600.jpg 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" loading="lazy" decoding="async">
+    </picture>
+  </div>
+  <div class="auth-layout">
+
+    <!-- colonna informativa -->
+    <aside class="auth-aside">
+      <span class="eyebrow" style="color:var(--accent-lime)">Area riservata</span>
+      <h2 class="auth-aside__title">La tua pratica,<br><em>senza doverla inseguire.</em></h2>
+      <p class="auth-aside__lead">
+        Stato dell'analisi, documenti caricati, richieste in lavorazione. Tutto
+        in un posto, con la cronologia di quello che abbiamo fatto.
+      </p>
+
+      <ul class="auth-points">
+        <li>
+          <span class="auth-points__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 11l3.6-3.6 2.4 2.4L14 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 3.5h4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div><strong>Stato della pratica</strong><span>Ogni fase, con date e responsabile.</span></div>
+        </li>
+        <li>
+          <span class="auth-points__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.6 8l1.7 1.7 3.4-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div><strong>Documenti al sicuro</strong><span>Solo chi segue il caso li vede.</span></div>
+        </li>
+        <li>
+          <span class="auth-points__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.8l5 1.9v4.1c0 3-2.1 5.7-5 6.4-2.9-.7-5-3.4-5-6.4V3.7l5-1.9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.8 8l1.5 1.5L10.4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div><strong>Nessun dato sensibile</strong><span>Mai seed phrase, mai credenziali bancarie.</span></div>
+        </li>
+      </ul>
+
+      <p class="auth-aside__foot">
+        ERSEL SPA · P.IVA 06900230018<br>
+        Analisi forense delle truffe finanziarie online
+      </p>
+    </aside>
+
+    <!-- colonna form -->
+    <div class="auth-card">
+      <header class="auth-card__head">
+        <h1 id="auth-title">Iniciar sesión</h1>
+        <p class="small muted" id="auth-subtitle">
+          Inserisci le credenziali della tua pratica.
+        </p>
+      </header>
+
+      <form class="form mt-4" id="login-form" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="username"
+                 placeholder="nome@esempio.it" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password"
+                 autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <p class="form__note" data-form-error hidden></p>
+        <button class="btn btn--accent btn--block btn--lg" type="submit">Iniciar sesión</button>
+      </form>
+
+      <p class="auth-switch">
+        Prima volta qui?
+        <a href="#registrati" data-show-register>Abrir un aviso</a>
+      </p>
+
+      <form class="form mt-3" id="register-form" hidden novalidate>
+        <!-- Richiesta di informazioni: i cinque dati che servono per
+             ricontattare qualcuno e capire se il caso è nostro. Nome e
+             cognome separati perché il contratto di incarico li vuole
+             distinti; il telefono perché chi ha appena perso dei soldi non
+             aspetta un'email; l'importo perché dice subito di che ordine di
+             grandezza si parla. Il tipo di truffa resta: dice all'analista
+             quale parte dell'ufficio aprire. La password no — vedi la nota in
+             fondo al modulo. -->
+        <div class="form-row">
+          <div class="field">
+            <label for="reg-first-name">Nome</label>
+            <input id="reg-first-name" name="first_name" type="text"
+                   autocomplete="given-name" placeholder="Mario"
+                   maxlength="60" required>
+          </div>
+          <div class="field">
+            <label for="reg-last-name">Cognome</label>
+            <input id="reg-last-name" name="last_name" type="text"
+                   autocomplete="family-name" placeholder="Rossi"
+                   maxlength="60" required>
+          </div>
+        </div>
+        <div class="field mt-3">
+          <label for="reg-email">Email</label>
+          <input id="reg-email" name="email" type="email" autocomplete="email"
+                 placeholder="nome@esempio.it" required>
+          <span class="field__hint">È l'indirizzo su cui riceverai le risposte.</span>
+        </div>
+        <div class="field mt-3">
+          <label for="reg-phone">Telefono per essere contattato</label>
+          <input id="reg-phone" name="phone" type="tel" autocomplete="tel"
+                 inputmode="tel" placeholder="+39 333 123 4567"
+                 maxlength="25" required>
+          <span class="field__hint">Con il prefisso: così possiamo chiamarti anche dall'estero.</span>
+        </div>
+        <div class="field mt-3">
+          <label for="reg-amount">Importo approssimativo perso</label>
+          <input id="reg-amount" name="amount_eur" type="text" inputmode="decimal"
+                 autocomplete="off" placeholder="12.500" required>
+          <span class="field__hint">In euro, anche approssimativo. Serve a capire di che caso si tratta.</span>
+        </div>
+        <div class="field mt-3">
+          <label for="reg-tipo">Che cosa ti è successo</label>
+          <select id="reg-tipo" name="situation">
+            <option value="broker">Finto broker o piattaforma di trading</option>
+            <option value="crypto">Truffa con criptovalute</option>
+            <option value="unlock">Mi hanno chiesto soldi per sbloccare il prelievo</option>
+            <option value="recovery">Sono stato contattato da un finto recupero fondi</option>
+            <option value="altro">Non lo so ancora</option>
+          </select>
+        </div>
+        <p class="form__note" data-form-error hidden></p>
+        <button class="btn btn--accent btn--block btn--lg" type="submit">Invia richiesta</button>
+        <!-- Niente password e niente «crea account»: chi ha appena perso dei
+             soldi non deve scegliere una password per un accesso che non esiste
+             ancora. Il modulo apre una richiesta; l'account lo crea un analista
+             quando prende in carico la pratica, e la password si sceglie allora.
+             Dirlo qui evita la domanda che altrimenti arriva al telefono:
+             «ma io ho un account?». -->
+        <p class="form__note">
+          Mandi una richiesta, non apri un conto: <strong>non serve una
+          password</strong> e non c'è nulla da ricordare. Un analista legge
+          quello che hai scritto e ti ricontatta entro 48 ore lavorative al
+          numero che ci hai indicato.
+        </p>
+      </form>
+
+    </div>
+  </div>
+</section>
+
+<script src="/assets/js/ui.js?v=20261102d" defer></script>
+<script src="/assets/js/auth.js?v=20261102d" defer></script>
+  </main>
+
+  <!-- shell:footer -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__col">
+        <a class="brand" href="/es/" style="margin-bottom:1rem">
+          <span class="brand__mark" aria-hidden="true">T</span>
+          <span>Traccia</span>
+        </a>
+        <p class="muted small" style="max-width:32ch">
+          Análisis forense de estafas financieras online. Reconstruimos el recorrido de tu dinero cuando una plataforma de inversión deja de devolverte el capital.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4>Servicio</h4>
+        <ul>
+          <li><a href="/es/come-funziona.html">Cómo funciona</a></li>
+          <li><a href="/es/come-funziona.html#fasi">Las cinco fases</a></li>
+          <li><a href="/es/casi.html">Casos llevados</a></li>
+          <li><a href="/es/crypto.html">Estafas cripto</a></li>
+          <li><a href="/es/chi-siamo.html">Quiénes somos</a></li>
+          <li><a href="/es/team.html">El equipo</a></li>
+          <li><a href="/es/onorari.html">Honorarios</a></li>
+          <li><a href="/es/onorari.html#cosa-non-facciamo">Lo que no hacemos</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Antes de empezar</h4>
+        <ul>
+          <li><a href="/es/supporto.html#mai-pagare">¿Te piden más dinero?</a></li>
+          <li><a href="/es/supporto.html#segnalare">Dónde denunciar</a></li>
+          <li><a href="/es/supporto.html#documenti">Documentos que conservar</a></li>
+          <li><a href="/es/supporto.html#faq">Preguntas frecuentes</a></li>
+          <li><a href="/es/login.html">Mi expediente</a></li>
+          <li><a href="/es/supporto.html#contatti">Contacto</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/es/privacy.html">Privacidad</a></li>
+          <li><a href="/es/termini.html">Términos y condiciones</a></li>
+          <li><a href="/es/cookie.html">Política de cookies</a></li>
+          <li><a href="/es/note-legali.html">Aviso legal</a></li>
+          <li><a href="/es/privacy.html#reclami">Reclamaciones</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <p class="footer__disclaimer">
+        <strong>Advertencia necesaria.</strong> Traccia realiza análisis técnicos y documentales y ayuda a reconstruir los flujos financieros. <strong>No somos abogados, ni un despacho, ni una entidad de crédito, ni una empresa de recobro autorizada conforme al art. 115 TULPS, ni un intermediario financiero.</strong> No podemos garantizar la recuperación de las sumas: el resultado depende de factores que no controlamos, como la trazabilidad de los fondos, la colaboración de las entidades implicadas y los tiempos de la justicia. Ningún operador puede prometer un reembolso garantizado: quien lo haga está cometiendo una estafa dentro de la estafa. Nuestro número de WhatsApp es solo el publicado en este sitio: nunca escribimos primero ni pedimos dinero por chat.
+      </p>
+
+      <p class="footer__disclaimer">
+        <strong>Antifraude.</strong> Nunca pedimos adelantar dinero para «desbloquear» un reembolso, pagar impuestos por adelantado, instalar software de acceso remoto ni facilitar códigos OTP y claves privadas. Cualquier petición de este tipo debe comunicarse de inmediato a
+        <a href="mailto:assistenza@traccia.it.com">assistenza@traccia.it.com</a>.
+      </p>
+
+      <div class="footer__entity">
+        <p>
+          <strong>ERSEL SPA</strong> — Sede legal y dirección general: Piazza Solferino, 11 - 10121 Turín (TO), Italia · NIF / Código fiscal 06900230018 · Actividad de análisis técnico y documental, no reservada a intermediarios autorizados. No somos un banco ni un intermediario financiero y no operamos bajo la supervisión del Banco de Italia ni de la CONSOB.
+        </p>
+      </div>
+
+      <div class="footer__legal-row">
+        <span>
+          © <span data-year>2026</span> ERSEL SPA — Todos los derechos reservados. NIF 06900230018
+        </span>
+        <span>
+          <a href="/es/note-legali.html">Aviso legal</a> ·
+          <a href="/es/privacy.html">Privacidad</a> ·
+          <a href="/es/cookie.html">Cookies</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+  <!-- /shell:footer -->
+
+  <div class="cookie-bar" data-cookie-bar role="dialog" aria-live="polite" aria-label="Preferencias de cookies">
+  <p>
+    Usamos cookies técnicas necesarias para el funcionamiento del sitio y, con tu consentimiento, cookies de medición. Puedes aceptar, rechazar o leer la
+    <a href="/es/cookie.html" style="text-decoration:underline">política de cookies</a>.
+  </p>
+  <div class="cookie-bar__actions">
+    <button class="btn" data-cookie-choice="all" type="button">Aceptar todas</button>
+    <button class="btn btn--ghost" data-cookie-choice="essential" type="button">Solo necesarias</button>
+    <a class="btn btn--ghost" href="/es/cookie.html">Preferencias</a>
+  </div>
+</div>
+
+
+  <script src="/assets/js/main.js?v=20261102d" defer></script>
+  <script src="/assets/js/market.js?v=20261102d" defer></script>
+  <script src="/assets/js/premium.js?v=20261102d" defer></script>
+  <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
+       pulsante non compare affatto -->
+  <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
+     aria-label="Escríbenos por WhatsApp" hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
+    <span class="wa-fab__label">Escríbenos por WhatsApp</span>
+  </a>
+  <script src="/assets/js/whatsapp.js?v=20261102d" defer></script>
+</body>
+</html>

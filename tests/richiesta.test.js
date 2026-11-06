@@ -80,7 +80,7 @@ function trova(radice, attributo, risultato) {
 function moduloLogin(valori) {
   /* i sei campi della richiesta, ciascuno dentro il suo `.field` */
   const nomi = ["reg-first-name", "reg-last-name", "reg-email",
-                "reg-phone", "reg-amount", "reg-password"];
+                "reg-phone", "reg-amount", "reg-tipo"];
   const perId = {};
   const contenitori = nomi.map((id) => {
     const c = campo("field-" + id);
@@ -157,7 +157,7 @@ function pieni(extra) {
     "reg-email": "mario.rossi@example.it",
     "reg-phone": "+39 333 123 4567",
     "reg-amount": "12.500",
-    "reg-password": "Password!2026"
+    "reg-tipo": "broker"
   }, extra || {});
 }
 
@@ -267,13 +267,15 @@ test("richiesta: i cinque dati partono nel payload, con il nome anche intero", a
   const p = m.chiamate[0];
   assert.strictEqual(p.first_name, "Mario");
   assert.strictEqual(p.last_name, "Rossi");
-  assert.strictEqual(p.name, "Mario Rossi",
-    "`name` resta la forma completa che l'area riservata mostra");
+  assert.ok(!("name" in p) || p.name === "Mario Rossi",
+    "nome e cognome viaggiano separati; la forma completa la compone il database");
   assert.strictEqual(p.email, "mario.rossi@example.it");
   assert.strictEqual(p.phone, "+39 333 123 4567");
   assert.strictEqual(p.amount_eur, 12500,
     "«12.500» sono dodicimilacinquemila euro, non dodici euro e mezzo");
-  assert.strictEqual(p.password, "Password!2026");
+  assert.ok(!("password" in p),
+    "nessuna password: l'account non si crea qui, lo crea un analista dopo");
+  assert.strictEqual(p.situation, "broker", "il tipo di truffa dice all'analista da dove partire");
 });
 
 /* ------------------------------------------------------- lettura dell'importo -- */
@@ -458,24 +460,26 @@ function apiCon(payload) {
   return { api: sandbox.api, chiamate };
 }
 
-test("api: la registrazione manda i sette parametri della funzione, non tre", async () => {
-  const { api, chiamate } = apiCon({ ok: true, message: "Richiesta inviata." });
+test("api: la registrazione manda gli otto parametri della funzione, senza password", async () => {
+  const { api, chiamate } = apiCon({ ok: true, message: "Richiesta ricevuta." });
   await api.register({
-    name: "Mario Rossi",
     first_name: "Mario",
     last_name: "Rossi",
     email: "mario.rossi@example.it",
     phone: "+39 333 123 4567",
     amount_eur: 12500,
-    password: "Password!2026"
+    situation: "broker",
+    origine: "login"
   });
 
   assert.strictEqual(chiamate.length, 1);
   const corpo = JSON.parse(chiamate[0].opt.body);
-  ["p_name", "p_email", "p_password", "p_first_name",
-   "p_last_name", "p_phone", "p_amount_eur"].forEach((k) => {
-    assert.ok(k in corpo, "manca " + k + ": la funzione a sette parametri rifiuta la chiamata");
+  ["p_first_name", "p_last_name", "p_email", "p_phone", "p_amount_eur",
+   "p_situation", "p_message", "p_origine"].forEach((k) => {
+    assert.ok(k in corpo, "manca " + k + ": la funzione rifiuta la chiamata");
   });
+  assert.ok(!("p_password" in corpo),
+    "una password non deve viaggiare: non stiamo creando un account");
   assert.strictEqual(corpo.p_first_name, "Mario");
   assert.strictEqual(corpo.p_last_name, "Rossi");
   assert.strictEqual(corpo.p_phone, "+39 333 123 4567");
@@ -489,12 +493,48 @@ test("api: un telefono vuoto arriva come null, non come stringa vuota", async ()
      posto sbagliato. Vuoto deve dire «vuoto». */
   const { api, chiamate } = apiCon({ ok: true });
   await api.register({
-    name: "Mario Rossi", email: "m@example.it", password: "Password!2026",
-    first_name: "Mario", last_name: "Rossi", phone: "", amount_eur: null
+    first_name: "Mario", last_name: "Rossi", email: "m@example.it",
+    phone: "", amount_eur: null
   });
   const corpo = JSON.parse(chiamate[0].opt.body);
   assert.strictEqual(corpo.p_phone, null);
   assert.strictEqual(corpo.p_amount_eur, null);
+});
+
+/* -------------------------------------------- la password non esiste più --
+   Il committente: «when signaling a case remove create password, they do not
+   need to create account. Account will be created later». Il test guarda i
+   file serviti al browser, non solo il JavaScript: una casella password
+   rimasta nell'HTML è una casella che qualcuno compilerà. */
+
+test("modulo: nessun campo password e nessun «apri un conto»", () => {
+  const form = LOGIN.slice(LOGIN.indexOf('id="register-form"'));
+  assert.ok(!/reg-password|name="password"|type="password"/.test(form),
+    "il modulo di richiesta non deve chiedere una password");
+  /* Il modulo non si annuncia come apertura di un conto: la frase «apri un
+     conto» resta solo dentro la negazione che la smentisce («mandi una
+     richiesta, non apri un conto»). */
+  const form2 = LOGIN.slice(LOGIN.indexOf('id="register-form"'));
+  const dentro = form2.slice(0, form2.indexOf("</form>")).replace(/<!--[\s\S]*?-->/g, "");
+  const senzaNegazione = dentro.replace(/non\s+apri un conto/gi, "");
+  assert.ok(!/Apri un conto/i.test(senzaNegazione),
+    "il modulo non deve annunciarsi come l'apertura di un conto");
+  assert.match(LOGIN, /non serve una\s+password|non serve una password/i,
+    "va detto esplicitamente che non serve una password, o la domanda arriva al telefono");
+});
+
+test("database: la migrazione 0024 registra una richiesta, non un account", () => {
+  const M = fs.readFileSync(
+    path.join(RADICE, "supabase/migrations/0024_richiesta_senza_account.sql"), "utf8");
+  assert.match(M, /create table if not exists traccia\.richieste/,
+    "serve una tabella per le richieste: un account senza password non è un account");
+  assert.match(M, /drop function if exists traccia\.auth_register\(text, text, text, text, text, text, numeric\)/,
+    "la vecchia firma con la password va tolta, o PostgREST ne sceglie una a caso");
+  assert.ok(!/password text/.test(M.slice(M.indexOf("create or replace function traccia.auth_register"),
+                                          M.indexOf("end $$;", M.indexOf("create or replace function traccia.auth_register")))),
+    "auth_register non deve avere un parametro password");
+  assert.match(M, /insert into traccia\.richieste/,
+    "la registrazione scrive nella tabella delle richieste");
 });
 
 module.exports = casi;
