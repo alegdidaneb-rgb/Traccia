@@ -20,10 +20,11 @@ function test(nome, fn) { casi.push({ nome, fn }); }
 const SRC = fs.readFileSync(path.join(__dirname, "..", "assets/js/whatsapp.js"), "utf8");
 const CFG = fs.readFileSync(path.join(__dirname, "..", "assets/js/config.js"), "utf8");
 
-function carica(config) {
+function carica(config, lingua = "it") {
   const finte = { TracciaWhatsApp: null };
   const document = {
     readyState: "complete", addEventListener() {},
+    documentElement: { getAttribute: (k) => (k === "lang" ? lingua : null) },
     querySelector: () => null, querySelectorAll: () => []
   };
   const fn = new Function("window", "document", SRC + "\n;return window.TracciaWhatsApp;");
@@ -90,6 +91,40 @@ test("whatsapp: il messaggio standard non presuppone una sessione", () => {
      visitatore non può aver scritto: il pulsante sta anche in home page. */
   const testo = decodeURIComponent(api().link("").split("text=")[1]);
   assert.ok(!/area riservata/i.test(testo), "messaggio da cliente su una pagina pubblica: " + testo);
+});
+
+test("whatsapp: il messaggio precompilato segue la lingua della pagina", () => {
+  /* Il pulsante sta su tutte le pagine, comprese `/de/` e `/es/`. Con il testo
+     fisso in italiano, il visitatore tedesco apre la chat e ci trova una frase
+     che non ha scritto lui, in una lingua che non è la sua. */
+  const cfg = {
+    whatsapp: NUMERO,
+    whatsappText: "Buongiorno, vi scrivo dal sito Traccia.",
+    whatsappTextLingue: { de: "Guten Tag, Fall {pratica}.", es: "Buenos días, Caso {pratica}." }
+  };
+  const tedesco = decodeURIComponent(carica(cfg, "de").api.link("").split("text=")[1]);
+  assert.ok(/^Guten Tag/.test(tedesco), "tedesco non usato: " + tedesco);
+  const spagnolo = decodeURIComponent(carica(cfg, "es").api.link("").split("text=")[1]);
+  assert.ok(/^Buenos días/.test(spagnolo), "spagnolo non usato: " + spagnolo);
+
+  /* senza voce per quella lingua si ricade sull'italiano, non su `undefined` */
+  const inglese = decodeURIComponent(carica(cfg, "en").api.link("").split("text=")[1]);
+  assert.ok(/Buongiorno/.test(inglese), "la ricaduta non funziona: " + inglese);
+
+  /* e i quattro testi esistono davvero nella configurazione del sito */
+  const vere = carica({ whatsapp: NUMERO }, "de");
+  assert.ok(vere.api, "la configurazione reale non si carica");
+});
+
+test("whatsapp: ogni lingua servita ha il suo messaggio configurato", () => {
+  /* la ricaduta sull'italiano è una rete di sicurezza, non il funzionamento
+     normale: se manca una lingua, il visitatore se ne accorge */
+  ["en", "de", "es"].forEach((l) => {
+    assert.ok(
+      new RegExp("\\b" + l + ":\\s*\"").test(CFG),
+      `config.js non ha whatsappTextLingue.${l}`
+    );
+  });
 });
 
 module.exports = casi;

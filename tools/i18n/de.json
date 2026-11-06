@@ -231,5 +231,15 @@
   "Segnala un caso": "Fall melden",
   "Console admin": "Admin-Konsole",
   "Esci": "Abmelden",
-  "Traccia": "Traccia"
+  "Traccia": "Traccia",
+  "Grafo di transazioni: nodi luminosi collegati da linee su fondo scuro": "Transaktionsgrafik: leuchtende Knoten, durch Linien auf dunklem Grund verbunden",
+  "Ufficio di analisi a Torino al tramonto: scrivanie, monitor con grafi di transazioni e la Mole sullo sfondo": "Analysebüro in Turin bei Sonnenuntergang: Schreibtische, Monitore mit Transaktionsgrafiken und die Mole im Hintergrund",
+  "Principale": "Hauptnavigation",
+  "Apri il menu": "Menü öffnen",
+  "Lingua / Language": "Sprache",
+  "I nostri numeri": "Unsere Zahlen",
+  "Diagramma del flusso dei fondi": "Diagramm des Geldflusses",
+  "Recupero parziale del capitale": "Teilweise Rückholung des Kapitals",
+  "Traccia interrotta": "Spur abgebrochen",
+  "Preferenze cookie": "Cookie-Einstellungen"
 }

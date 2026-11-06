@@ -92,9 +92,11 @@ def costruisci_header(pagina: str, lingua: str = "it") -> str:
     corpo = leggi("header.html").replace("{{nav_links}}", nav_links(pagina))
     if lingua != "it":
         corpo = corpo.replace('href="index.html"', f'href="/{lingua}/"')
+        # l'estensione resta: `/de/casi.html` funziona anche servito da una
+        # cartella qualsiasi, `/de/casi` solo grazie ai riscritti di Vercel
         corpo = re.sub(
             r'href="(?!https?:|/|#|mailto:|tel:)([a-z0-9\-]+)\.html(#[^"]*)?"',
-            lambda m: f'href="/{lingua}/{m.group(1)}"',
+            lambda m: f'href="/{lingua}/{m.group(1)}.html{m.group(2) or ""}"',
             corpo,
         )
     return corpo

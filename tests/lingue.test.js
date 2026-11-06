@@ -326,4 +326,50 @@ test("la sigla del selettore è scritta già giusta nell'HTML", () => {
   });
 });
 
+/* Testo alternativo, `aria-label`, `title`, `placeholder` non stanno fra `>` e
+   `<`: la traduzione dei nodi di testo non li tocca. Sono i testi che nessuno
+   rilegge — invisibili a chi guarda la pagina, presenti a chi la ascolta.
+   Trovati in italiano in produzione su `/de/`. */
+test("anche i testi invisibili sono tradotti", () => {
+  TRADOTTE.forEach((l) => {
+    const h = R(`${l}/index.html`);
+    const attrs = [...h.matchAll(/\b(alt|aria-label|title|placeholder)="([^"]+)"/g)]
+      .map((m) => m[2])
+      .filter((v) => /[^\W\d_]/.test(v));
+    const it = CAT("it");
+    const rimasti = attrs.filter((v) => it[v] === v || Object.keys(it).includes(v));
+    /* le eccezioni vere: nomi propri, sigle, parole identiche nelle due lingue */
+    const ammessi = ["Traccia", "WhatsApp", "MB", "AC", "SF", "GR", "IT", "EN", "DE", "ES"];
+    const colpevoli = rimasti.filter((v) => !ammessi.includes(v) && it[v] === v);
+    assert.equal(
+      colpevoli.length,
+      0,
+      `${l}: ${colpevoli.length} testi invisibili in italiano, il primo è «${colpevoli[0] || ""}»`
+    );
+  });
+});
+
+/* Da una pagina tedesca ogni link interno deve restare in tedesco: il banner
+   cookie e il piè di pagina stavano fuori da `<main>` e puntavano a
+   `/cookie.html`, cioè all'italiano, da tutte e tre le lingue. */
+test("nessun link interno riporta all'italiano", () => {
+  TRADOTTE.forEach((l) => {
+    const h = R(`${l}/index.html`);
+    /* `data:` è l'icona incisa in linea, non un collegamento da seguire */
+    const interni = [...h.matchAll(/href="(?!https?:|\/assets|\/|#|mailto:|tel:|data:)([^"]+)"/g)].map(
+      (m) => m[1]
+    );
+    assert.equal(
+      interni.length,
+      0,
+      `${l}: ${interni.length} link relativi (riportano all'italiano), il primo è «${interni[0] || ""}»`
+    );
+    /* e i link assoluti interni stanno nella propria lingua */
+    const fuori = [...h.matchAll(/href="\/(en|de|es|it)?\/?([a-z0-9\-]*\.html[^"]*)"/g)]
+      .filter((m) => m[1] !== l)
+      .map((m) => m[0]);
+    assert.equal(fuori.length, 0, `${l}: ${fuori.length} link in un'altra lingua («${fuori[0] || ""}»)`);
+  });
+});
+
 module.exports = casi;

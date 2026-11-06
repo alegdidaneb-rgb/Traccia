@@ -34,5 +34,15 @@ window.TRACCIA_CONFIG = {
   /* La prima frase deve funzionare anche per chi non ha una sessione: «dalla
      mia area riservata» su una pagina pubblica è una frase che il visitatore
      non può aver scritto. La seconda compare solo quando c'è una pratica. */
-  whatsappText: "Buongiorno, vi scrivo dal sito Traccia. Pratica {pratica}."
+  whatsappText: "Buongiorno, vi scrivo dal sito Traccia. Pratica {pratica}.",
+
+  /* Lo stesso messaggio nelle altre lingue. Il visitatore tedesco che preme il
+     pulsante non deve trovarsi la chat già scritta in italiano: sembra che il
+     sito non sappia in che lingua lo sta servendo. La lingua si legge da
+     `<html lang>` — la stessa fonte di verità del selettore. */
+  whatsappTextLingue: {
+    en: "Hello, I am writing from the Traccia website. Case {pratica}.",
+    de: "Guten Tag, ich schreibe über die Website von Traccia. Fall {pratica}.",
+    es: "Buenos días, escribo desde el sitio de Traccia. Caso {pratica}."
+  }
 };
