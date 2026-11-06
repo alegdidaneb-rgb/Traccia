@@ -196,14 +196,37 @@
 
     <!-- colonna form -->
     <div class="auth-card">
-      <header class="auth-card__head">
+      <!-- Due schede, non una frase con un link: chi arriva da «Segnala un
+           caso» deve vedere subito che è nel posto giusto, e chi arriva qui
+           per caso deve poter scegliere senza leggere il piè della scheda. Il
+           link `#registrati` resta e apre la scheda giusta anche con il
+           tasto indietro del browser. -->
+      <div class="auth-tabs" role="tablist" aria-label="Accesso o segnalazione">
+        <a class="auth-tab" role="tab" id="tab-login" href="#" data-auth-tab="login"
+           aria-selected="true" aria-controls="login-form">Accedi</a>
+        <a class="auth-tab" role="tab" id="tab-register" href="#registrati"
+           data-auth-tab="register" aria-selected="false"
+           aria-controls="register-form">Segnala un caso</a>
+      </div>
+
+      <!-- Il titolo e il sottotitolo li rimpiazza `auth.js` quando si cambia
+           scheda. L'inglese, il tedesco e lo spagnolo hanno bisogno di sapere
+           quali sono, quindi viaggiano anche come `data-` sul contenitore:
+           sono attributi come gli altri, e `build_i18n.py` li traduce. Senza,
+           la pagina tedesca mostrava «Segnala il tuo caso» in italiano appena
+           premuta la seconda scheda. -->
+      <header class="auth-card__head"
+              data-titolo-accesso="Accedi"
+              data-titolo-segnalazione="Segnala il tuo caso"
+              data-sottotitolo-accesso="Inserisci le credenziali della tua pratica."
+              data-sottotitolo-segnalazione="Bastano pochi dati. Ti ricontattiamo noi, senza password da scegliere.">
         <h1 id="auth-title">Accedi</h1>
         <p class="small muted" id="auth-subtitle">
           Inserisci le credenziali della tua pratica.
         </p>
       </header>
 
-      <form class="form mt-4" id="login-form" novalidate>
+      <form class="form mt-4" id="login-form" role="tabpanel" aria-labelledby="tab-login" novalidate>
         <div class="field">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" autocomplete="username"
@@ -218,12 +241,7 @@
         <button class="btn btn--accent btn--block btn--lg" type="submit">Accedi</button>
       </form>
 
-      <p class="auth-switch">
-        Prima volta qui?
-        <a href="#registrati" data-show-register>Apri una segnalazione</a>
-      </p>
-
-      <form class="form mt-3" id="register-form" hidden novalidate>
+      <form class="form mt-3" id="register-form" role="tabpanel" aria-labelledby="tab-register" hidden novalidate>
         <!-- Richiesta di informazioni: i cinque dati che servono per
              ricontattare qualcuno e capire se il caso è nostro. Nome e
              cognome separati perché il contratto di incarico li vuole

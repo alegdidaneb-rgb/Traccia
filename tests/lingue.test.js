@@ -29,12 +29,43 @@ const LINGUE = ["it", "en", "de", "es"];
 const TRADOTTE = ["en", "de", "es"];
 
 /* ------------------------------------------------------------ i cataloghi -- */
+test("il catalogo italiano è la fotografia delle pagine, non un elenco di ricordi", () => {
+  /* Il difetto che questo test intercetta è silenzioso in entrambe le
+     direzioni. Una frase italiana che compare in pagina e non è nel catalogo
+     resta italiana in tutte e tre le lingue, e nessuno se ne accorge finché
+     qualcuno non la legge. Una chiave che non compare più in nessuna pagina è
+     una traduzione fatta e poi buttata via: il testo è cambiato e il catalogo
+     no — e il test «nessuna chiave orfana» grida per aria finché qualcuno non
+     lo zittisce, e da quel momento non lo legge più nessuno.
+
+     Il confronto lo fa `tools/allinea_catalogo.py`, che è anche lo strumento
+     con cui si sistema: `--pota` toglie le orfane, `--aggiungi` aggiunge le
+     mancanti. Qui si controlla che risponda «allineati». */
+  const { spawnSync } = require("child_process");
+  const esito = spawnSync("python3", ["tools/allinea_catalogo.py"], {
+    cwd: path.join(__dirname, ".."),
+    encoding: "utf8"
+  });
+  const uscita = (esito.stdout || "").trim();
+  assert.strictEqual(
+    esito.status,
+    0,
+    "catalogo e pagine non coincidono:\n" + uscita.split("\n").slice(0, 12).join("\n")
+  );
+  assert.match(uscita, /allineati/, "il controllo non ha risposto come previsto");
+});
+
 test("ogni lingua ha un catalogo, e l'italiano è la fonte", () => {
   LINGUE.forEach((l) => {
     assert.ok(esiste(`tools/i18n/${l}.json`), `manca il catalogo ${l}.json`);
   });
   const it = CAT("it");
-  assert.ok(Object.keys(it).length > 150, "il catalogo italiano è troppo corto per essere la home");
+  /* Il catalogo italiano copre tutto il sito, non solo la home: era nato per
+     la home sola, e le altre tredici pagine si traducevano senza una fonte di
+     verità italiana con cui confrontarsi. La soglia è bassa di proposito —
+     quello che conta è che non torni a essere il catalogo di una pagina. */
+  assert.ok(Object.keys(it).length > 900,
+    `il catalogo italiano ha ${Object.keys(it).length} chiavi: copre una pagina sola, non il sito`);
 });
 
 test("nessuna lingua ha chiavi mancanti rispetto all'italiano", () => {
@@ -64,33 +95,27 @@ test("nessuna lingua ha chiavi che l'italiano non ha", () => {
 
 test("la traduzione non è vuota e non è l'italiano lasciato lì", () => {
   /* Il caso vero: la chiave c'è, il valore è la stringa italiana copiata. Il
-     test non può giudicare la qualità, ma può vedere che qualcosa è cambiato —
-     tranne per i nomi propri e le sigle, che restano identici in ogni lingua. */
-  /* Valori che restano identici in ogni lingua, e devono restare: nomi propri,
-     sigle, percentuali, l'indirizzo email, i nomi delle lingue nel selettore e
-     i termini che nel mestiere si usano in inglese anche in italiano. Il test
-     non può giudicare la qualità di una traduzione; può però vedere se una
-     frase italiana è stata copiata nella colonna sbagliata. */
-  const IDENTICI = new Set([
-    "31%", "12%", "33 %", "27 %", "0 €", "online.", "KYC", "USDT", "exchange", "wallet", "mixer",
-    "conto", "Blockchain intelligence", "On-chain", "Chargeback",
-    "Marta Bellini", "Andrea Costa", "Sara Ferrero", "Giulia Rinaldi",
-    "ERSEL SPA", "Privacy", "Cookie policy", "cookie policy",
-    "assistenza@traccia.it.com",
-    "Italiano", "English", "Deutsch", "Español", "Traccia",
-    "Torino · Piazza Solferino", "Turin · Piazza Solferino",
-    /* spagnolo: «exchange» si usa così, «Caso T-2418» è il nome di un caso,
-       «Exchange con KYC» è un'etichetta del diagramma. Restano identici
-       perché in spagnolo sono già giusti, non perché nessuno li ha tradotti. */
-    "Caso T-2418", "Exchange intermediario", "Exchange con KYC"
-  ]);
+     test non può giudicare la qualità di una traduzione, ma può vedere due
+     cose che succedono davvero.
+
+     Primo: un valore vuoto, che in pagina diventa un buco.
+     Secondo: una frase italiana incollata nella colonna sbagliata. Qui non si
+     confronta il valore con la chiave — nomi propri, codici pratica, sigle e
+     nomi di tecnologia sono identici in ogni lingua ed è giusto che lo siano,
+     e un elenco di eccezioni lungo novanta voci smette di essere una regola e
+     diventa un elenco di cose tollerate. Si cerca invece una parola che in
+     inglese, tedesco e spagnolo non esiste: se compare, quella frase non è
+     stata tradotta. */
+  const SPIA = /\b(della|dello|degli|delle|dei|nella|negli|perché|quindi|nostro|nostra|vostro|siamo|potrebbe|anche|senza|dopo|ogni|sono|questo|questa|dove|più|già|sempre|denaro|truffa|truffe|pratica|documenti)\b/i;
   const it = CAT("it");
   TRADOTTE.forEach((l) => {
     const cat = CAT(l);
-    const identiche = Object.keys(it).filter((k) =>
-      k !== "_meta" && !IDENTICI.has(k) && cat[k] === it[k]);
-    assert.strictEqual(identiche.length, 0,
-      `${l}: ${identiche.length} valori identici all'italiano, il primo è «${(identiche[0] || "").slice(0, 60)}»`);
+    const vuote = Object.keys(it).filter((k) => k !== "_meta" && !cat[k]);
+    assert.strictEqual(vuote.length, 0,
+      `${l}: ${vuote.length} traduzioni vuote, la prima è «${(vuote[0] || "").slice(0, 60)}»`);
+    const copiate = Object.keys(it).filter((k) => k !== "_meta" && SPIA.test(cat[k] || ""));
+    assert.strictEqual(copiate.length, 0,
+      `${l}: ${copiate.length} frasi ancora italiane, la prima è «${(copiate[0] || "").slice(0, 60)}»`);
   });
 });
 

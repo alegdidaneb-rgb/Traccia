@@ -176,13 +176,14 @@
       }).then(function (res) {
         busy(button, false);
         registerForm.reset();
-        registerForm.hidden = true;
-        loginForm.hidden = false;
-        setMode("login");
-        showError(loginError,
+        /* la conferma si legge dove si è appena scritto: portare alla scheda
+           dell'accesso, come si faceva prima, faceva sembrare che la
+           richiesta fosse diventata un account da aprire con una password */
+        setMode("register");
+        showError(registerError,
           (res && res.message) ||
           "Richiesta ricevuta. Ti ricontattiamo entro 48 ore lavorative.");
-        if (loginError) loginError.style.color = "var(--accent)";
+        if (registerError) registerError.style.color = "var(--accent)";
       }).catch(function (err) {
         showError(registerError, err.message || "Invio non riuscito. Riprova.");
         busy(button, false);
@@ -191,25 +192,86 @@
   }
 
   /* ------------------------------------------------ switch / autofill -- */
-  /* il titolo della scheda segue il pannello visibile */
+  /* Due schede, un solo pannello visibile per volta. `setMode` è l'unico
+     punto che cambia stato: prima il titolo e i due moduli si muovevano
+     ognuno per conto suo, e bastava un ramo dimenticato per mostrare il campo
+     password sopra il modulo di segnalazione — la cosa che questo lavoro
+     doveva togliere. */
   var titleEl = document.getElementById("auth-title");
   var subtitleEl = document.getElementById("auth-subtitle");
+  /* I testi delle due schede stanno nei `data-` della testata della scheda,
+     dove `build_i18n.py` li traduce; gli italiani qui sotto restano come rete
+     di sicurezza per una pagina costruita a mano. */
+  var testi = (titleEl && titleEl.parentElement && titleEl.parentElement.dataset) || {};
+  function testo(chiave, difetto) {
+    return testi[chiave] || difetto;
+  }
+  var schede = Array.prototype.slice.call(document.querySelectorAll("[data-auth-tab]"));
+
   function setMode(mode) {
+    var registrazione = mode === "register";
+    if (loginForm) loginForm.hidden = registrazione;
+    if (registerForm) registerForm.hidden = !registrazione;
+    schede.forEach(function (scheda) {
+      scheda.setAttribute("aria-selected",
+        scheda.getAttribute("data-auth-tab") === mode ? "true" : "false");
+    });
     if (!titleEl) return;
-    if (mode === "register") {
-      titleEl.textContent = "Segnala il tuo caso";
-      if (subtitleEl) subtitleEl.textContent = "Bastano pochi dati. Ti ricontattiamo noi, senza password da scegliere.";
+    if (registrazione) {
+      titleEl.textContent = testo("titoloSegnalazione", "Segnala il tuo caso");
+      if (subtitleEl) subtitleEl.textContent = testo("sottotitoloSegnalazione",
+        "Bastano pochi dati. Ti ricontattiamo noi, senza password da scegliere.");
     } else {
-      titleEl.textContent = "Accedi";
-      if (subtitleEl) subtitleEl.textContent = "Inserisci le credenziali del tuo conto.";
+      titleEl.textContent = testo("titoloAccesso", "Accedi");
+      if (subtitleEl) subtitleEl.textContent = testo("sottotitoloAccesso",
+        "Inserisci le credenziali della tua pratica.");
     }
   }
 
+  /* Da dove si arriva: `#registrati` (il pulsante «Segnala un caso» in ogni
+     pagina) apre la scheda della segnalazione. Si guarda l'indirizzo e non il
+     clic, perché il link può essere premuto da un'altra pagina — in quel caso
+     il browser non emette nessun clic qui, cambia solo l'indirizzo. */
+  function modalitaDaIndirizzo() {
+    return location.hash.replace(/^#/, "") === "registrati" ? "register" : null;
+  }
+
+  function applicaIndirizzo(mettiAFuoco) {
+    var modo = modalitaDaIndirizzo();
+    if (!modo) {
+      setMode("login");
+      return;
+    }
+    setMode(modo);
+    var primo = document.getElementById("reg-first-name");
+    if (mettiAFuoco && primo) primo.focus();
+  }
+
+  schede.forEach(function (scheda) {
+    scheda.addEventListener("click", function (e) {
+      var modo = scheda.getAttribute("data-auth-tab");
+      e.preventDefault();
+      /* l'indirizzo resta leggibile e condivisibile: `login.html#registrati`
+         apre la scheda giusta, `/login.html` quella dell'accesso */
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "",
+          location.pathname + (modo === "register" ? "#registrati" : ""));
+      }
+      setMode(modo);
+      var primo = document.getElementById(modo === "register" ? "reg-first-name" : "email");
+      if (primo) primo.focus();
+    });
+  });
+
+  /* il tasto indietro e i link `#registrati` premuti da un'altra pagina */
+  window.addEventListener("hashchange", function () { applicaIndirizzo(true); });
+  applicaIndirizzo(false);
+
+  /* compatibilità: resta il vecchio aggancio `data-show-register`, se una
+     pagina lo usa ancora */
   document.querySelectorAll("[data-show-register]").forEach(function (link) {
     link.addEventListener("click", function (e) {
       e.preventDefault();
-      loginForm.hidden = true;
-      registerForm.hidden = false;
       setMode("register");
       var primo = document.getElementById("reg-first-name");
       if (primo) primo.focus();

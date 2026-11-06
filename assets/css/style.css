@@ -1584,6 +1584,44 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 .auth-card__head p { margin-top: 0.35rem; }
 .auth-card .form { gap: 0.9rem; }
 
+/* Due schede in cima alla scheda: «Accedi» e «Segnala un caso». Prima la
+   scelta stava in una frase in fondo al modulo, e chi arrivava da «Segnala un
+   caso» vedeva comunque il campo password — cioè la cosa sbagliata. */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 1.35rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.auth-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.auth-tab:hover { color: var(--ink); }
+.auth-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.auth-tab[aria-selected="true"] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
 .auth-switch {
   margin-top: 1.1rem;
   font-size: var(--fs-small);

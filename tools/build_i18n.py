@@ -82,6 +82,23 @@ def leggi_catalogo(lingua: str) -> dict[str, str]:
     return dati
 
 
+_ITALIANO: dict[str, str] | None = None
+
+
+def italiano() -> dict[str, str]:
+    """Il catalogo italiano, solo per distinguere «manca» da «già tradotto».
+
+    Il titolo di una pagina passa due volte: `traduci_corpo` lo sostituisce
+    perché sta fra `>` e `<`, poi `titolo` lo rivede e non trova più la chiave.
+    Senza questo controllo il rapporto segnalava come mancante ogni titolo
+    già tradotto, e un avviso che grida sempre non si legge più.
+    """
+    global _ITALIANO
+    if _ITALIANO is None:
+        _ITALIANO = leggi_catalogo(SORGENTE)
+    return _ITALIANO
+
+
 def parti_della_pagina(pagina: str) -> tuple[str, str, str]:
     """(prima del corpo, corpo, dopo il corpo).
 
@@ -160,7 +177,15 @@ def traduci_corpo(corpo: str, catalogo: dict[str, str], lingua: str) -> tuple[st
     return "".join(pezzi), non_tradotti
 
 
-ATTRIBUTI_VISIBILI = ("alt", "aria-label", "title", "placeholder")
+# `data-titolo-*` e `data-sottotitolo-*` non sono decorazioni: sono i testi che
+# `auth.js` scrive quando si passa da una scheda all'altra. Se restano in
+# italiano, la pagina tedesca mostra un titolo tedesco al caricamento e uno
+# italiano al primo clic.
+ATTRIBUTI_VISIBILI = (
+    "alt", "aria-label", "title", "placeholder",
+    "data-titolo-accesso", "data-titolo-segnalazione",
+    "data-sottotitolo-accesso", "data-sottotitolo-segnalazione",
+)
 
 
 def traduci_attributi(pagina: str, catalogo: dict[str, str], lingua: str) -> tuple[str, list[str]]:
@@ -193,6 +218,55 @@ def traduci_attributi(pagina: str, catalogo: dict[str, str], lingua: str) -> tup
     return re.sub(modello, sostituisci, pagina), non_tradotti
 
 
+# Campi della `<head>` che contengono testo leggibile. `og:site_name`,
+# `og:locale`, `og:type`, `twitter:card` e gli URL restano: non sono frasi da
+# tradurre, e cambiarli romperebbe le anteprime invece di migliorarle.
+METADATI = re.compile(
+    r'<meta\s+(?:name|property)="'
+    r'(description|og:title|og:description|og:image:alt|'
+    r'twitter:title|twitter:description|twitter:image:alt)'
+    r'"\s+content="([^"]*)"',
+    re.I,
+)
+
+
+def _meta_tradotto(m: re.Match[str], catalogo: dict[str, str]) -> str:
+    """Traduce il `content` di un meta sociale, se il catalogo lo conosce."""
+    campo, valore = m.group(1), html_mod.unescape(m.group(2))
+    centro = " ".join(valore.split())
+    tradotto = catalogo.get(centro)
+    if tradotto is None or tradotto == centro:
+        return m.group(0)
+    return m.group(0).replace(f'content="{m.group(2)}"', f'content="{tradotto}"', 1)
+
+
+LD_DESCRIZIONE = re.compile(r'"description": "([^"]*)"')
+
+
+def _json_ld_tradotto(testata: str, catalogo: dict[str, str]) -> str:
+    """La `description` dentro `<script type="application/ld+json">`.
+
+    È il testo che Google mostra sotto il titolo quando il risultato è una
+    scheda arricchita: lasciarlo in italiano significa che il risultato
+    tedesco si presenta in italiano anche con il resto tradotto.
+    """
+    def dentro(m: re.Match[str]) -> str:
+        def campo(c: re.Match[str]) -> str:
+            centro = " ".join(c.group(1).split())
+            tradotto = catalogo.get(centro)
+            if tradotto is None or tradotto == centro:
+                return c.group(0)
+            return f'"description": "{tradotto}"'
+        return LD_DESCRIZIONE.sub(campo, m.group(0))
+
+    return LD_JSON.sub(dentro, testata)
+
+
+LD_JSON = re.compile(
+    r'<script\s+type="application/ld\+json"[^>]*>.*?</script>', re.S | re.I
+)
+
+
 def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None = None,
                      pagina: str = "index.html") -> str:
     """`lang`, `canonical`, `og:locale`, `hreflang` e Open Graph.
@@ -223,12 +297,15 @@ def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None 
         f'<meta property="og:url" content="{base}{prefisso}/{coda}"',
         testata,
     )
-    # la descrizione è un attributo, quindi non passa da `traduci_corpo`:
-    # senza questa riga la pagina tedesca si presenta in italiano su Google
+    # I metadati della testata: `<title>` (già in `costruisci`), la descrizione,
+    # i campi Open Graph e Twitter e il blocco JSON-LD. Sono attributi o JSON,
+    # quindi non passano da `traduci_corpo`, ma sono testo che il visitatore
+    # legge — nella scheda del browser, in una anteprima di link, nei risultati
+    # di ricerca. Prima di questa funzione la pagina tedesca si presentava in
+    # italiano su Google.
     if catalogo:
-        for chiave, valore in catalogo.items():
-            if len(chiave) > 80 and chiave in testata:
-                testata = testata.replace(chiave, valore)
+        testata = METADATI.sub(lambda m: _meta_tradotto(m, catalogo), testata)
+        testata = _json_ld_tradotto(testata, catalogo)
 
     locale = {"it": "it_IT", "en": "en_GB", "de": "de_DE", "es": "es_ES"}[lingua]
     testata = re.sub(
@@ -379,7 +456,11 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     def titolo(m: re.Match[str]) -> str:
         centro = " ".join(m.group(2).split())
         tradotto = catalogo.get(centro)
-        return f"<{m.group(1)}>{tradotto}</{m.group(1)}>" if tradotto else m.group(0)
+        if tradotto is None:
+            if centro in italiano():
+                non_tradotti.append(f"[title] {centro}")
+            return m.group(0)
+        return f"<{m.group(1)}>{tradotto}</{m.group(1)}>"
 
     pagina = re.sub(r"<(title)>([^<]*)</\1>", titolo, pagina)
     return pagina, non_tradotti
