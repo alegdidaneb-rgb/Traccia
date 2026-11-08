@@ -1018,9 +1018,14 @@ Ogni riga ha le colonne che Meta si aspetta per un data feed di catalogo:
 ## Come si importa
 
 **WhatsApp Business Manager → Catalogo → Aggiungi articoli → Importa da file.**
-Se l'importazione non passa (succede: il catalogo di un'azienda non verificata
-rifiuta i feed), le schede in `schede-it.md`, `schede-en.md`, … sono gli stessi
-testi, da caricare a mano dall'app.
+Se l'importazione non passa, le schede in `schede-it.md`, `schede-en.md`, … sono
+gli stessi testi, da caricare a mano dall'app.
+
+**La verifica dell'azienda non serve per questo catalogo.** Era scritto qui e
+era sbagliato: la verifica in Meta Business Manager serve all'API di WhatsApp
+(messaggi automatici, più operatori, badge verde), non al catalogo della
+**app** WhatsApp Business, che si scarica gratis dal telefono e non richiede
+verifica né documenti. Chi crea il catalogo dall'app importa il feed e basta.
 
 ### Prima di incollare il file, due controlli
 
@@ -1072,6 +1077,30 @@ rigenera, altrimenti il catalogo e le schede dicono cose diverse.
 Il prezzo della perizia deve restare uguale a quello di `onorari.html`: se
 cambia là, cambia anche qui, e il test in `tests/catalogo_whatsapp.test.js`
 fallisce finché non lo allinei.
+
+## Se il catalogo va creato da zero
+
+Due strade, e la scelta cambia tutto il resto.
+
+**App WhatsApp Business (gratis, verificabile in mezz'ora).** Si scarica sul
+telefono, si registra il numero dell'assistenza (`+1 539 215 1268`, quello già
+nel sito), si compila il profilo e si apre **Strumenti → Catalogo**. Nessuna
+verifica dell'azienda, nessun documento, nessuna attesa di Meta. Sette articoli
+si possono caricare anche a mano in una serata, o importare dal feed se
+l'app lo propone. È la strada giusta per il volume di oggi: una persona che
+risponde, non un contact center.
+
+**WhatsApp Business Platform (API).** Serve quando gli operatori sono più di
+uno, o quando i messaggi devono partire da soli. Qui la verifica dell'azienda
+in Meta Business Manager è obbligatoria: nome legale, indirizzo, telefono e
+sito devono coincidere con i documenti (visura o certificato di
+incorporazione più una bolletta), e la risposta arriva da dieci minuti a
+quattordici giorni lavorativi. Nel frattempo si può già mandare, con un limite
+basso. Il catalogo dell'API vive in Commerce Manager e si popola con lo stesso
+feed.
+
+In entrambi i casi quello che c'è in questa cartella non cambia: `id`, `title`,
+`price`, `link` e `image_link` sono le stesse colonne.
 
 ## Cosa non c'è, e perché
 
