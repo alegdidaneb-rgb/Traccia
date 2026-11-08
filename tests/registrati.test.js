@@ -59,6 +59,9 @@ function pagina(frammento) {
   ["login-form", "register-form", "auth-title", "auth-subtitle", "email",
    "password", "reg-first-name", "reg-last-name", "reg-email", "reg-phone",
    "reg-amount", "reg-tipo"].forEach((id) => { nodi[id] = fatto(id); });
+  /* la frase «Non hai ancora un account?» sotto il pulsante di accesso */
+  nodi["auth-no-account"] = fatto("auth-no-account", { hidden: true });
+  nodi["auth-no-account"].closest = null;
   nodi["login-form"].querySelector = () => null;
   nodi["register-form"].querySelector = () => null;
   ["login", "register"].forEach((modo) => {
@@ -192,6 +195,64 @@ test("una sola funzione decide quale pannello si vede", () => {
   const assegnazioni = AUTH.match(/registerForm\.hidden|loginForm\.hidden/g) || [];
   assert.ok(assegnazioni.length <= 3,
     "lo stato dei pannelli viene cambiato in troppi punti");
+});
+
+test("chi non ha un account lo scopre sotto il pulsante di accesso", () => {
+  /* Il difetto riferito dal cliente: «non ci sono i campi da compilare».
+     I campi c'erano; mancava il modo di arrivarci da chi apre `login.html`
+     senza credenziali, perché l'unico link stava in fondo alla scheda. */
+  assert.match(LOGIN, /id="auth-no-account"/, "manca la frase per chi non ha un account");
+  assert.match(LOGIN, /data-go-register/, "manca il pulsante che apre la segnalazione");
+
+  const { nodi, schede } = pagina("");
+  assert.strictEqual(nodi["auth-no-account"].hidden, false,
+    "la frase per chi non ha un account resta nascosta");
+  const scheda = schede.find((s) => s.getAttribute("data-auth-tab") === "register");
+  scheda._ev.click({ preventDefault() {} });
+  assert.strictEqual(nodi["register-form"].hidden, false,
+    "premendo «Segnala un caso» non si apre il modulo");
+  assert.strictEqual(nodi["auth-no-account"].hidden, true,
+    "sulla scheda della segnalazione la frase resta in vista");
+});
+
+test("«Segnala un caso» ha un'ancora vera, non solo una parola letta dallo script", () => {
+  assert.match(LOGIN, /id="registrati"/,
+    "manca l'ancora #registrati: senza, il pulsante dipende da auth.js");
+});
+
+test("il modulo non sparisce quando lo script non arriva", () => {
+  /* il guasto vero: un `auth.js` vecchio in cache non apriva la scheda, e la
+     pagina restava sul campo password. Senza JavaScript ora c'è un avviso con
+     il numero WhatsApp invece di una pagina che sembra rotta. */
+  assert.match(LOGIN, /<noscript>[\s\S]*auth-noscript[\s\S]*<\/noscript>/,
+    "manca l'avviso per chi non esegue JavaScript");
+  ["en", "de", "es"].forEach((l) => {
+    assert.match(R(`${l}/login.html`), /auth-noscript/, `${l}: manca l'avviso senza JavaScript`);
+  });
+});
+
+test("i cinque campi richiesti ci sono, e sono obbligatori, in tutte le lingue", () => {
+  /* I campi che il cliente ha chiesto per nome: nome, cognome, email, telefono,
+     importo perso e tipo di truffa. Obbligatori anche nell'HTML, perché chi usa
+     un browser che non esegue il nostro script deve essere fermato prima di
+     premere invio con i campi vuoti. */
+  ["", "en/", "de/", "es/"].forEach((cartella) => {
+    const html = R(cartella + "login.html");
+    ["reg-first-name", "reg-last-name", "reg-email", "reg-phone",
+     "reg-amount", "reg-tipo"].forEach((id) => {
+      assert.ok(html.includes(`id="${id}"`),
+        `${cartella || "it/"}login.html: manca il campo «${id}»`);
+    });
+    ["reg-first-name", "reg-last-name", "reg-email", "reg-phone", "reg-amount"]
+      .forEach((id) => {
+        const inizio = html.indexOf(`id="${id}"`);
+        const tag = html.slice(inizio, html.indexOf(">", inizio) + 1);
+        assert.match(tag, /required/, `${cartella || "it/"}: «${id}» non è obbligatorio`);
+      });
+  });
+  /* e la funzione che il modulo chiama deve esistere davvero: il pezzo che
+     nessuno guardava mentre il cliente compilava e non arrivava niente */
+  assert.match(R("assets/js/api.js"), /rpc\("auth_register"/, "api.js non chiama auth_register");
 });
 
 module.exports = casi;

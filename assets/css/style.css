@@ -1622,6 +1622,36 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   box-shadow: var(--shadow-sm);
 }
 
+/* «Non hai ancora un account?» sotto il pulsante di accesso: è la porta per
+   chi arriva qui senza credenziali, e deve stare dove si guarda — non in fondo
+   alla scheda, piccolo e grigio. */
+.auth-help {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: var(--fs-small);
+  color: var(--muted);
+  text-align: center;
+}
+.auth-help a { color: var(--accent); font-weight: 600; }
+
+/* L'ancora `#registrati`: un segnaposto invisibile che il browser può
+   raggiungere senza script. Non deve spostare niente. */
+.auth-anchor { display: block; height: 0; scroll-margin-top: 6rem; }
+
+/* Il messaggio che si vede solo quando JavaScript non c'è: meglio dire «oggi
+   non si può» con un numero WhatsApp accanto che lasciare una pagina che
+   sembra rotta e non spiega perché. */
+.auth-noscript {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(180, 83, 9, 0.35);
+  border-radius: var(--r-sm);
+  background: rgba(180, 83, 9, 0.06);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
 .auth-switch {
   margin-top: 1.1rem;
   font-size: var(--fs-small);

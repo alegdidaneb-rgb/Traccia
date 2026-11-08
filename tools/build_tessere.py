@@ -38,7 +38,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from build_team import esc, leggi_dati  # noqa: E402  (dipendenza voluta: una sola lettura dei dati)
+from build_team import cartella_asset, esc, leggi_dati  # noqa: E402  (dipendenza voluta: una sola lettura dei dati)
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PAGINA = ROOT / "team.html"
@@ -85,9 +85,9 @@ def ritratto_tessera(p: dict) -> str:
     return (
         '<picture class="tessera__foto">\n'
         '            <source type="image/webp" '
-        f'srcset="assets/img/team/{base}-480.webp 480w" sizes="96px">\n'
-        f'            <img src="assets/img/team/{base}-480.jpg" '
-        f'srcset="assets/img/team/{base}-480.jpg 480w" sizes="96px" '
+        f'srcset="{cartella_asset()}{base}-480.webp 480w" sizes="96px">\n'
+        f'            <img src="{cartella_asset()}{base}-480.jpg" '
+        f'srcset="{cartella_asset()}{base}-480.jpg 480w" sizes="96px" '
         f'alt="Ritratto di {esc(p["nome"])}" width="480" height="480" '
         'loading="lazy" decoding="async">\n'
         "          </picture>"

@@ -85,17 +85,25 @@ def ritratto(p: dict) -> str:
     return (
         '<picture class="profilo__ritratto">\n'
         '        <source type="image/webp" '
-        f'srcset="assets/img/team/{esc(base)}-480.webp 480w, '
-        f'assets/img/team/{esc(base)}-960.webp 960w" '
+        f'srcset="{cartella_asset()}{esc(base)}-480.webp 480w, '
+        f'{cartella_asset()}{esc(base)}-960.webp 960w" '
         'sizes="(max-width: 700px) 38vw, 180px">\n'
-        f'        <img src="assets/img/team/{esc(base)}-480.jpg" '
-        f'srcset="assets/img/team/{esc(base)}-480.jpg 480w, '
-        f'assets/img/team/{esc(base)}-960.jpg 960w" '
+        f'        <img src="{cartella_asset()}{esc(base)}-480.jpg" '
+        f'srcset="{cartella_asset()}{esc(base)}-480.jpg 480w, '
+        f'{cartella_asset()}{esc(base)}-960.jpg 960w" '
         'sizes="(max-width: 700px) 38vw, 180px" '
         f'alt="Ritratto di {esc(p["nome"])}" width="480" height="480" '
         'loading="lazy" decoding="async">\n'
         "      </picture>"
     )
+
+
+# Gli asset vivono in `assets/<impronta>/`: le immagini di questo blocco devono
+# nascere già lì, altrimenti lo script riscrive la pagina con un indirizzo che
+# non esiste. L'impronta non dipende da questo file — si calcola da CSS e JS.
+def cartella_asset() -> str:
+    from versione_asset import impronta
+    return f"assets/{impronta()}/img/team/"
 
 
 def profilo(p: dict, numero: str) -> str:

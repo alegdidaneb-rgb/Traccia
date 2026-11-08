@@ -156,7 +156,7 @@ test("team: la pagina ha testata, piè di pagina e metadati sociali", () => {
   assert.ok(/rel="canonical" href="https:\/\/traccia.it.com\/team.html"/.test(TEAM),
     "manca il canonical");
   assert.ok(/og:title/.test(TEAM), "mancano i metadati Open Graph");
-  assert.ok(/assets\/js\/team\.js/.test(TEAM), "la pagina non carica i dati del team");
+  assert.ok(/assets\/(?:[0-9a-f]{8}\/)?js\/team\.js/.test(TEAM), "la pagina non carica i dati del team");
 });
 
 test("team: i dati sono nel file, non scritti a mano nell'HTML", () => {

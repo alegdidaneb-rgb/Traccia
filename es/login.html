@@ -16,18 +16,18 @@
   <meta property="og:title" content="Accede a tu caso — Traccia">
   <meta property="og:description" content="Accede al área reservada para seguir tu expediente de análisis o abrir una nueva comunicación.">
   <meta property="og:url" content="https://traccia.it.com/es/login.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/d0a54119/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — investigaciones forenses sobre fraudes financieros y criptomonedas">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <link rel="preload" href="/assets/fonts/inter-var.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/assets/fonts/display-serif.woff2?v=20261102d" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/css/style.css?v=20261102d">
-  <link rel="stylesheet" href="/assets/css/premium.css?v=20261102d">
+  <link rel="apple-touch-icon" href="/assets/d0a54119/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/d0a54119/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/d0a54119/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/d0a54119/css/style.css">
+  <link rel="stylesheet" href="/assets/d0a54119/css/premium.css">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="/assets/js/config.js?v=20261102d" defer></script>
-  <script src="/assets/js/api.js?v=20261102d" defer></script>
-  <script src="/assets/js/session.js?v=20261102d" defer></script>
+  <script src="/assets/d0a54119/js/config.js" defer></script>
+  <script src="/assets/d0a54119/js/api.js" defer></script>
+  <script src="/assets/d0a54119/js/session.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -156,8 +156,8 @@
 <section class="auth-shell auth-shell--photo grain">
   <div class="auth-shell__bg" aria-hidden="true">
     <picture>
-      <source type="image/webp" srcset="assets/img/hero-trace-900.webp 900w, assets/img/hero-trace-1600.webp 1600w" sizes="100vw">
-      <img src="/assets/img/hero-trace-1600.jpg" srcset="assets/img/hero-trace-900.jpg 900w, assets/img/hero-trace-1600.jpg 1600w"
+      <source type="image/webp" srcset="assets/d0a54119/img/hero-trace-900.webp 900w, assets/d0a54119/img/hero-trace-1600.webp 1600w" sizes="100vw">
+      <img src="/assets/d0a54119/img/hero-trace-1600.jpg" srcset="assets/d0a54119/img/hero-trace-900.jpg 900w, assets/d0a54119/img/hero-trace-1600.jpg 1600w"
            sizes="100vw" alt="" width="1600" height="1067" loading="lazy" decoding="async">
     </picture>
   </div>
@@ -199,6 +199,13 @@
     </aside>
 
     <!-- colonna form -->
+    <!-- `#registrati` non è più solo una parola che legge `auth.js`: è questa
+         ancora. Il pulsante che arriva da un'altra pagina la trova da sé, senza
+         script, e `auth.js` la usa per aprire la scheda giusta. Il difetto che
+         ha portato qui: un `auth.js` vecchio in cache non leggeva l'indirizzo,
+         e il clic lasciava la pagina sull'accesso — nessun modulo, in nessuna
+         lingua. -->
+    <span id="registrati" class="auth-anchor" aria-hidden="true"></span>
     <div class="auth-card">
       <!-- Due schede, non una frase con un link: chi arriva da «Segnala un
            caso» deve vedere subito che è nel posto giusto, e chi arriva qui
@@ -243,8 +250,18 @@
         </div>
         <p class="form__note" data-form-error hidden></p>
         <button class="btn btn--accent btn--block btn--lg" type="submit">Acceder</button>
+        <p class="auth-help" id="auth-no-account" hidden>
+          ¿Todavía no tienes cuenta?
+          <a href="#registrati" data-go-register>Denunciar un caso</a>
+        </p>
       </form>
 
+      <noscript>
+        <div class="auth-noscript">
+          <p><strong>El formulario no está disponible en este momento.</strong>
+            No depende de ti: recarga la página o escríbenos por WhatsApp y cuéntanos nombre, apellidos, email, teléfono, importe perdido y qué te pasó.</p>
+        </div>
+      </noscript>
       <form class="form mt-3" id="register-form" role="tabpanel" aria-labelledby="tab-register" hidden novalidate>
         <!-- Richiesta di informazioni: i cinque dati che servono per
              ricontattare qualcuno e capire se il caso è nostro. Nome e
@@ -314,8 +331,8 @@
   </div>
 </section>
 
-<script src="/assets/js/ui.js?v=20261102d" defer></script>
-<script src="/assets/js/auth.js?v=20261102d" defer></script>
+<script src="/assets/d0a54119/js/ui.js" defer></script>
+<script src="/assets/d0a54119/js/auth.js" defer></script>
   </main>
 
   <!-- shell:footer -->
@@ -414,16 +431,16 @@
 </div>
 
 
-  <script src="/assets/js/main.js?v=20261102d" defer></script>
-  <script src="/assets/js/market.js?v=20261102d" defer></script>
-  <script src="/assets/js/premium.js?v=20261102d" defer></script>
-  <!-- WhatsApp: il numero sta in assets/js/config.js; senza numero il
+  <script src="/assets/d0a54119/js/main.js" defer></script>
+  <script src="/assets/d0a54119/js/market.js" defer></script>
+  <script src="/assets/d0a54119/js/premium.js" defer></script>
+  <!-- WhatsApp: il numero sta in assets/d0a54119/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
      aria-label="Escríbenos por WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Escríbenos por WhatsApp</span>
   </a>
-  <script src="/assets/js/whatsapp.js?v=20261102d" defer></script>
+  <script src="/assets/d0a54119/js/whatsapp.js" defer></script>
 </body>
 </html>
