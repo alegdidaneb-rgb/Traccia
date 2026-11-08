@@ -5,6 +5,8 @@
   var state = {
     me: null,
     accounts: [],
+    richieste: [],
+    richiestaFilter: "new",
     operations: [],
     accountFilter: "pending",
     operationFilter: "pending",
@@ -33,6 +35,11 @@
     kpiActive: document.querySelector("[data-kpi-active]"),
     kpiBalance: document.querySelector("[data-kpi-balance]"),
     countAccounts: document.querySelector("[data-count-accounts]"),
+    countLead: document.querySelector("[data-count-lead]"),
+    kpiLead: document.querySelector("[data-kpi-lead]"),
+    cardLead: document.querySelector("[data-kpi-lead]") &&
+              document.querySelector("[data-kpi-lead]").closest(".summary-card"),
+    richiesteBody: document.querySelector("#lead-table tbody"),
     countOperations: document.querySelector("[data-count-operations]"),
     countWallets: document.querySelector("[data-count-wallets]"),
     kpiWallets: document.querySelector("[data-kpi-wallets]"),
@@ -1080,9 +1087,206 @@
     }
   }
 
+  /* --------------------------------------------------- segnalazioni dal sito -- */
+  /* Il cliente: «abbiamo bisogno di un sistema dove anche riceve i lead».
+     Il database le raccoglieva già — ogni modulo compilato finisce in
+     `traccia.richieste` — ma l'unico modo di vederle era una query a mano:
+     un lead che nessuno guarda non è un lead, è una persona che aspetta.
+
+     Tre scelte che si vedono in questa tabella:
+       * l'**attesa** viene prima del nome. Il dato che cambia la giornata non
+         è chi ha scritto, è da quanto tempo aspetta: sotto le 24 ore si chiama
+         oggi, oltre le 48 la persona ha già cercato qualcun altro;
+       * il **telefono** sta sotto il nome, come nel resto della console: si
+         guarda una riga e si chiama;
+       * «cosa è successo» è la parola del cliente, non una categoria nostra:
+         il valore grezzo (`situation`) si traduce in un'etichetta, ma la
+         `message`, quando c'è, si legge per intero al passaggio del mouse.
+  */
+  var SITUAZIONI = {
+    broker: "Finto broker o piattaforma",
+    crypto: "Truffa con criptovalute",
+    unlock: "Soldi chiesti per sbloccare il prelievo",
+    recovery: "Finto recupero fondi",
+    altro: "Non lo sa ancora"
+  };
+
+  function etichettaSituazione(s) {
+    if (!s) return '<span class="xs muted">—</span>';
+    return ui.esc(SITUAZIONI[s] || s);
+  }
+
+  /* Ore di attesa, calcolate dall'orologio del browser a ogni giro: la
+     tabella può restare aperta per ore e un numero fermo direbbe una bugia. */
+  function attesaOre(r) {
+    if (!r.created_at) return 0;
+    return Math.max(0, (Date.now() / 1000 - Number(r.created_at)) / 3600);
+  }
+
+  function attesaLeggibile(r) {
+    var ore = attesaOre(r);
+    if (r.status !== "new") return '<span class="xs muted">' + ui.when(r.created_at) + "</span>";
+    var testo = ore < 1 ? "adesso"
+      : ore < 24 ? Math.floor(ore) + " h"
+      : Math.floor(ore / 24) + " g";
+    /* oltre le 48 ore è un lead che si sta perdendo: si vede dal colore,
+       non da una frase che nessuno legge */
+    var classe = ore >= 48 ? "is-alert" : (ore >= 24 ? "is-warn" : "");
+    return '<span class="' + classe + '"><strong>' + testo + "</strong></span>";
+  }
+
+  function azioniRichiesta(r) {
+    var id = ui.esc(r.id);
+    var bottoni = [];
+    bottoni.push('<a class="btn btn--ghost btn--sm" href="tel:' + ui.esc(r.phone) +
+      '">Chiama</a>');
+    if (r.status === "new") {
+      bottoni.push('<button class="btn btn--sm" data-richiesta="' + id +
+        '" data-stato="contacted" type="button">Contattata</button>');
+    }
+    if (r.status === "new" || r.status === "contacted") {
+      bottoni.push('<button class="btn btn--ghost btn--sm" data-richiesta="' + id +
+        '" data-stato="denied" type="button">Non nostra</button>');
+    }
+    if (r.status === "contacted") {
+      bottoni.push('<button class="btn btn--approve btn--sm" data-richiesta="' + id +
+        '" data-stato="account" type="button">Apri pratica</button>');
+    }
+    if (r.status === "account" || r.status === "contacted") {
+      bottoni.push('<button class="btn btn--ghost btn--sm" data-richiesta="' + id +
+        '" data-stato="closed" type="button">Chiudi</button>');
+    }
+    return bottoni.join(" ");
+  }
+
+  function renderRichieste() {
+    if (!L.richiesteBody) return;
+    if (!state.richieste.length) {
+      L.richiesteBody.innerHTML =
+        '<tr><td colspan="7" class="empty-state">Nessuna segnalazione in questo filtro.' +
+        '<div class="xs muted mt-1">Le nuove arrivano dal modulo «Segnala un caso» del sito.</div>' +
+        "</td></tr>";
+      return;
+    }
+    L.richiesteBody.innerHTML = state.richieste.map(function (r) {
+      return "<tr>" +
+        "<td>" + attesaLeggibile(r) + "</td>" +
+        "<td><strong>" + ui.esc(r.name) + "</strong>" +
+          '<div class="xs muted">' + ui.esc(r.email) + "</div>" +
+          '<div class="xs muted">' + ui.esc(r.phone) + "</div></td>" +
+        '<td class="num">' + ui.money(r.amount_eur) + "</td>" +
+        '<td title="' + ui.esc(r.message || "") + '">' + etichettaSituazione(r.situation) +
+          (r.note ? '<div class="xs muted">' + ui.esc(r.note) + "</div>" : "") + "</td>" +
+        "<td>" + ui.esc((r.origine || "login").toUpperCase()) + "</td>" +
+        "<td>" + ui.pill(r.status, r.status === "new" ? "pending" : null) +
+          (r.taken_by_name ? '<div class="xs muted">' + ui.esc(r.taken_by_name) + "</div>" : "") +
+        "</td>" +
+        '<td class="data-table__actions">' + azioniRichiesta(r) + "</td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  function loadRichieste() {
+    if (!L.richiesteBody) return Promise.resolve();
+    return api.richieste(state.richiestaFilter || undefined).then(function (data) {
+      state.richieste = data.richieste || [];
+      renderRichieste();
+      /* il contatore in barra laterale conta solo le nuove: è il numero che
+         dice «c'è qualcuno da chiamare» */
+      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
+      if (L.cardLead) {
+        L.cardLead.classList.toggle("is-zero", !data.new_count);
+        L.cardLead.classList.toggle("has-items", !!data.new_count);
+      }
+      avvisaSeNuove(data.new_count || 0, data.richieste || []);
+    });
+  }
+
+  /* ------------------------------------------------- l'avviso in pagina -- */
+  /* Il primo dei tre strati di LEAD.md, e l'unico che funziona senza
+     configurare niente: la console chiede ogni 60 secondi quante segnalazioni
+     nuove ci sono, e quando il numero sale lo dice.
+
+     Due dettagli che fanno la differenza fra un avviso e un fastidio:
+       * il primo giro non avvisa. All'apertura il contatore «sale» da zero a
+         quello che c'è, e un avviso per ogni segnalazione già vista insegnerebbe
+         a ignorarli;
+       * l'avviso dice **chi** e **quanto**, non «hai una nuova segnalazione»:
+         chi lo legge decide in due secondi se alzarsi dal tavolo. */
+  var ultimoConteggio = null;
+
+  function avvisaSeNuove(conteggio, elenco) {
+    var precedente = ultimoConteggio;
+    ultimoConteggio = conteggio;
+    if (precedente === null || conteggio <= precedente) return;
+
+    var ultima = elenco.filter(function (r) { return r.status === "new"; })[0] || null;
+    var testo = ultima
+      ? ultima.name + " · " + ui.money(ultima.amount_eur) + " · " + (ultima.phone || "")
+      : "Nuova segnalazione dal sito";
+    ui.toast("Nuova segnalazione: " + testo, "ok");
+
+    /* notifica del browser: chiede il permesso la prima volta, e se viene
+       negato non insiste — la richiesta ripetuta è ciò che fa disattivare le
+       notifiche per sempre */
+    if (typeof Notification === "undefined") return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+      return;
+    }
+    if (Notification.permission !== "granted") return;
+    try {
+      var n = new Notification("Traccia — nuova segnalazione", {
+        body: testo,
+        tag: "lead",
+        requireInteraction: true
+      });
+      n.onclick = function () {
+        window.focus();
+        var voce = document.querySelector('.app-side a[data-tab="lead"]');
+        if (voce) voce.click();
+        n.close();
+      };
+    } catch (e) { /* un browser che non le supporta non deve rompere altro */ }
+  }
+
+  /* ogni 60 secondi. `document.hidden` non ferma il giro: è proprio quando la
+     scheda è in secondo piano che l'avviso serve */
+  window.setInterval(function () {
+    if (!state.me) return;
+    api.richieste("new").then(function (data) {
+      avvisaSeNuove(data.new_count || 0, data.richieste || []);
+      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
+    }).catch(function () { /* rete assente: si riprova al giro dopo */ });
+  }, 60000);
+
+  function richiestaStato(id, stato) {
+    var etichette = {
+      contacted: { titolo: "Segnare come contattata?", testo: "La persona è stata chiamata." },
+      account: { titolo: "Aprire la pratica?", testo: "Da qui nasce l'account: la password la sceglie il cliente al primo accesso." },
+      closed: { titolo: "Chiudere la segnalazione?", testo: "Non serve più rispondere." },
+      denied: { titolo: "Non è un nostro caso?", testo: "La segnalazione viene archiviata; nessun messaggio parte da sola." }
+    }[stato] || { titolo: "Aggiornare la segnalazione?", testo: "" };
+    ui.ask({
+      title: etichette.titolo,
+      message: etichette.testo + " L'azione viene registrata nel registro attività.",
+      prompt: "Nota (opzionale)",
+      confirm: stato === "denied" ? "Archivia" : "Conferma",
+      danger: stato === "denied"
+    }).then(function (nota) {
+      if (nota === null) return;
+      return api.richiestaStato(id, stato, nota).then(function () {
+        ui.toast("Segnalazione aggiornata.", "ok");
+        return refresh();
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
   function refresh() {
     return Promise.all([
-      loadOverview(), loadAccounts(), loadAllAccounts(), loadOperations(),
+      loadOverview(), loadRichieste(), loadAccounts(), loadAllAccounts(), loadOperations(),
       loadWallets(), loadDocuments(), loadSettings(), loadMessages(), loadBanca()
     ]);
   }
@@ -1494,6 +1698,30 @@
           state.documentFilter = chip.getAttribute("data-filter");
           loadDocuments().catch(function (err) { ui.toast(err.message, "error"); });
         });
+      });
+    }
+
+    document.querySelectorAll("[data-lead-filters] .chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        document.querySelectorAll("[data-lead-filters] .chip").forEach(function (c) {
+          c.classList.remove("is-active");
+        });
+        chip.classList.add("is-active");
+        state.richiestaFilter = chip.getAttribute("data-lead-filter");
+        loadRichieste().catch(function (err) { ui.toast(err.message, "error"); });
+      });
+    });
+
+    /* i bottoni di stato dentro la tabella: delegati sul corpo, perché le
+       righe vengono ricostruite a ogni aggiornamento e i listener singoli
+       sparirebbero al primo giro */
+    if (L.richiesteBody) {
+      L.richiesteBody.addEventListener("click", function (e) {
+        var bottone = e.target.closest ? e.target.closest("[data-richiesta]") : null;
+        if (!bottone) return;
+        e.preventDefault();
+        richiestaStato(bottone.getAttribute("data-richiesta"),
+                       bottone.getAttribute("data-stato"));
       });
     }
 

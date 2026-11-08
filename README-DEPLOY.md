@@ -71,6 +71,22 @@ stato truffato una seconda volta.
 
 ---
 
+## I lead (segnalazioni dal sito)
+
+Il modulo «Segnala un caso» scrive in `traccia.richieste`. Le segnalazioni si
+vedono in `admin.html` → **Segnalazioni dal sito**, con l'attesa in prima
+colonna (rossa oltre 48 ore) e i bottoni per chiamare e far avanzare lo stato.
+
+Le notifiche sono in `supabase/migrations/0025_notifica_lead.sql`: webhook su
+Telegram, token nel vault, mai nel repository. Tutto spiegato in **`LEAD.md`**.
+
+    supabase db push                     # applica la 0025
+
+Senza webhook configurato le segnalazioni restano salvate e la console le
+mostra lo stesso: il canale mancante non fa perdere il lead.
+
+---
+
 ## Intestazione e piè di pagina: un solo posto
 
 L'intestazione e il piè di pagina non stanno più dentro le quattordici pagine

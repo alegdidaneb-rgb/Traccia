@@ -1622,6 +1622,36 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   box-shadow: var(--shadow-sm);
 }
 
+/* «Non hai ancora un account?» sotto il pulsante di accesso: è la porta per
+   chi arriva qui senza credenziali, e deve stare dove si guarda — non in fondo
+   alla scheda, piccolo e grigio. */
+.auth-help {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: var(--fs-small);
+  color: var(--muted);
+  text-align: center;
+}
+.auth-help a { color: var(--accent); font-weight: 600; }
+
+/* L'ancora `#registrati`: un segnaposto invisibile che il browser può
+   raggiungere senza script. Non deve spostare niente. */
+.auth-anchor { display: block; height: 0; scroll-margin-top: 6rem; }
+
+/* Il messaggio che si vede solo quando JavaScript non c'è: meglio dire «oggi
+   non si può» con un numero WhatsApp accanto che lasciare una pagina che
+   sembra rotta e non spiega perché. */
+.auth-noscript {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(180, 83, 9, 0.35);
+  border-radius: var(--r-sm);
+  background: rgba(180, 83, 9, 0.06);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
 .auth-switch {
   margin-top: 1.1rem;
   font-size: var(--fs-small);
@@ -1859,6 +1889,12 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   top: 0;
   z-index: 2;
 }
+/* L'attesa di una segnalazione: il colore dice quello che il numero dice già,
+   perché in una tabella di venti righe nessuno legge le cifre.
+   `is-warn` = da un giorno, `is-alert` = oltre le 48 ore: si sta perdendo. */
+.is-warn { color: #b45309; }
+.is-alert { color: #b91c1c; font-weight: 600; }
+
 .empty-state {
   padding: 2.5rem 1.25rem;
   text-align: center;
@@ -2026,7 +2062,8 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 /* --------------------------------------------------------------------------
    18. Limiti, KYC, wallet e impostazioni
    -------------------------------------------------------------------------- */
-.summary-grid--5 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.summary-grid--5,
+.summary-grid--6 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 
 .limit-grid {
   display: grid;
