@@ -1,0 +1,34 @@
+{
+  "de": {
+    "titolo": "Wohin das Geld verschwindet",
+    "primario": "Wir prüfen, was mit Ihrem Geld passiert ist. Erste Einschätzung kostenlos, Antwort in 48 Arbeitsstunden.",
+    "descrizione": "Gutachten zu Online-Betrug",
+    "cta": "Mehr erfahren",
+    "destinazione": "https://traccia.it.com/de/",
+    "utm": "?utm_source=meta&utm_medium=ads&utm_campaign=de"
+  },
+  "it": {
+    "titolo": "Dove finiscono i soldi",
+    "primario": "Ricostruiamo cosa è successo ai tuoi soldi. Prima valutazione gratuita, risposta in 48 ore lavorative.",
+    "descrizione": "Perizia su truffe online",
+    "cta": "Scopri di più",
+    "destinazione": "https://traccia.it.com/",
+    "utm": "?utm_source=meta&utm_medium=ads&utm_campaign=it"
+  },
+  "en": {
+    "titolo": "Where the money went",
+    "primario": "We work out what happened to your money. First assessment free, reply within 48 working hours.",
+    "descrizione": "Assessment of online fraud",
+    "cta": "Learn more",
+    "destinazione": "https://traccia.it.com/en/",
+    "utm": "?utm_source=meta&utm_medium=ads&utm_campaign=en"
+  },
+  "es": {
+    "titolo": "¿Dónde está el dinero?",
+    "primario": "Reconstruimos qué pasó con su dinero. Primera valoración gratuita, respuesta en 48 horas laborables.",
+    "descrizione": "Peritaje sobre fraude online",
+    "cta": "Más información",
+    "destinazione": "https://traccia.it.com/es/",
+    "utm": "?utm_source=meta&utm_medium=ads&utm_campaign=es"
+  }
+}

@@ -172,7 +172,12 @@
         phone: telefono,
         amount_eur: importo,
         situation: situazione,
-        origine: "login"
+        /* non «login»: la pagina non è un'origine, è un posto. Quello che
+           vogliamo sapere è se questa persona è arrivata da un annuncio, e
+           quale — vedi `origine.js`. Se lo script non c'è, il valore resta
+           quello di prima invece di essere `undefined`. */
+        origine: (window.TracciaOrigine && window.TracciaOrigine.valore())
+          || "sito"
       }).then(function (res) {
         busy(button, false);
         registerForm.reset();

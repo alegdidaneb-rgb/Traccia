@@ -1159,6 +1159,17 @@
     return bottoni.join(" ");
   }
 
+  /* Da dove è arrivata. Il valori li scrive `origine.js` sulle pagine del
+     sito; quelli vecchi (`login`) restano e vanno mostrati per quello che
+     sono, senza farli sembrare un canale. */
+  function etichettaOrigine(origine) {
+    var v = (origine || "").trim();
+    if (!v || v === "login" || v === "sito") return "diretta";
+    if (v === "organico") return "motore di ricerca";
+    if (v === "altro-sito") return "altro sito";
+    return v.replace(/-/g, " · ");
+  }
+
   function renderRichieste() {
     if (!L.richiesteBody) return;
     if (!state.richieste.length) {
@@ -1177,7 +1188,10 @@
         '<td class="num">' + ui.money(r.amount_eur) + "</td>" +
         '<td title="' + ui.esc(r.message || "") + '">' + etichettaSituazione(r.situation) +
           (r.note ? '<div class="xs muted">' + ui.esc(r.note) + "</div>" : "") + "</td>" +
-        "<td>" + ui.esc((r.origine || "login").toUpperCase()) + "</td>" +
+        /* «META-DE» non si legge: si legge «Meta · de». Con una campagna
+           accesa questa colonna è la sola che dice quale annuncio ha portato
+           quella persona, e deve costare zero decodifica. */
+        '<td class="xs">' + ui.esc(etichettaOrigine(r.origine)) + "</td>" +
         "<td>" + ui.pill(r.status, r.status === "new" ? "pending" : null) +
           (r.taken_by_name ? '<div class="xs muted">' + ui.esc(r.taken_by_name) + "</div>" : "") +
         "</td>" +
