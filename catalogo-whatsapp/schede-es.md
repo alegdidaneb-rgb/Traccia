@@ -1,15 +1,10 @@
 # Catalogo WhatsApp — Español
 
----
-
 Da caricare a mano dall'app WhatsApp Business se l'importazione
 del CSV non passa. Stessi testi del file `es.csv`: se ne cambi uno, cambia anche l'altro, altrimenti il catalogo e le schede dicono cose diverse.
-
----
-
 ### Valoración inicial del caso
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** Gratis
 
 Una conversación de unos treinta minutos y la revisión de tus documentos. Vemos si el caso entra en nuestro ámbito: fraude financiero online, inversiones, cripto, falsas ofertas de recuperación. Gratuita y sin compromiso: si el caso no tiene sentido, te lo decimos aquí.
 
@@ -31,7 +26,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-valutazione-iniziale.jpg`
 
 ### Reconstrucción del flujo de los fondos
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** Incluida en el aporte
 
 Seguimos el dinero: la cadena de cuentas de destino y sus titulares en las transferencias, las transacciones on-chain en cripto, con exchanges y servicios de mezcla identificados. Incluida en el aporte inicial. Si aquí no queda rastro, paramos sin pedir nada.
 
@@ -53,7 +48,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-ricostruzione-flusso.jpg`
 
 ### Peritaje técnico firmado
 
-**Prezzo nel catalogo:** 190 €
+**Come si paga:** 190 € IVA incluido
 
 Un documento fechado, firmado y numerado que describe el recorrido de los fondos con los datos recogidos: cronología, direcciones y hashes, entidades implicadas, puntos de anclaje, límites del análisis. Te sirve para entender y al abogado para construir el escrito. Aporte inicial 190 EUR IVA incluido, una sola vez.
 
@@ -77,7 +72,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-perizia-tecnica.jpg`
 
 ### Denuncias y comunicaciones
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** Incluido en el aporte
 
 Te asistimos en la preparación de los escritos que puedes presentar tú mismo: denuncia, comunicación a la Policía Postal, a la AGCM y a la OCLAFP, y en las solicitudes a bancos o exchanges para conservar los datos y bloquear las sumas. Incluido en el aporte inicial.
 
@@ -98,7 +93,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-denunce-segnalazioni.jpg`
 
 ### Coordinación con tu abogado
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** Incluido en el aporte
 
 Si el caso se sostiene, el peritaje pasa a tu abogado o a uno de los profesionales con los que colaboramos. Seguimos disponibles para aclaraciones técnicas, ampliaciones y contradicción. No te defendemos en juicio: el abogado lo eliges y lo pagas tú, según su presupuesto.
 
@@ -118,7 +113,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-coordinamento-legale.jpg`
 
 ### Porcentaje sobre lo recuperado
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** 12 % de lo recuperado
 
 12 por ciento sobre las sumas efectivamente recuperadas, calculado neto de los gastos bancarios y los impuestos pagados para la recuperación. Solo sobre dinero realmente abonado a ti, dentro de los 24 meses siguientes a la firma. Si no vuelve nada, no nos debes nada.
 
@@ -138,7 +133,7 @@ Immagine: `catalogo-whatsapp/ritagli/es-percentuale-recuperato.jpg`
 
 ### Guía: qué hacer en las primeras 48 horas
 
-**Prezzo nel catalogo:** Gratis
+**Come si paga:** Gratis
 
 Las seis primeras cosas que hacer tras un fraude, en el orden correcto: detener los pagos sin cerrar la cuenta, poner a salvo la wallet, conservar las pruebas, presentar denuncia, pedir la conservación de los datos, comunicarlo a las autoridades. Gratis.
 

@@ -1,15 +1,10 @@
 # Catalogo WhatsApp — italiano
 
----
-
 Da caricare a mano dall'app WhatsApp Business se l'importazione
 del CSV non passa. Stessi testi del file `it.csv`: se ne cambi uno, cambia anche l'altro, altrimenti il catalogo e le schede dicono cose diverse.
-
----
-
 ### Valutazione iniziale del caso
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** Gratuita
 
 Un colloquio di circa trenta minuti e la verifica dei documenti. Capiamo se il caso rientra nel nostro perimetro: truffa finanziaria online, investimenti, cripto, finti recuperi. Gratuita e senza impegno: se il caso non ha senso, te lo diciamo qui.
 
@@ -31,7 +26,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-valutazione-iniziale.jpg`
 
 ### Ricostruzione del flusso dei fondi
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** Compresa nel contributo
 
 Seguiamo il denaro: catena dei conti di destinazione e intestazioni per i bonifici, transazioni on-chain per le cripto, con exchange e servizi di mixing identificati. Compresa nel contributo di avvio. Se qui non resta una traccia, ci fermiamo senza chiedere nulla.
 
@@ -53,7 +48,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-ricostruzione-flusso.jpg`
 
 ### Perizia tecnica firmata
 
-**Prezzo nel catalogo:** 190 €
+**Come si paga:** 190 € IVA inclusa
 
 Un documento datato, firmato e numerato che descrive il percorso dei fondi con i dati raccolti. Cronologia, indirizzi e hash, istituti coinvolti, punti di aggancio, limiti dell'analisi. Serve a te per capire e al legale per costruire l'atto. Contributo di avvio 190 EUR IVA inclusa, una volta sola.
 
@@ -77,7 +72,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-perizia-tecnica.jpg`
 
 ### Denunce e segnalazioni
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** Compreso nel contributo
 
 Ti assistiamo nella preparazione degli atti che puoi presentare da solo: denuncia, segnalazione alla Polizia Postale, all'AGCM, all'OCLAFP, e nelle richieste agli istituti di credito o agli exchange per la conservazione dei dati e il blocco delle somme. Incluso nel contributo di avvio.
 
@@ -98,7 +93,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-denunce-segnalazioni.jpg`
 
 ### Coordinamento con il tuo legale
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** Compreso nel contributo
 
 Se il caso regge, la perizia passa al tuo avvocato o a uno dei professionisti con cui collaboriamo. Restiamo a disposizione per chiarimenti tecnici, integrazioni e contraddittorio. Non siamo noi a difenderti in giudizio: il legale lo scegli e lo paghi tu, secondo il suo preventivo.
 
@@ -118,7 +113,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-coordinamento-legale.jpg`
 
 ### Percentuale sul recuperato
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** 12 % sul recuperato
 
 12 per cento sulle somme effettivamente rientrate, calcolata al netto delle spese bancarie e delle imposte pagate per il rientro. Solo su denaro realmente accreditato a te, entro 24 mesi dalla firma. Se non rientra nulla, non ci devi nulla.
 
@@ -138,7 +133,7 @@ Immagine: `catalogo-whatsapp/ritagli/it-percentuale-recuperato.jpg`
 
 ### Guida: cosa fare nelle prime 48 ore
 
-**Prezzo nel catalogo:** Gratuita
+**Come si paga:** Gratuita
 
 Le prime sei cose da fare dopo una truffa, nell'ordine giusto: fermare i pagamenti senza chiudere il conto, mettere al sicuro il wallet, conservare le prove, presentare denuncia, chiedere la conservazione dei dati, segnalare alle autorità. Gratuita.
 

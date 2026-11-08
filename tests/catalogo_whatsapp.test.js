@@ -193,6 +193,56 @@ test("dove la cifra dipende dal caso, il prezzo è zero e la regola sta scritta"
     "la descrizione non dice su cosa si applica");
 });
 
+test("il link porta alla pagina nella lingua del catalogo", () => {
+  /* Il difetto: il catalogo tedesco linkava `/come-funziona.html`, cioè la
+     pagina italiana. Chi legge in tedesco e preme «Perizia» si trovava il sito
+     in italiano — l'unico posto in cui la lingua scelta si perdeva. */
+  LINGUE.forEach((l) => {
+    articoli(l).forEach((a) => {
+      assert.ok(/^https:\/\/traccia\.it\.com\/(it\/|en\/|de\/|es\/|come|onorari|supporto|index|casi|crypto|chi|team|privacy|termini|cookie|note|404)/.test(a.link),
+        `${l}/${a.id}: link inatteso «${a.link}»`);
+      if (l === "it") {
+        assert.ok(!/\/(en|de|es)\//.test(a.link), `it/${a.id}: il catalogo italiano linka un'altra lingua`);
+      } else {
+        assert.ok(a.link.includes(`/${l}/`),
+          `${l}/${a.id}: il link «${a.link}» non porta alla pagina in ${l}`);
+      }
+    });
+  });
+});
+
+test("le schede dicono come si paga, non «gratuita» su tutto", () => {
+  /* «Prezzo nel catalogo: Gratuita» sulla riga della percentuale è falso, e nel
+     modo più costoso: la percentuale si paga, e il cliente lo scopre alla
+     firma. Ogni scheda dice il costo vero. */
+  const attesi = {
+    it: { "percentuale-recuperato": "12 % sul recuperato", "perizia-tecnica": "190 € IVA inclusa",
+          "valutazione-iniziale": "Gratuita", "ricostruzione-flusso": "Compresa nel contributo" },
+    en: { "percentuale-recuperato": "12 % of what is recovered", "perizia-tecnica": "190 € incl. VAT" },
+    de: { "percentuale-recuperato": "12 % des Zurückgeflossenen", "perizia-tecnica": "190 € inkl. USt." },
+    es: { "percentuale-recuperato": "12 % de lo recuperado", "perizia-tecnica": "190 € IVA incluido" }
+  };
+  LINGUE.forEach((l) => {
+    const schede = R(`catalogo-whatsapp/schede-${l}.md`);
+    assert.ok(!/Prezzo nel catalogo: Gratuita/.test(schede),
+      `${l}: le schede dicono ancora «Prezzo nel catalogo: Gratuita»`);
+    Object.keys(attesi[l]).forEach((id) => {
+      assert.ok(schede.includes(`**Come si paga:** ${attesi[l][id]}`),
+        `${l}/${id}: manca il costo «${attesi[l][id]}»`);
+    });
+  });
+});
+
+test("le schede hanno il titolo staccato dal testo, e il separatore fra gli articoli", () => {
+  /* Il separatore stava fra il titolo del file e il primo articolo: una riga
+     orizzontale subito sotto il titolo, e la nota introduttiva staccata. */
+  LINGUE.forEach((l) => {
+    const schede = R(`catalogo-whatsapp/schede-${l}.md`);
+    assert.ok(!/^# .+\n\n---/m.test(schede), `${l}: separatore subito sotto il titolo`);
+    assert.match(schede, /\n\n### /, `${l}: il primo articolo non è staccato dalla nota`);
+  });
+});
+
 test("le schede da copiare a mano dicono le stesse cose dei CSV", () => {
   LINGUE.forEach((l) => {
     const schede = R(`catalogo-whatsapp/schede-${l}.md`);
