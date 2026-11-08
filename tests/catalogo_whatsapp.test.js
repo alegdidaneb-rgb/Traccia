@@ -272,4 +272,18 @@ test("il README dice dove si importa e cosa non promettere", () => {
     });
 });
 
+test("il README non fa credere che serva la verifica dell'azienda", () => {
+  /* L'ho scritto io, ed era falso: la verifica in Meta Business Manager serve
+     all'API, non al catalogo dell'app WhatsApp Business, che si scarica gratis
+     e non chiede documenti. Un cliente che legge «serve la verifica» e aspetta
+     quattordici giorni per una cosa che non gli serve è un danno mio. */
+  const readme = R("catalogo-whatsapp/README.md");
+  assert.ok(!/azienda non verificata/i.test(readme),
+    "il README dice ancora che il catalogo di un'azienda non verificata viene rifiutato");
+  assert.ok(/non serve per questo catalogo/i.test(readme),
+    "il README non dice che la verifica non serve per il catalogo dell'app");
+  assert.ok(/app WhatsApp Business/i.test(readme) && /API/i.test(readme),
+    "il README non distingue le due strade (app e API)");
+});
+
 module.exports = casi;
