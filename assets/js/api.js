@@ -460,6 +460,19 @@
     /* --- console analisti --- */
     overview: function () { return call("admin_overview"); },
     accounts: function (status) { return call("admin_accounts", { p_status: status || null }); },
+
+    /* --- le segnalazioni dal sito (non sono account) ---
+       Chi compila «Segnala un caso» scrive in `traccia.richieste`: l'account
+       nasce dopo, quando un analista ha parlato con la persona. Queste tre
+       funzioni sono l'unico modo di vederle e di muoverle. */
+    richieste: function (status) {
+      return call("admin_richieste", { p_status: status || null });
+    },
+    richiestaStato: function (id, status, note) {
+      return call("admin_richiesta_stato", {
+        p_id: id, p_status: status, p_note: note || null
+      });
+    },
     createAccount: function (payload) {
       return call("admin_create_account", {
         p_name: payload.name,

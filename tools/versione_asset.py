@@ -91,6 +91,28 @@ def crea_cartella(versione: str) -> bool:
 # Le pagine scritte prima del 2026-11-08 chiamano gli asset con `assets/…` e un
 # `?v=`; quelle nuove con `assets/<impronta>/…`. Il controllo accetta solo la
 # seconda forma: la prima è il difetto, non una variante.
+def asset_correnti(versione: str) -> bool:
+    """Vero se `assets/<versione>/` contiene già il contenuto attuale.
+
+    Serve perché l'impronta è calcolata **sui sorgenti**, e i sorgenti
+    contengono anche i riferimenti ad altri asset (le immagini del team nel
+    CSS, per esempio). Al primo giro la cartella viene creata da sorgenti senza
+    impronta; poi `riscrivi()` cambia i riferimenti, l'impronta cambia, e la
+    cartella creata non corrisponde più. Senza questo controllo si entra in un
+    ciclo: una cartella nuova a ogni esecuzione, il repository che cresce di
+    dieci file per volta. Misurato ieri: 28 000 righe di differenza.
+    """
+    for f in sorted((ASSET / "js").glob("*.js")):
+        copia = ASSET / versione / "js" / f.name
+        if not copia.exists() or copia.read_bytes() != f.read_bytes():
+            return False
+    for f in sorted((ASSET / "css").glob("*.css")):
+        copia = ASSET / versione / "css" / f.name
+        if not copia.exists() or copia.read_bytes() != f.read_bytes():
+            return False
+    return True
+
+
 def riscrivi(versione: str) -> list[str]:
     cambiate = []
     for nome in PAGINE:
@@ -132,9 +154,26 @@ def main() -> int:
         print(f"asset in assets/{attesa}/: pagine allineate.")
         return 0
 
-    creata = crea_cartella(attesa)
-    if creata:
-        print(f"creata assets/{attesa}/")
+    # Si ripete finché l'impronta non smette di muoversi: riscrivere le pagine
+    # cambia i riferimenti dentro il CSS/JS? Sì, e va assorbito qui, non alla
+    # prossima esecuzione.
+    for _ in range(5):
+        if asset_correnti(attesa):
+            break
+        creata = crea_cartella(attesa)
+        if creata:
+            print(f"creata assets/{attesa}/")
+        cambiate = riscrivi(attesa)
+        if cambiate:
+            print(f"versione {attesa}: aggiornate {len(cambiate)} pagine")
+        nuova = impronta()
+        if nuova == attesa:
+            break
+        attesa = nuova
+
+    if not asset_correnti(attesa):
+        print(f"attenzione: assets/{attesa}/ non corrisponde ai sorgenti")
+        return 1
     cambiate = riscrivi(attesa)
     if cambiate:
         print(f"versione {attesa}: aggiornate {len(cambiate)} pagine")

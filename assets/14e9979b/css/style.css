@@ -1889,6 +1889,12 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   top: 0;
   z-index: 2;
 }
+/* L'attesa di una segnalazione: il colore dice quello che il numero dice già,
+   perché in una tabella di venti righe nessuno legge le cifre.
+   `is-warn` = da un giorno, `is-alert` = oltre le 48 ore: si sta perdendo. */
+.is-warn { color: #b45309; }
+.is-alert { color: #b91c1c; font-weight: 600; }
+
 .empty-state {
   padding: 2.5rem 1.25rem;
   text-align: center;
@@ -2056,7 +2062,8 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 /* --------------------------------------------------------------------------
    18. Limiti, KYC, wallet e impostazioni
    -------------------------------------------------------------------------- */
-.summary-grid--5 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.summary-grid--5,
+.summary-grid--6 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 
 .limit-grid {
   display: grid;

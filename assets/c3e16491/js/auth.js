@@ -212,6 +212,10 @@
     var registrazione = mode === "register";
     if (loginForm) loginForm.hidden = registrazione;
     if (registerForm) registerForm.hidden = !registrazione;
+    /* la frase «non hai un account» appartiene all'accesso: sulla scheda della
+       segnalazione sarebbe una porta che dà sulla stanza in cui sei già */
+    var senzaAccount = document.getElementById("auth-no-account");
+    if (senzaAccount) senzaAccount.hidden = registrazione;
     schede.forEach(function (scheda) {
       scheda.setAttribute("aria-selected",
         scheda.getAttribute("data-auth-tab") === mode ? "true" : "false");
@@ -266,6 +270,24 @@
   /* il tasto indietro e i link `#registrati` premuti da un'altra pagina */
   window.addEventListener("hashchange", function () { applicaIndirizzo(true); });
   applicaIndirizzo(false);
+
+  /* Chi arriva sull'accesso e non ha un account non deve cercare il link in
+     fondo alla scheda: il modulo di segnalazione gli serve subito. */
+  var senzaAccount = document.getElementById("auth-no-account");
+  if (senzaAccount) {
+    senzaAccount.hidden = false;
+    senzaAccount.addEventListener("click", function (e) {
+      var link = e.target.closest ? e.target.closest("[data-go-register]") : null;
+      if (!link) return;
+      e.preventDefault();
+      setMode("register");
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", location.pathname + "#registrati");
+      }
+      var primo = document.getElementById("reg-first-name");
+      if (primo) primo.focus();
+    });
+  }
 
   /* compatibilità: resta il vecchio aggancio `data-show-register`, se una
      pagina lo usa ancora */
