@@ -51,6 +51,26 @@ disallineata dal catalogo: è il comando da mettere in CI.
 
 ---
 
+## Il catalogo WhatsApp Business
+
+Quello che offriamo, in vetrina dentro WhatsApp: sette articoli in quattro
+lingue, in `catalogo-whatsapp/`.
+
+    catalogo-whatsapp/it.csv           da importare in WhatsApp Business Manager
+    catalogo-whatsapp/en.csv  de  es   lo stesso, per le altre lingue
+    catalogo-whatsapp/ritagli/         le foto quadrate 1080×1080 degli articoli
+    catalogo-whatsapp/schede-*.md      gli stessi testi, da caricare a mano
+    catalogo-whatsapp/README.md        come si importa, e cosa non promettere
+
+Non si scrivono a mano: `python3 tools/catalogo_whatsapp.py` li genera da
+`onorari.html`, `come-funziona.html` e `supporto.html`, così il prezzo del
+catalogo e quello della pagina Onorari non possono divergere. Il test
+`tests/catalogo_whatsapp.test.js` controlla che sia così, e che nessun articolo
+prometta un recupero — è un catalogo pubblico, e lo legge anche chi è appena
+stato truffato una seconda volta.
+
+---
+
 ## Intestazione e piè di pagina: un solo posto
 
 L'intestazione e il piè di pagina non stanno più dentro le quattordici pagine
