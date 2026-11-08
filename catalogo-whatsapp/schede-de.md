@@ -1,15 +1,10 @@
 # Catalogo WhatsApp — Deutsch
 
----
-
 Da caricare a mano dall'app WhatsApp Business se l'importazione
 del CSV non passa. Stessi testi del file `de.csv`: se ne cambi uno, cambia anche l'altro, altrimenti il catalogo e le schede dicono cose diverse.
-
----
-
 ### Erste Einschätzung des Falls
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** Kostenlos
 
 Ein Gespräch von etwa dreißig Minuten und die Prüfung Ihrer Unterlagen. Wir klären, ob der Fall in unseren Bereich fällt: Finanzbetrug im Internet, Anlagen, Krypto, gefälschte Rückholangebote. Kostenlos und unverbindlich: Ergibt der Fall keinen Sinn, sagen wir es Ihnen hier.
 
@@ -31,7 +26,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-valutazione-iniziale.jpg`
 
 ### Rekonstruktion des Geldflusses
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** Im Beitrag enthalten
 
 Wir folgen dem Geld: bei Überweisungen die Kette der Zielkonten und deren Inhaber, bei Krypto die Transaktionen auf der Blockchain, mit identifizierten Börsen und Mixing-Diensten. Im Startbeitrag enthalten. Bleibt keine Spur, hören wir auf, ohne etwas zu verlangen.
 
@@ -53,7 +48,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-ricostruzione-flusso.jpg`
 
 ### Unterzeichnetes technisches Gutachten
 
-**Prezzo nel catalogo:** 190 €
+**Come si paga:** 190 € inkl. USt.
 
 Ein datiertes, unterzeichnetes und nummeriertes Dokument, das den Weg der Gelder mit den erhobenen Daten beschreibt: Chronologie, Adressen und Hashes, beteiligte Institute, Anknüpfungspunkte, Grenzen der Analyse. Es dient Ihnen zum Verstehen und der Anwaltschaft zum Aufbau des Verfahrens. Startbeitrag 190 EUR inkl. USt., einmalig.
 
@@ -77,7 +72,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-perizia-tecnica.jpg`
 
 ### Anzeigen und Meldungen
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** Im Beitrag enthalten
 
 Wir unterstützen Sie bei den Schriftstücken, die Sie selbst einreichen können: Strafanzeige, Meldung an die Postpolizei, an die AGCM und an die OCLAFP, sowie bei Ersuchen an Banken oder Börsen um Datenaufbewahrung und Sperrung der Beträge. Im Startbeitrag enthalten.
 
@@ -98,7 +93,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-denunce-segnalazioni.jpg`
 
 ### Koordination mit Ihrer Anwältin
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** Im Beitrag enthalten
 
 Trägt der Fall, geht das Gutachten an Ihre Anwältin oder an eine der Kanzleien, mit denen wir zusammenarbeiten. Wir bleiben für technische Rückfragen, Ergänzungen und die Beweisaufnahme verfügbar. Wir verteidigen Sie nicht vor Gericht: Die Anwältin wählen und bezahlen Sie, nach deren Kostenvoranschlag.
 
@@ -118,7 +113,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-coordinamento-legale.jpg`
 
 ### Beteiligung am Zurückgeflossenen
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** 12 % des Zurückgeflossenen
 
 12 Prozent auf die tatsächlich zurückgeflossenen Beträge, berechnet nach Abzug der Bankgebühren und Steuern, die für den Rückfluss gezahlt wurden. Nur auf Geld, das Ihnen tatsächlich gutgeschrieben wird, innerhalb von 24 Monaten ab Unterzeichnung. Fließt nichts zurück, schulden Sie uns nichts.
 
@@ -138,7 +133,7 @@ Immagine: `catalogo-whatsapp/ritagli/de-percentuale-recuperato.jpg`
 
 ### Leitfaden: was in den ersten 48 Stunden zu tun ist
 
-**Prezzo nel catalogo:** Kostenlos
+**Come si paga:** Kostenlos
 
 Die ersten sechs Schritte nach einem Betrug, in der richtigen Reihenfolge: Zahlungen stoppen, ohne das Konto zu schließen; das Wallet sichern; Beweise aufbewahren; Anzeige erstatten; Datenaufbewahrung verlangen; bei den Aufsichtsbehörden melden. Kostenlos.
 

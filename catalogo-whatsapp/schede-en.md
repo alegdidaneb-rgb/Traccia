@@ -1,15 +1,10 @@
 # Catalogo WhatsApp — English
 
----
-
 Da caricare a mano dall'app WhatsApp Business se l'importazione
 del CSV non passa. Stessi testi del file `en.csv`: se ne cambi uno, cambia anche l'altro, altrimenti il catalogo e le schede dicono cose diverse.
-
----
-
 ### Initial assessment of the case
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** Free
 
 A call of about thirty minutes and a check of your documents. We establish whether the case falls within our scope: online financial fraud, investments, crypto, fake recovery offers. Free and with no obligation: if the case makes no sense, we tell you here.
 
@@ -31,7 +26,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-valutazione-iniziale.jpg`
 
 ### Reconstruction of the flow of funds
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** Included in the fee
 
 We follow the money: the chain of destination accounts and their holders for transfers, on-chain transactions for crypto, with exchanges and mixing services identified. Included in the initial fee. If no trace remains, we stop without charging anything.
 
@@ -53,7 +48,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-ricostruzione-flusso.jpg`
 
 ### Signed technical expert report
 
-**Prezzo nel catalogo:** 190 €
+**Come si paga:** 190 € incl. VAT
 
 A dated, signed and numbered document describing the path of the funds using the data gathered: timeline, addresses and hashes, institutions involved, points of attachment, limits of the analysis. It serves you to understand and your lawyer to build the case. Initial fee 190 EUR incl. VAT, charged once.
 
@@ -77,7 +72,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-perizia-tecnica.jpg`
 
 ### Complaints and reports
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** Included in the fee
 
 We help you prepare the documents you can file yourself: the criminal complaint, reports to the Postal Police, the AGCM and the OCLAFP, and requests to banks or exchanges to preserve data and block the sums. Included in the initial fee.
 
@@ -98,7 +93,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-denunce-segnalazioni.jpg`
 
 ### Coordination with your lawyer
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** Included in the fee
 
 If the case holds, the report goes to your lawyer or to one of the professionals we work with. We stay available for technical clarifications, additions and cross-examination. We do not defend you in court: you choose and pay the lawyer, on their own quote.
 
@@ -118,7 +113,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-coordinamento-legale.jpg`
 
 ### Percentage on what is recovered
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** 12 % of what is recovered
 
 12 per cent on the sums actually recovered, calculated net of the bank charges and taxes paid to obtain the recovery. Only on money actually credited to you, within 24 months of signing. If nothing comes back, you owe us nothing.
 
@@ -138,7 +133,7 @@ Immagine: `catalogo-whatsapp/ritagli/en-percentuale-recuperato.jpg`
 
 ### Guide: what to do in the first 48 hours
 
-**Prezzo nel catalogo:** Free
+**Come si paga:** Free
 
 The first six things to do after a fraud, in the right order: stop the payments without closing the account, secure the wallet, keep the evidence, file the complaint, ask for data preservation, report to the authorities. Free.
 

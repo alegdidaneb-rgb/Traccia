@@ -28,13 +28,33 @@ Ogni riga ha le colonne che Meta si aspetta per un data feed di catalogo:
 ## Come si importa
 
 **WhatsApp Business Manager → Catalogo → Aggiungi articoli → Importa da file.**
-Se l'importazione non passa (succede: il catalogo di un'azienda non
-verificata rifiuta i feed), le schede in `schede-it.md`, `schede-en.md`, … sono
-gli stessi testi, da caricare a mano dall'app. **Carica la prima immagine una
-volta sola e segnati il suo indirizzo pubblico**, poi sostituiscilo in tutte le
-righe: `image_link` deve puntare a un indirizzo raggiungibile da internet, e
-`https://traccia.it.com/catalogo-whatsapp/ritagli/…` funziona solo se questa
-cartella viene pubblicata con il sito.
+Se l'importazione non passa (succede: il catalogo di un'azienda non verificata
+rifiuta i feed), le schede in `schede-it.md`, `schede-en.md`, … sono gli stessi
+testi, da caricare a mano dall'app.
+
+### Prima di incollare il file, due controlli
+
+**1. Le immagini rispondono?** `image_link` è un indirizzo assoluto, e Meta lo
+scarica dai suoi server: se il file non risponde `200`, la riga viene scartata
+con un errore che non dice quale. Da terminale, una riga:
+
+    for f in catalogo-whatsapp/ritagli/*.jpg; do
+      curl -s -o /dev/null -w "%{http_code} " "https://traccia.it.com/$f"; echo "$f"
+    done
+
+Tutti `200`. Se qualcuno è `404` o `500`, la cartella non è pubblicata: `.vercelignore`
+la deve lasciar passare (non è nell'elenco) e il deploy deve essere quello di
+`main`.
+
+**2. Le pagine del sito rispondono?** Il `link` di ogni articolo porta a una
+pagina del sito, nella lingua del catalogo. Anche quelle devono essere raggiungibili.
+
+### Le foto non si caricano dal telefono
+
+`image_link` non accetta un file allegato: vuole un indirizzo pubblico. Se
+preferisci non pubblicare la cartella, carica le immagini una volta a mano
+dall'app e sostituisci `image_link` con gli indirizzi che ti restituisce Meta:
+sono sempre gli stessi 28 file (`ritagli/<lingua>-<articolo>.jpg`).
 
 ## Le due regole che valgono più del resto
 
@@ -62,3 +82,9 @@ rigenera, altrimenti il catalogo e le schede dicono cose diverse.
 Il prezzo della perizia deve restare uguale a quello di `onorari.html`: se
 cambia là, cambia anche qui, e il test in `tests/catalogo_whatsapp.test.js`
 fallisce finché non lo allinei.
+
+## Cosa non c'è, e perché
+
+Nel catalogo non ci sono gli onorari del legale: li paga il cliente
+direttamente al suo avvocato, secondo il preventivo di quello. Metterli qui
+come articolo a 0 € farebbe credere che siano compresi nel nostro contributo.

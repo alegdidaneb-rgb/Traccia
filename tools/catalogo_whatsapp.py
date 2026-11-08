@@ -713,6 +713,46 @@ SCHEDE = {
 }
 
 # Il titolo del ritaglio: poche parole, leggibili a 500 px sul telefono.
+# Come si paga ogni voce, in tre parole. Non è il prezzo del catalogo (quello
+# sta in `price` ed è 0 dove la cifra dipende dal caso): è la frase che dice
+# subito se una cosa è gratuita, compresa in un'altra, o a percentuale.
+# Prima qui c'era solo «Gratuita» per tutto ciò che costava zero, e la scheda
+# della percentuale finiva per dire «Prezzo nel catalogo: Gratuita» — falso, e
+# nel modo più costoso: il cliente lo scopre alla firma.
+COSTO = {
+    "valutazione-iniziale": {
+        "it": "Gratuita", "en": "Free", "de": "Kostenlos", "es": "Gratis"},
+    "ricostruzione-flusso": {
+        "it": "Compresa nel contributo", "en": "Included in the fee",
+        "de": "Im Beitrag enthalten", "es": "Incluida en el aporte"},
+    "perizia-tecnica": {
+        "it": "190 € IVA inclusa", "en": "190 € incl. VAT",
+        "de": "190 € inkl. USt.", "es": "190 € IVA incluido"},
+    "denunce-segnalazioni": {
+        "it": "Compreso nel contributo", "en": "Included in the fee",
+        "de": "Im Beitrag enthalten", "es": "Incluido en el aporte"},
+    "coordinamento-legale": {
+        "it": "Compreso nel contributo", "en": "Included in the fee",
+        "de": "Im Beitrag enthalten", "es": "Incluido en el aporte"},
+    "percentuale-recuperato": {
+        "it": "12 % sul recuperato", "en": "12 % of what is recovered",
+        "de": "12 % des Zurückgeflossenen", "es": "12 % de lo recuperado"},
+    "guida-prime-48-ore": {
+        "it": "Gratuita", "en": "Free", "de": "Kostenlos", "es": "Gratis"},
+}
+
+# La stessa cosa, corta, per l'angolo dell'immagine: la banda è larga 1080 px e
+# il testo sta a 44 px in grassetto.
+COSTO_BREVE = {
+    "valutazione-iniziale": {"it": "Gratuita", "en": "Free", "de": "Kostenlos", "es": "Gratis"},
+    "ricostruzione-flusso": {"it": "Compresa", "en": "Included", "de": "Enthalten", "es": "Incluida"},
+    "perizia-tecnica": {"it": "190 €", "en": "190 €", "de": "190 €", "es": "190 €"},
+    "denunce-segnalazioni": {"it": "Compreso", "en": "Included", "de": "Enthalten", "es": "Incluido"},
+    "coordinamento-legale": {"it": "Compreso", "en": "Included", "de": "Enthalten", "es": "Incluido"},
+    "percentuale-recuperato": {"it": "12 %", "en": "12 %", "de": "12 %", "es": "12 %"},
+    "guida-prime-48-ore": {"it": "Gratuita", "en": "Free", "de": "Kostenlos", "es": "Gratis"},
+}
+
 SOTTOTITOLI = {
     "it": {
         "valutazione-iniziale": "Gratuita, senza impegno",
@@ -854,7 +894,8 @@ def ritaglio(lingua: str, articolo: dict, destinazione: pathlib.Path) -> None:
     disegno.rectangle([0, foto_h, lato, lato], fill=INK)
     disegno.rectangle([0, foto_h, lato, foto_h + 3], fill=ACCENTO)
 
-    numero, titolo, prezzo = testo_ritaglio(lingua, articolo)
+    numero, titolo, _ = testo_ritaglio(lingua, articolo)
+    prezzo = COSTO_BREVE[articolo["id"]][lingua]
     sottotitolo = SOTTOTITOLI[lingua][articolo["id"]]
     font_numero = ImageFont.truetype(FONT_BOLD, 30)
     font_titolo = ImageFont.truetype(FONT_BOLD, 52)
@@ -905,6 +946,11 @@ def riga_csv(lingua: str, articolo: dict) -> dict[str, str]:
         titolo, descrizione = articolo["titolo"], articolo["descrizione"]
     else:
         titolo, descrizione = TRADUZIONI[lingua][articolo["id"]]
+    # Il link porta alla pagina **nella lingua del catalogo**: chi legge il
+    # catalogo tedesco e preme «Perizia» deve arrivare a `/de/come-funziona`,
+    # non alla pagina italiana. Era l'unico posto del sito in cui la lingua
+    # scelta si perdeva di nuovo.
+    pagina = articolo["pagina"] if lingua == "it" else f"{lingua}/{articolo['pagina']}"
     return {
         "id": articolo["id"],
         "title": titolo,
@@ -912,7 +958,7 @@ def riga_csv(lingua: str, articolo: dict) -> dict[str, str]:
         "availability": DISPONIBILE,
         "condition": NUOVO,
         "price": f"{articolo['prezzo']} {VALUTA}",
-        "link": f"{SITO}/{articolo['pagina']}",
+        "link": f"{SITO}/{pagina}",
         "image_link": f"{SITO}/catalogo-whatsapp/ritagli/{nome_ritaglio(lingua, articolo['id'])}",
         "brand": BRAND,
     }
@@ -929,12 +975,12 @@ def scheda_markdown(lingua: str, articolo: dict) -> str:
     else:
         titolo, descrizione = TRADUZIONI[lingua][articolo["id"]]
         righe = SCHEDE[lingua][articolo["id"]]
-    prezzo = prezzo_leggibile(articolo["prezzo"], lingua)
+    costo = COSTO[articolo["id"]][lingua]
     link = f"{SITO}/{lingua}/{articolo['pagina']}" if lingua != "it" else f"{SITO}/{articolo['pagina']}"
     blocco = "\n".join(righe)
     return (
         f"### {titolo}\n\n"
-        f"**Prezzo nel catalogo:** {prezzo}\n\n"
+        f"**Come si paga:** {costo}\n\n"
         f"{descrizione}\n\n"
         f"{blocco}\n\n"
         f"Pagina: {link}\n\n"
@@ -972,13 +1018,33 @@ Ogni riga ha le colonne che Meta si aspetta per un data feed di catalogo:
 ## Come si importa
 
 **WhatsApp Business Manager → Catalogo → Aggiungi articoli → Importa da file.**
-Se l'importazione non passa (succede: il catalogo di un'azienda non
-verificata rifiuta i feed), le schede in `schede-it.md`, `schede-en.md`, … sono
-gli stessi testi, da caricare a mano dall'app. **Carica la prima immagine una
-volta sola e segnati il suo indirizzo pubblico**, poi sostituiscilo in tutte le
-righe: `image_link` deve puntare a un indirizzo raggiungibile da internet, e
-`https://traccia.it.com/catalogo-whatsapp/ritagli/…` funziona solo se questa
-cartella viene pubblicata con il sito.
+Se l'importazione non passa (succede: il catalogo di un'azienda non verificata
+rifiuta i feed), le schede in `schede-it.md`, `schede-en.md`, … sono gli stessi
+testi, da caricare a mano dall'app.
+
+### Prima di incollare il file, due controlli
+
+**1. Le immagini rispondono?** `image_link` è un indirizzo assoluto, e Meta lo
+scarica dai suoi server: se il file non risponde `200`, la riga viene scartata
+con un errore che non dice quale. Da terminale, una riga:
+
+    for f in catalogo-whatsapp/ritagli/*.jpg; do
+      curl -s -o /dev/null -w "%{http_code} " "https://traccia.it.com/$f"; echo "$f"
+    done
+
+Tutti `200`. Se qualcuno è `404` o `500`, la cartella non è pubblicata: `.vercelignore`
+la deve lasciar passare (non è nell'elenco) e il deploy deve essere quello di
+`main`.
+
+**2. Le pagine del sito rispondono?** Il `link` di ogni articolo porta a una
+pagina del sito, nella lingua del catalogo. Anche quelle devono essere raggiungibili.
+
+### Le foto non si caricano dal telefono
+
+`image_link` non accetta un file allegato: vuole un indirizzo pubblico. Se
+preferisci non pubblicare la cartella, carica le immagini una volta a mano
+dall'app e sostituisci `image_link` con gli indirizzi che ti restituisce Meta:
+sono sempre gli stessi 28 file (`ritagli/<lingua>-<articolo>.jpg`).
 
 ## Le due regole che valgono più del resto
 
@@ -1006,6 +1072,12 @@ rigenera, altrimenti il catalogo e le schede dicono cose diverse.
 Il prezzo della perizia deve restare uguale a quello di `onorari.html`: se
 cambia là, cambia anche qui, e il test in `tests/catalogo_whatsapp.test.js`
 fallisce finché non lo allinei.
+
+## Cosa non c'è, e perché
+
+Nel catalogo non ci sono gli onorari del legale: li paga il cliente
+direttamente al suo avvocato, secondo il preventivo di quello. Metterli qui
+come articolo a 0 € farebbe credere che siano compresi nel nostro contributo.
 """
 
 
@@ -1036,9 +1108,12 @@ def genera() -> list[pathlib.Path]:
                  "del CSV non passa. Stessi testi del file "
                  f"`{lingua}.csv`: se ne cambi uno, cambia anche l'altro, "
                  "altrimenti il catalogo e le schede dicono cose diverse.\n"]
-        for articolo in ARTICOLI:
-            testi.append(scheda_markdown(lingua, articolo))
-        md_path.write_text("\n---\n\n".join(testi), encoding="utf-8")
+        # il separatore va **fra gli articoli**, non fra il titolo del file e
+        # il primo articolo: lì produceva una riga orizzontale subito sotto il
+        # titolo, e la nota introduttiva finiva staccata dal suo documento
+        articoli_md = [scheda_markdown(lingua, a) for a in ARTICOLI]
+        md_path.write_text("\n".join(testi) + "\n---\n\n".join(articoli_md),
+                           encoding="utf-8")
         scritti.append(md_path)
 
     return scritti
