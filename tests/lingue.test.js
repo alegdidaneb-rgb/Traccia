@@ -331,8 +331,9 @@ test("le pagine tradotte caricano gli asset dalla radice", () => {
       0,
       `${l}: ${relativi.length} asset relativi, il primo è «${relativi[0] || ""}»`
     );
-    assert.match(h, /src="\/assets\/js\/main\.js/, `${l}: manca main.js dalla radice`);
-    assert.match(h, /href="\/assets\/css\/premium\.css/, `${l}: manca il foglio di stile`);
+    assert.match(h, /src="\/assets\/(?:[0-9a-f]{8}\/)?js\/main\.js/,
+      `${l}: manca main.js dalla radice`);
+    assert.match(h, /href="\/assets\/(?:[0-9a-f]{8}\/)?css\/premium\.css/, `${l}: manca il foglio di stile`);
   });
 });
 
