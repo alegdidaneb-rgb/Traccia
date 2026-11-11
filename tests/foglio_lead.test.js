@@ -82,6 +82,10 @@ test("il CSV si apre in un foglio italiano", () => {
             FUNZIONE.includes('replace(/"/g'),
     "le virgolette dentro un campo non vengono raddoppiate");
   assert.match(FUNZIONE, /toFixed\(2\)/, "l'importo non è scritto come numero");
+  /* e un importo che non conosciamo non è zero: `Number(null)` fa 0, e la
+     colonna sommerebbe righe che non hanno un importo */
+  assert.match(FUNZIONE, /if \(valore === null \|\| valore === undefined \|\| valore === ""\) return ""/,
+    "un importo mancante diventa 0.00: la colonna delle somme mentirebbe");
   assert.match(FUNZIONE, /"text\/plain; charset=utf-8"/,
     "il tipo dichiarato non è quello che il gateway accetta");
 });

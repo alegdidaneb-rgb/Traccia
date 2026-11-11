@@ -57,6 +57,11 @@ function campo(valore: unknown): string {
    impostato in italiano legge «1.500,00» come testo, e la colonna smette di
    essere una somma. */
 function numero(valore: unknown): string {
+  /* `Number(null)` e `Number("")` fanno 0: un importo che non conosciamo
+     diventava «0.00», che nel foglio è una cifra vera e sbagliata — chi somma
+     la colonna crede che quella persona non abbia perso niente. Vuoto è la
+     verità. */
+  if (valore === null || valore === undefined || valore === "") return "";
   const n = Number(valore);
   return Number.isFinite(n) ? n.toFixed(2) : "";
 }
