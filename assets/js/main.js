@@ -201,6 +201,11 @@
         message: messaggio,
         source: "supporto"
       }).then(function (res) {
+        /* terzo imbuto, stesso evento: chi scrive da «Contatti» è un lead
+           quanto chi lascia il numero in home */
+        try {
+          if (window.TracciaConversione) window.TracciaConversione.lead("supporto");
+        } catch (e) { /* non è un motivo per non mostrare la conferma */ }
         if (status) {
           status.textContent = res.message || "Richiesta ricevuta.";
           status.classList.remove("sr-only");

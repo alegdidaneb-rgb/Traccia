@@ -173,6 +173,16 @@
           return data;
         });
     },
+    /* La via veloce: un numero, niente altro. Il nome e l'importo li prende
+       l'analista al telefono (vedi `richiesta_telefono`, migrazione 0027). */
+    richiestaTelefono: function (payload) {
+      return rpc("richiesta_telefono", {
+        p_phone: payload.phone,
+        p_nome: payload.nome || null,
+        p_situation: payload.situation || null,
+        p_origine: payload.origine || "sito"
+      });
+    },
     register: function (payload) {
       /* Una richiesta di informazioni, non un account: non c'è password da
          mandare, e non c'è un utente da creare. L'account nasce dopo, quando

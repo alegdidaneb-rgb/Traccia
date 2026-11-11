@@ -256,6 +256,15 @@ test("le schede da copiare a mano dicono le stesse cose dei CSV", () => {
 test("il catalogo è rigenerato, non vecchio", () => {
   /* Se qualcuno cambia il generatore e non lo esegue, i CSV restano alla
      versione precedente e nessuno se ne accorge: il file c'è, è solo sbagliato. */
+  /* Pillow serve a *generare* il catalogo, non a controllarlo. Dove non è
+     installato il test lo dice e passa: un rosso che significa «manca una
+     libreria nel sandbox» insegna a ignorare i rossi, e il prossimo rosso
+     vero passerà inosservato. */
+  const pillow = spawnSync("python3", ["-c", "import PIL"], { cwd: RADICE });
+  if (pillow.status !== 0) {
+    console.log("      (saltato: Pillow non è installato in questo ambiente)");
+    return;
+  }
   const esito = spawnSync("python3", ["tools/catalogo_whatsapp.py", "--check"], {
     cwd: RADICE,
     encoding: "utf8"

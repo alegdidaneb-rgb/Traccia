@@ -114,6 +114,123 @@ posto dove andrà è segnato nella migrazione.
 
 ---
 
+---
+
+## Il foglio Google
+
+C'è un foglio — **«Traccia — segnalazioni dal sito»** — che si popola da solo:
+ogni segnalazione che arriva compare in una riga, con nome, telefono, email,
+importo, tipo di truffa, origine, stato e chi l'ha in carico.
+
+**Come è fatto**, perché conta saperlo prima di romperlo: la scheda
+`Segnalazioni` ha **una sola formula** in `A1`:
+
+```
+=IMPORTDATA("https://mmjycpdfjlbckeefbtuq.supabase.co/functions/v1/leads-csv?k=…")
+```
+
+`IMPORTDATA` chiama l'Edge Function `leads-csv`, che chiede le righe a
+`traccia.leads_per_foglio` e le restituisce in CSV. Non c'è nessuno script da
+incollare, nessuna estensione da installare, e niente da riavviare: premendo
+`Ctrl+Shift+F5` il foglio rilegge.
+
+**Il rinfresco, che è la parte che frega tutti.** `IMPORTDATA` si aggiorna da
+sé, ma con una pigrizia che sembra un guasto: quando si ricarica la pagina il
+foglio può mostrare lo *snapshot dell'ultimo ricalcolo*, non lo stato presente
+del server. Il 2026-11-11, subito dopo aver corretto il nome mancante, la
+scheda mostrava ancora `Nome` vuoto e `Importo` `0` su righe che sul server
+avevano già il nome e la cella dell'importo vuota — e sembrava che la
+correzione non fosse passata. Non era così.
+
+Due cose da sapere, entrambe verificate quel giorno:
+
+- **Riscrivere la formula identica non ricalcola niente.** Google confronta il
+  testo e conclude «non è cambiato». Per forzare il ricalcolo serve una
+  differenza — basta un parametro inerte in coda
+  (`…?k=…&r=2`, poi `&r=3`): il contenuto è lo stesso, l'indirizzo no.
+- **`Ctrl+Shift+F5`** ricarica il foglio senza toccare niente.
+
+Se un lead è arrivato in `admin.html` ma non nel foglio, **prima si guarda
+l'indirizzo con `&debug=1`**, che restituisce gli stessi dati in JSON: quella è
+la verità. Se lì la riga c'è, è solo pigrizia del foglio, non un lead perso.
+Se lì non c'è, il problema sta a monte (Edge Function o `leads_per_foglio`),
+e il JSON ha già la risposta.
+
+La colonna **`Arrivata` nasce come testo** (`2026-11-11 09:28`) e Google la
+mostra come numero seriale (`46337.41875`) finché la colonna non ha un formato
+data. Formattare `A2:A1000` come `yyyy-mm-dd hh:mm` lo sistema — fatto il
+2026-11-11, e va rifatto se si ricrea il foglio o si cancellano i formati. Un
+numero seriale al posto di una data non è un dettaglio: nessuno sa a colpo
+d'occhio se quel lead è di stamattina o di ferragosto.
+
+### Il foglio è uno specchio, non una scrivania
+
+Non si lavorano i lead dal foglio, e non è una limitazione tecnica: è la scelta.
+Una segnalazione in due posti dove si può scrivere diventa **due verità** —
+Marco la prende in console, Sara guarda il foglio (che non sa niente della presa
+in carico) e chiama. Il cliente riceve due telefonate e capisce che nessuno sa
+chi lo segue. Con due lead al giorno non succede; con cento è esattamente così
+che si perde la fiducia di chi ha già perso dei soldi.
+
+Il lavoro si fa in `admin.html`, dove «Prendi» blocca la riga. Il foglio serve a
+far vedere cosa sta arrivando — a te, al cliente, a chi non ha una password per
+la console.
+
+### Se il foglio non si aggiorna
+
+| Cosa vedi | Cosa vuol dire | Cosa fare |
+|---|---|---|
+| `#REF! (Please use a desktop web browser…)` | Google chiede il permesso per una fonte esterna, la prima volta | apri il foglio da un computer, concedi l'accesso, ricarica con `Ctrl+Shift+F5` |
+| intestazione e nessuna riga | non ci sono segnalazioni dopo l'ultima lettura | niente: la console le mostra lo stesso |
+| «Non autorizzato.» | il segreto non è più quello nel database | vedi sotto |
+| «Configurazione mancante.» | all'Edge Function manca la chiave pubblicabile | è un guasto del progetto Supabase, non del foglio |
+
+Per capire **dove** si è fermato, apri l'indirizzo con `&debug=1` in fondo:
+restituisce gli stessi dati in JSON. Se risponde JSON e il foglio è vuoto, il
+problema è il foglio; se non risponde, è il database.
+
+### Il segreto
+
+Nell'indirizzo c'è una chiave: chi ce l'ha legge i contatti. Non va incollata in
+un messaggio, in un annuncio, in una pagina. Sta in `traccia.settings`, chiave
+`foglio_segreto`, si legge così:
+
+```sql
+select value #>> '{}' from traccia.settings where key = 'foglio_segreto';
+```
+
+Per cambiarlo: si scrive il nuovo valore in quella riga **e** si aggiorna la
+formula nel foglio — le due cose insieme, altrimenti il foglio smette di
+leggere.
+
+---
+
+## La via veloce: un numero, e basta
+
+Il modulo con i sei dati resta. Accanto c'è una seconda porta, **sopra** il
+modulo in `login.html` (`#telefono-form`): un campo, «Fatti chiamare».
+
+Perché due porte: a freddo, su un annuncio, ogni campo in più costa circa l'11%
+di compilazioni. Con un budget di 24 $ quella differenza è tutto — 0–2
+segnalazioni invece di 5–8. Il nome, l'importo e il tipo di truffa li prende
+l'analista **durante la chiamata**, che è dove li avrebbe presi comunque.
+
+Cosa cambia nel database (`0027_via_veloce.sql`):
+
+- `first_name`, `last_name`, `email` e `amount_eur` diventano **facoltativi**:
+  una richiesta con il solo telefono è una richiesta valida;
+- la funzione `richiesta_telefono` accetta un numero e nient'altro;
+- il doppione si controlla sul **telefono**, non sulla email: due pressioni
+  dello stesso pulsante non sono due clienti, e la seconda risponde «ti
+  chiamiamo noi» invece di un errore;
+- in console una riga senza nome si legge **«Telefono in attesa»** — la verità:
+  nessuno l'ha ancora chiamata.
+
+Una riga della via veloce costa all'analista una domanda in più («come si
+chiama?») e vale tre campi in meno sul modulo. Se un giorno la conversione del
+modulo completo salirà abbastanza, la via veloce si può togliere senza toccare
+niente altro: è un `<form>` in più e una funzione in più.
+
 ## Cosa guardare quando la campagna è accesa
 
 | Numero | Dove | Cosa vuol dire |

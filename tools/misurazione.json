@@ -1,0 +1,5 @@
+{
+  "_nota": "Gli identificatori della misurazione. `gtm` è il contenitore Google Tag Manager, che è anche dove va messo il tag Google Analytics 4: chi apre il sito riceve GTM, e GTM decide cosa caricare. `ga4` serve solo se un giorno si vuole misurare senza passare dal contenitore — lasciandolo vuoto non si carica gtag.js e non si rischia di contare due volte la stessa visita.",
+  "gtm": "GTM-PCHTN7DM",
+  "ga4": ""
+}

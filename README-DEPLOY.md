@@ -85,6 +85,40 @@ Telegram, token nel vault, mai nel repository. Tutto spiegato in **`LEAD.md`**.
 Senza webhook configurato le segnalazioni restano salvate e la console le
 mostra lo stesso: il canale mancante non fa perdere il lead.
 
+### La via veloce (solo telefono)
+
+`supabase/migrations/0027_via_veloce.sql` — già applicata in produzione il
+2026-11-08. Rende facoltativi `first_name`, `last_name`, `email` e
+`amount_eur` (una richiesta con il solo telefono è valida) e aggiunge
+`richiesta_telefono`, che accetta un numero. Il modulo completo resta e resta
+obbligatorio: la via veloce è un secondo `<form>` in `login.html`, sopra.
+
+    supabase db push                     # applica la 0027
+
+Se si toglie il modulo veloce, il database non va cambiato: le colonne
+facoltative accettano anche le righe complete.
+
+### Il foglio Google
+
+In produzione ci sono già (2026-11-08):
+
+- la funzione `traccia.leads_per_foglio`, che legge le segnalazioni e le
+  restituisce in JSON a chi presenta il segreto (`traccia.settings`,
+  `foglio_segreto`);
+- l'Edge Function `leads-csv`, che le traduce in CSV per `=IMPORTDATA(…)`.
+
+Per applicarle da zero, in questo ordine:
+
+    supabase db push                          # applica anche 0026_foglio_lead.sql
+    supabase functions deploy leads-csv       # senza --no-verify-jwt: non serve JWT
+
+La funzione ha `verify_jwt: false` perché `IMPORTDATA` di Google **non manda
+header HTTP**: un token non potrebbe arrivare. La protezione è il segreto
+nell'indirizzo, che è lungo 48 caratteri esadecimali e si cambia dal database.
+
+Se un giorno questa funzione sparisce, il foglio resta vuoto e la console
+continua a mostrare tutto: è una copia, non la fonte.
+
 ---
 
 ## Intestazione e piè di pagina: un solo posto
@@ -117,6 +151,111 @@ alla build successiva, che lo sovrascrive.
 
 Per bloccare le regressioni, `python3 tools/build_shell.py --check` va eseguito
 prima di ogni pubblicazione: se qualcuno ha toccato una pagina a mano, lo dice.
+
+## Misurazione delle campagne (Google Tag Manager)
+
+Il sito carica il contenitore **GTM-PCHTN7DM** su tutte le pagine servite,
+comprese `en/`, `de/`, `es/` e l'area riservata. Come header e piè di pagina,
+non è incollato a mano: lo scrive uno script, e i marcatori restano in pagina.
+
+```bash
+python3 tools/misurazione.py          # riscrive il blocco in tutte le pagine
+python3 tools/misurazione.py --check  # esce 1 se una pagina è indietro
+```
+
+L'identificatore sta in `tools/misurazione.json` — un posto solo. Cambiare
+contenitore significa cambiare quel file e rilanciare lo script: cercare
+`GTM-…` in 58 file è il modo per dimenticarne uno, e le pagine che misurano
+metà del sito non si distinguono da un sito che non misura.
+
+**Tre cose che rompono la misurazione senza dare un errore visibile:**
+
+1. **La policy di sicurezza.** `vercel.json` dichiara una `Content-Security-Policy`:
+   deve ammettere `https://www.googletagmanager.com` in `script-src` e in
+   `frame-src`, e `*.google-analytics.com` in `connect-src` e `img-src`.
+   Senza, il browser blocca il contenitore e l'unico segnale è un errore
+   nella console di chi apre gli strumenti. `tests/misurazione.test.js`
+   confronta le due cose, così non si scopre a campagna finita.
+2. **Lo snippet doppio.** Due contenitori in pagina contano ogni visita due
+   volte: il costo per lead dimezza per finta e la decisione dopo si prende
+   su un numero falso. Lo script toglie i blocchi vecchi prima di riscrivere.
+3. **Il `<noscript>` fuori dal `<body>`.** Chi naviga senza JavaScript passa
+   solo da lì.
+
+**Dove si mette Analytics**: il tag GA4 va dentro il contenitore, in
+Tag Manager (*Tag → Nuovo → Google Analytics: configurazione GA4*), non
+incollato nelle pagine. Così una modifica alla misurazione non richiede un
+rilascio del sito, e non si rischia di contare due volte la stessa visita
+con due snippet diversi. Se un giorno GA4 va caricato direttamente, il campo
+`ga4` di `tools/misurazione.json` lo fa — ma va svuotato il tag dentro GTM,
+altrimenti sono due.
+
+**Lo snippet che Google mostra per il contenitore non si incolla così com'è.**
+Quello proposto nel pannello GTM è:
+
+```html
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-…"></script>
+```
+
+e non funziona: `gtm.js` **non è** la libreria di GTM, è il contenitore
+stesso, che si aspetta di essere stato chiamato dal bootstrap — quello che
+scrive `dataLayer` e spinge `gtm.start`. Caricato da solo, il contenitore
+parte senza il suo stato iniziale e il tag dentro non scatta. La versione
+corretta è quella che genera `tools/misurazione.py`. Lo snippet che finisce
+con `gtag('js', new Date())` ma **senza** `gtag('config','G-…')` non manda
+niente a nessuna proprietà: è la forma che si ottiene copiando la prima metà
+del pannello Google tag.
+
+## La conversione: l'evento `lead`
+
+Un contatore di visite non dice se un annuncio porta clienti. Quando uno dei
+tre moduli riesce — via veloce (due campi), modulo completo (sei campi),
+modulo della pagina Contatti — `assets/js/conversione.js` spinge nel
+`dataLayer` un evento:
+
+```js
+{ event: "lead", modulo: "veloce", origine: "meta-de" }
+```
+
+**Nessun dato personale**: né nome, né telefono, né email, né importo. Il
+numero di telefono resta nel database; dentro Analytics sarebbe un dato
+personale in un sistema di Google. Quello che serve alla campagna è *che* un
+lead è arrivato, da quale modulo e da quale origine — e ci sono tutti e tre.
+
+Due dettagli non negoziabili:
+
+- **l'evento parte dal `.then` della chiamata al server**, non dal clic: sul
+  clic conterebbe anche i numeri rifiutati e chi ha sbagliato un campo;
+- **al massimo un lead ogni dieci minuti da un browser**, perché due moduli
+  compilati di seguito sono una persona sola, e tre conversioni per una
+  persona fanno sembrare il costo per lead un terzo di quello vero.
+
+### Farlo diventare una conversione in Google
+
+L'evento esiste già; va solo detto a Google che vale. Servono cinque minuti,
+tutti dentro i due pannelli:
+
+1. **Tag Manager** → *Tag → Nuovo* → *Google Analytics: evento GA4*;
+2. proprietà: quella del sito (l'ID `G-…`, preso in *Amministratore → Flussi
+   di dati*); nome evento: `lead`; parametri: `modulo` e `origine` (facoltativi,
+   servono a leggere i due imbuti separati);
+3. *Attivazione*: **evento personalizzato** → nome `lead` (o, equivalente,
+   *Tutti gli eventi* con la condizione `{{Event}}` uguale a `lead`);
+4. *Anteprima* per verificare, poi *Invia* e pubblica il contenitore;
+5. **GA4** → *Amministratore → Eventi chiave* → *Nuovo evento chiave* → `lead`.
+   Da quel momento compare come conversione nei rapporti e si può importare
+   in Google Ads.
+
+Se invece GA4 va caricato direttamente (senza tag dentro GTM), si mette l'ID
+nel campo `ga4` di `tools/misurazione.json` e si lancia
+`python3 tools/misurazione.py`: `conversione.js` manda l'evento anche a
+`gtag`, senza un secondo codice da mantenere.
+
+**Consenso**: il banner «Accetta tutti / Solo necessari» resta com'è, ma la
+misurazione **non dipende** da quella scelta — il contenitore parte al
+caricamento. È una decisione presa il 2026-11-11 per misurare anche chi non
+tocca il banner, ed è annotata qui perché è la prima cosa da rivedere se il
+traffico è austriaco o tedesco e arriva una contestazione sulla cookie policy.
 
 ## Opzione A — drag & drop (2 minuti, nessun comando)
 
