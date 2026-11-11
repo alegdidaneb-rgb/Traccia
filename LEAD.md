@@ -134,6 +134,35 @@ importo, tipo di truffa, origine, stato e chi l'ha in carico.
 incollare, nessuna estensione da installare, e niente da riavviare: premendo
 `Ctrl+Shift+F5` il foglio rilegge.
 
+**Il rinfresco, che è la parte che frega tutti.** `IMPORTDATA` si aggiorna da
+sé, ma con una pigrizia che sembra un guasto: quando si ricarica la pagina il
+foglio può mostrare lo *snapshot dell'ultimo ricalcolo*, non lo stato presente
+del server. Il 2026-11-11, subito dopo aver corretto il nome mancante, la
+scheda mostrava ancora `Nome` vuoto e `Importo` `0` su righe che sul server
+avevano già il nome e la cella dell'importo vuota — e sembrava che la
+correzione non fosse passata. Non era così.
+
+Due cose da sapere, entrambe verificate quel giorno:
+
+- **Riscrivere la formula identica non ricalcola niente.** Google confronta il
+  testo e conclude «non è cambiato». Per forzare il ricalcolo serve una
+  differenza — basta un parametro inerte in coda
+  (`…?k=…&r=2`, poi `&r=3`): il contenuto è lo stesso, l'indirizzo no.
+- **`Ctrl+Shift+F5`** ricarica il foglio senza toccare niente.
+
+Se un lead è arrivato in `admin.html` ma non nel foglio, **prima si guarda
+l'indirizzo con `&debug=1`**, che restituisce gli stessi dati in JSON: quella è
+la verità. Se lì la riga c'è, è solo pigrizia del foglio, non un lead perso.
+Se lì non c'è, il problema sta a monte (Edge Function o `leads_per_foglio`),
+e il JSON ha già la risposta.
+
+La colonna **`Arrivata` nasce come testo** (`2026-11-11 09:28`) e Google la
+mostra come numero seriale (`46337.41875`) finché la colonna non ha un formato
+data. Formattare `A2:A1000` come `yyyy-mm-dd hh:mm` lo sistema — fatto il
+2026-11-11, e va rifatto se si ricrea il foglio o si cancellano i formati. Un
+numero seriale al posto di una data non è un dettaglio: nessuno sa a colpo
+d'occhio se quel lead è di stamattina o di ferragosto.
+
 ### Il foglio è uno specchio, non una scrivania
 
 Non si lavorano i lead dal foglio, e non è una limitazione tecnica: è la scelta.
