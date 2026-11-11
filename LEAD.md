@@ -174,6 +174,34 @@ Per cambiarlo: si scrive il nuovo valore in quella riga **e** si aggiorna la
 formula nel foglio — le due cose insieme, altrimenti il foglio smette di
 leggere.
 
+---
+
+## La via veloce: un numero, e basta
+
+Il modulo con i sei dati resta. Accanto c'è una seconda porta, **sopra** il
+modulo in `login.html` (`#telefono-form`): un campo, «Fatti chiamare».
+
+Perché due porte: a freddo, su un annuncio, ogni campo in più costa circa l'11%
+di compilazioni. Con un budget di 24 $ quella differenza è tutto — 0–2
+segnalazioni invece di 5–8. Il nome, l'importo e il tipo di truffa li prende
+l'analista **durante la chiamata**, che è dove li avrebbe presi comunque.
+
+Cosa cambia nel database (`0027_via_veloce.sql`):
+
+- `first_name`, `last_name`, `email` e `amount_eur` diventano **facoltativi**:
+  una richiesta con il solo telefono è una richiesta valida;
+- la funzione `richiesta_telefono` accetta un numero e nient'altro;
+- il doppione si controlla sul **telefono**, non sulla email: due pressioni
+  dello stesso pulsante non sono due clienti, e la seconda risponde «ti
+  chiamiamo noi» invece di un errore;
+- in console una riga senza nome si legge **«Telefono in attesa»** — la verità:
+  nessuno l'ha ancora chiamata.
+
+Una riga della via veloce costa all'analista una domanda in più («come si
+chiama?») e vale tre campi in meno sul modulo. Se un giorno la conversione del
+modulo completo salirà abbastanza, la via veloce si può togliere senza toccare
+niente altro: è un `<form>` in più e una funzione in più.
+
 ## Cosa guardare quando la campagna è accesa
 
 | Numero | Dove | Cosa vuol dire |

@@ -85,6 +85,19 @@ Telegram, token nel vault, mai nel repository. Tutto spiegato in **`LEAD.md`**.
 Senza webhook configurato le segnalazioni restano salvate e la console le
 mostra lo stesso: il canale mancante non fa perdere il lead.
 
+### La via veloce (solo telefono)
+
+`supabase/migrations/0027_via_veloce.sql` — già applicata in produzione il
+2026-11-08. Rende facoltativi `first_name`, `last_name`, `email` e
+`amount_eur` (una richiesta con il solo telefono è valida) e aggiunge
+`richiesta_telefono`, che accetta un numero. Il modulo completo resta e resta
+obbligatorio: la via veloce è un secondo `<form>` in `login.html`, sopra.
+
+    supabase db push                     # applica la 0027
+
+Se si toglie il modulo veloce, il database non va cambiato: le colonne
+facoltative accettano anche le righe complete.
+
 ### Il foglio Google
 
 In produzione ci sono già (2026-11-08):

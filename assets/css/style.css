@@ -3190,3 +3190,23 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 @media (min-width: 1000px) {
   .pillars--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* --------------------------------------------------------------------------
+   La via veloce (login.html)
+   --------------------------------------------------------------------------
+   Un campo e un pulsante. Non è un modulo più corto dello stesso modulo: è
+   un'altra cosa, e deve sembrarlo — chi arriva da un annuncio deve capire in
+   due secondi che l'impegno richiesto è un numero di telefono.
+   -------------------------------------------------------------------------- */
+.form--rapido {
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: 14px;
+  padding: 1.1rem 1.1rem 0.9rem;
+}
+.form--rapido .field__hint { margin-top: 0.35rem; }
+.form--rapido .form__note a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -5,6 +5,7 @@
   var next = new URLSearchParams(location.search).get("next") || "";
   var loginForm = document.getElementById("login-form");
   var registerForm = document.getElementById("register-form");
+  var rapidoForm = document.getElementById("telefono-form");
   var loginError = loginForm && loginForm.querySelector("[data-form-error]");
   var registerError = registerForm && registerForm.querySelector("[data-form-error]");
 
@@ -192,6 +193,65 @@
       }).catch(function (err) {
         showError(registerError, err.message || "Invio non riuscito. Riprova.");
         busy(button, false);
+      });
+    });
+  }
+
+  /* --------------------------------------------------------- via veloce -- */
+  /* Un campo, un pulsante. Il modulo con i sei dati resta sotto e non si
+     tocca: chi vuole scrivere tutto subito lo apre dal link. Chi arriva da un
+     annuncio scrive il numero e va via — che è quello che serve, perché a
+     freddo ogni campo in più costa circa l'11% di compilazioni. */
+  if (rapidoForm) {
+    var rapidoErrore = rapidoForm.querySelector("[data-form-error]");
+    var completo = document.querySelector("[data-completo]");
+    var apriCompleto = rapidoForm.querySelector("[data-apri-completo]");
+
+    if (apriCompleto && completo) {
+      apriCompleto.addEventListener("click", function (e) {
+        e.preventDefault();
+        rapidoForm.hidden = true;
+        completo.hidden = false;
+        /* il fuoco sul primo campo, altrimenti chi ha appena premuto il link
+           non sa dove guardare */
+        var primo = completo.querySelector("input");
+        if (primo) primo.focus();
+      });
+    }
+
+    rapidoForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      clearError(rapidoErrore);
+      pulisciCampi(rapidoForm);
+
+      var numero = (document.getElementById("rapido-phone") || {}).value || "";
+      numero = numero.trim();
+      if (!regolaTelefono.test(numero) ||
+          numero.replace(/\D/g, "").length < 8) {
+        return segnalaCampo(document.getElementById("rapido-phone"),
+          "Inserisci il numero con il prefisso, per esempio +43 660 123 4567.");
+      }
+
+      var bottone = rapidoForm.querySelector('button[type="submit"]');
+      busy(bottone, true);
+
+      api.richiestaTelefono({
+        phone: numero,
+        /* da dove arriva: è l'unica cosa che i 24 $ devono comprare */
+        origine: (window.TracciaOrigine && window.TracciaOrigine.valore()) || "sito"
+      }).then(function (res) {
+        busy(bottone, false);
+        rapidoForm.reset();
+        /* la conferma si legge dove si è appena scritto */
+        showError(rapidoErrore,
+          (res && res.message) || "Ricevuto. Ti chiamiamo entro 48 ore lavorative.");
+        if (rapidoErrore) rapidoErrore.style.color = "var(--accent)";
+        /* e il pulsante sparisce: lasciarlo invita a ripremere, e chi ripreme
+           aspetta una seconda telefonata che non arriverà */
+        if (bottone) bottone.hidden = true;
+      }).catch(function (err) {
+        showError(rapidoErrore, err.message || "Invio non riuscito. Riprova.");
+        busy(bottone, false);
       });
     });
   }
