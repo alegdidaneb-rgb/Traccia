@@ -16,18 +16,18 @@
   <meta property="og:title" content="Accedi alla tua pratica — Traccia">
   <meta property="og:description" content="Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.">
   <meta property="og:url" content="https://traccia.it.com/login.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/017db13a/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/10d76438/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="assets/017db13a/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/017db13a/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/017db13a/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/017db13a/css/style.css">
-  <link rel="stylesheet" href="assets/017db13a/css/premium.css">
+  <link rel="apple-touch-icon" href="assets/10d76438/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/10d76438/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/10d76438/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/10d76438/css/style.css">
+  <link rel="stylesheet" href="assets/10d76438/css/premium.css">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -39,9 +39,9 @@
     })();
   </script>
 
-  <script src="assets/017db13a/js/config.js" defer></script>
-  <script src="assets/017db13a/js/api.js" defer></script>
-  <script src="assets/017db13a/js/session.js" defer></script>
+  <script src="assets/10d76438/js/config.js" defer></script>
+  <script src="assets/10d76438/js/api.js" defer></script>
+  <script src="assets/10d76438/js/session.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -151,8 +151,8 @@
 <section class="auth-shell auth-shell--photo grain">
   <div class="auth-shell__bg" aria-hidden="true">
     <picture>
-      <source type="image/webp" srcset="assets/017db13a/img/hero-trace-900.webp 900w, assets/017db13a/img/hero-trace-1600.webp 1600w" sizes="100vw">
-      <img src="assets/017db13a/img/hero-trace-1600.jpg" srcset="assets/017db13a/img/hero-trace-900.jpg 900w, assets/017db13a/img/hero-trace-1600.jpg 1600w"
+      <source type="image/webp" srcset="assets/10d76438/img/hero-trace-900.webp 900w, assets/10d76438/img/hero-trace-1600.webp 1600w" sizes="100vw">
+      <img src="assets/10d76438/img/hero-trace-1600.jpg" srcset="assets/10d76438/img/hero-trace-900.jpg 900w, assets/10d76438/img/hero-trace-1600.jpg 1600w"
            sizes="100vw" alt="" width="1600" height="1067" loading="lazy" decoding="async">
     </picture>
   </div>
@@ -271,7 +271,18 @@
            dal link «Preferisco scrivere i dettagli». -->
       <form class="form form--rapido mt-3" id="telefono-form" novalidate
             data-rapido>
+        <!-- Il nome, prima del numero. Non è un capriccio: senza nome la riga
+             arriva in console e nel foglio come «Telefono in attesa», e chi la
+             guarda non sa chi sta per chiamare — misurato il 2026-11-11, con
+             una richiesta vera senza nome. Un campo in più, ma è il campo che
+             rende utile tutto il resto: al telefono, «buongiorno» a uno
+             sconosciuto costa più di due secondi di compilazione. -->
         <div class="field">
+          <label for="rapido-nome">Il tuo nome</label>
+          <input id="rapido-nome" name="nome" type="text" autocomplete="name"
+                 placeholder="Maria" maxlength="60" required>
+        </div>
+        <div class="field mt-2">
           <label for="rapido-phone">Il tuo numero di telefono</label>
           <input id="rapido-phone" name="phone" type="tel" autocomplete="tel"
                  inputmode="tel" placeholder="+43 660 123 4567"
@@ -281,8 +292,8 @@
         <button class="btn btn--accent btn--block btn--lg" type="submit">Fatti chiamare</button>
         <p class="form__note" data-form-error hidden></p>
         <p class="form__note">
-          Non serve altro: nome, importo e che cosa ti è successo li chiediamo
-          al telefono, con calma. <strong>Nessuna password, nessun conto da
+          Non serve altro: l'importo e che cosa ti è successo li chiediamo al
+          telefono, con calma. <strong>Nessuna password, nessun conto da
           aprire.</strong>
         </p>
         <p class="form__note">
@@ -363,9 +374,9 @@
   </div>
 </section>
 
-<script src="assets/017db13a/js/ui.js" defer></script>
-<script src="assets/017db13a/js/origine.js" defer></script>
-<script src="assets/017db13a/js/auth.js" defer></script>
+<script src="assets/10d76438/js/ui.js" defer></script>
+<script src="assets/10d76438/js/origine.js" defer></script>
+<script src="assets/10d76438/js/auth.js" defer></script>
   </main>
 
   <!-- shell:footer -->
@@ -484,16 +495,16 @@
 </div>
 
 
-  <script src="assets/017db13a/js/main.js" defer></script>
-  <script src="assets/017db13a/js/market.js" defer></script>
-  <script src="assets/017db13a/js/premium.js" defer></script>
-  <!-- WhatsApp: il numero sta in assets/017db13a/js/config.js; senza numero il
+  <script src="assets/10d76438/js/main.js" defer></script>
+  <script src="assets/10d76438/js/market.js" defer></script>
+  <script src="assets/10d76438/js/premium.js" defer></script>
+  <!-- WhatsApp: il numero sta in assets/10d76438/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
      aria-label="Scrivici su WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/017db13a/js/whatsapp.js" defer></script>
+  <script src="assets/10d76438/js/whatsapp.js" defer></script>
 </body>
 </html>

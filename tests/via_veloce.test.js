@@ -30,10 +30,14 @@ const API = R("assets/js/api.js");
 const SQL = R("supabase/migrations/0027_via_veloce.sql");
 const LINGUE = ["", "en/", "de/", "es/"];
 
-test("la via veloce c'è, ed è un campo solo", () => {
-  /* Se il modulo veloce avesse tre campi non sarebbe la via veloce: sarebbe
-     il modulo completo con tre campi in meno, e il guadagno di conversione
-     che lo giustifica sparirebbe. Un campo, misurato. */
+test("la via veloce chiede nome e numero, e nient'altro", () => {
+  /* Un campo solo era la scelta giusta sulla carta, sbagliata nei fatti: il
+     2026-11-11 una richiesta vera è arrivata con il solo numero, e in console
+     e nel foglio si leggeva «Telefono in attesa». Chi guarda la tabella non
+     sapeva chi stava per chiamare — e al telefono «buongiorno» a uno
+     sconosciuto costa più di due secondi di compilazione.
+     Quindi due campi: il nome e il numero. Non tre: il resto (importo, tipo di
+     truffa) si chiede parlando, che è dove si sarebbe chiesto comunque. */
   LINGUE.forEach((cartella) => {
     const html = R(cartella + "login.html");
     const inizio = html.indexOf('id="telefono-form"');
@@ -41,9 +45,26 @@ test("la via veloce c'è, ed è un campo solo", () => {
     const fine = html.indexOf("</form>", inizio);
     const blocco = html.slice(inizio, fine);
     const campi = (blocco.match(/<input\b/g) || []).length;
-    assert.strictEqual(campi, 1, `${cartella || "it/"}: il modulo veloce ha ${campi} campi, deve averne 1`);
-    assert.match(blocco, /type="tel"/, "il campo non è type=tel: la tastiera del telefono non è numerica");
+    assert.strictEqual(campi, 2, `${cartella || "it/"}: il modulo veloce ha ${campi} campi, deve averne 2`);
+    assert.match(blocco, /id="rapido-nome"/, "manca il nome: la riga arriverebbe senza");
+    assert.match(blocco, /type="tel"/, "il campo del numero non è type=tel: la tastiera non è numerica");
+    /* il nome deve arrivare al database, altrimenti è decorazione */
+    assert.match(AUTH, /nome:\s*nome/, "il nome non viene mandato a richiesta_telefono");
+    assert.match(AUTH, /nome\.length < 2/, "il nome non viene controllato prima dell'invio");
   });
+});
+
+test("il foglio mostra il nome, non una cella vuota", () => {
+  /* `first_name || ' ' || last_name` con NULL dà NULL: misurato il 2026-11-11,
+     una richiesta con il nome dentro arrivava nel foglio come riga senza nome.
+     La costruzione deve essere la stessa della console. */
+  const sql = R("supabase/migrations/0027_via_veloce.sql");
+  const inizio = sql.indexOf("create or replace function traccia.leads_per_foglio");
+  const blocco = sql.slice(inizio, sql.indexOf("$f$", sql.indexOf("create or replace function public.leads_per_foglio")));
+  assert.match(blocco, /'nome', coalesce\(nullif\(trim\(coalesce\(r\.first_name/,
+    "leads_per_foglio costruisce il nome senza tollerare i NULL");
+  assert.match(blocco, /'Telefono in attesa'/,
+    "nel foglio una riga senza nome resta vuota");
 });
 
 test("il modulo completo non è stato mangiato", () => {

@@ -228,8 +228,15 @@
       clearError(rapidoErrore);
       pulisciCampi(rapidoForm);
 
-      var numero = (document.getElementById("rapido-phone") || {}).value || "";
-      numero = numero.trim();
+      var nome = ((document.getElementById("rapido-nome") || {}).value || "").trim();
+      var numero = ((document.getElementById("rapido-phone") || {}).value || "").trim();
+
+      /* il nome prima del numero, come sul modulo: è il dato che rende utile
+         la riga in console e nel foglio. Senza, il lead si chiama «Telefono in
+         attesa» e chi apre la tabella non sa chi sta per chiamare. */
+      if (nome.length < 2) {
+        return segnalaCampo(document.getElementById("rapido-nome"), "Inserisci il tuo nome.");
+      }
       if (!regolaTelefono.test(numero) ||
           numero.replace(/\D/g, "").length < 8) {
         return segnalaCampo(document.getElementById("rapido-phone"),
@@ -240,6 +247,7 @@
       busy(bottone, true);
 
       api.richiestaTelefono({
+        nome: nome,
         phone: numero,
         /* da dove arriva: è l'unica cosa che i 24 $ devono comprare */
         origine: (window.TracciaOrigine && window.TracciaOrigine.valore()) || "sito"
