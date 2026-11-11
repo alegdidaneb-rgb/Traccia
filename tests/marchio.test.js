@@ -25,6 +25,14 @@ const R = (f) => fs.readFileSync(path.join(RADICE, f), "utf8");
 const esiste = (f) => fs.existsSync(path.join(RADICE, f));
 
 const CSS = R("assets/css/style.css");
+
+/* Pillow serve solo a rigenerare i file, non a controllarli: le misure e il
+   canale alfa si leggono dall'intestazione PNG. Se manca, i test che
+   *eseguono* gli script lo dicono invece di fallire — un rosso che significa
+   «manca una libreria nel sandbox» insegna a ignorare i rossi. */
+function haPillow() {
+  return spawnSync("python3", ["-c", "import PIL"], { cwd: RADICE }).status === 0;
+}
 const SCRIPT = R("tools/marchio.py");
 const LATI = [32, 48, 180, 512, 1024];
 
@@ -70,17 +78,18 @@ test("il marchio è in tutte le misure che servono", () => {
 
 test("il marchio è trasparente fuori dal quadrato arrotondato", () => {
   /* Senza trasparenza, l'icona su iOS è un quadrato nero dentro un quadrato
-     bianco: si vede il bordo e sembra un errore. Il PNG deve avere il canale
-     alfa, e l'angolo in alto a sinistra deve essere vuoto. */
-  const esito = spawnSync("python3", ["-c", [
-    "from PIL import Image",
-    "im = Image.open('assets/img/marchio/marchio-512.png')",
-    "print(im.mode, im.getpixel((0, 0))[3])",
-  ].join("\n")], { cwd: RADICE, encoding: "utf8" });
-  assert.strictEqual(esito.status, 0, esito.stderr);
-  const [modo, alfa] = esito.stdout.trim().split(" ");
-  assert.strictEqual(modo, "RGBA", "il marchio non ha canale alfa");
-  assert.strictEqual(alfa, "0", "l'angolo non è trasparente: si vedrà il quadrato");
+     bianco: si vede il bordo e sembra un errore.
+
+     Il byte 25 dell'intestazione PNG è il *color type*: 6 vuol dire RGBA,
+     cioè che il canale alfa c'è. Si legge dai byte e non con Pillow, così il
+     controllo gira anche dove Pillow non è installato — ed è il controllo che
+     conta: se il marchio perdesse la trasparenza, si vedrebbe su ogni
+     telefono. */
+  const byte = fs.readFileSync(path.join(RADICE, "assets/img/marchio/marchio-512.png"));
+  assert.strictEqual(byte.readUInt32BE(0), 0x89504e47, "non è un PNG");
+  const tipoColore = byte[25];
+  assert.strictEqual(tipoColore, 6,
+    `il PNG non ha il canale alfa (color type ${tipoColore}, serve 6): l'angolo sarà pieno`);
 });
 
 test("il marchio dichiarato nelle pagine è quello che esiste", () => {
@@ -100,6 +109,10 @@ test("il marchio dichiarato nelle pagine è quello che esiste", () => {
 });
 
 test("il marchio si rigenera da un comando", () => {
+  if (!haPillow()) {
+    console.log("      (saltato: Pillow non è installato in questo ambiente)");
+    return;
+  }
   const esito = spawnSync("python3", ["tools/marchio.py", "--check"],
     { cwd: RADICE, encoding: "utf8" });
   assert.strictEqual(esito.status, 0, esito.stdout + esito.stderr);

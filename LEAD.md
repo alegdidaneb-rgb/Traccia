@@ -114,6 +114,66 @@ posto dove andrà è segnato nella migrazione.
 
 ---
 
+---
+
+## Il foglio Google
+
+C'è un foglio — **«Traccia — segnalazioni dal sito»** — che si popola da solo:
+ogni segnalazione che arriva compare in una riga, con nome, telefono, email,
+importo, tipo di truffa, origine, stato e chi l'ha in carico.
+
+**Come è fatto**, perché conta saperlo prima di romperlo: la scheda
+`Segnalazioni` ha **una sola formula** in `A1`:
+
+```
+=IMPORTDATA("https://mmjycpdfjlbckeefbtuq.supabase.co/functions/v1/leads-csv?k=…")
+```
+
+`IMPORTDATA` chiama l'Edge Function `leads-csv`, che chiede le righe a
+`traccia.leads_per_foglio` e le restituisce in CSV. Non c'è nessuno script da
+incollare, nessuna estensione da installare, e niente da riavviare: premendo
+`Ctrl+Shift+F5` il foglio rilegge.
+
+### Il foglio è uno specchio, non una scrivania
+
+Non si lavorano i lead dal foglio, e non è una limitazione tecnica: è la scelta.
+Una segnalazione in due posti dove si può scrivere diventa **due verità** —
+Marco la prende in console, Sara guarda il foglio (che non sa niente della presa
+in carico) e chiama. Il cliente riceve due telefonate e capisce che nessuno sa
+chi lo segue. Con due lead al giorno non succede; con cento è esattamente così
+che si perde la fiducia di chi ha già perso dei soldi.
+
+Il lavoro si fa in `admin.html`, dove «Prendi» blocca la riga. Il foglio serve a
+far vedere cosa sta arrivando — a te, al cliente, a chi non ha una password per
+la console.
+
+### Se il foglio non si aggiorna
+
+| Cosa vedi | Cosa vuol dire | Cosa fare |
+|---|---|---|
+| `#REF! (Please use a desktop web browser…)` | Google chiede il permesso per una fonte esterna, la prima volta | apri il foglio da un computer, concedi l'accesso, ricarica con `Ctrl+Shift+F5` |
+| intestazione e nessuna riga | non ci sono segnalazioni dopo l'ultima lettura | niente: la console le mostra lo stesso |
+| «Non autorizzato.» | il segreto non è più quello nel database | vedi sotto |
+| «Configurazione mancante.» | all'Edge Function manca la chiave pubblicabile | è un guasto del progetto Supabase, non del foglio |
+
+Per capire **dove** si è fermato, apri l'indirizzo con `&debug=1` in fondo:
+restituisce gli stessi dati in JSON. Se risponde JSON e il foglio è vuoto, il
+problema è il foglio; se non risponde, è il database.
+
+### Il segreto
+
+Nell'indirizzo c'è una chiave: chi ce l'ha legge i contatti. Non va incollata in
+un messaggio, in un annuncio, in una pagina. Sta in `traccia.settings`, chiave
+`foglio_segreto`, si legge così:
+
+```sql
+select value #>> '{}' from traccia.settings where key = 'foglio_segreto';
+```
+
+Per cambiarlo: si scrive il nuovo valore in quella riga **e** si aggiorna la
+formula nel foglio — le due cose insieme, altrimenti il foglio smette di
+leggere.
+
 ## Cosa guardare quando la campagna è accesa
 
 | Numero | Dove | Cosa vuol dire |

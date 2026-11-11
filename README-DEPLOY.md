@@ -85,6 +85,27 @@ Telegram, token nel vault, mai nel repository. Tutto spiegato in **`LEAD.md`**.
 Senza webhook configurato le segnalazioni restano salvate e la console le
 mostra lo stesso: il canale mancante non fa perdere il lead.
 
+### Il foglio Google
+
+In produzione ci sono già (2026-11-08):
+
+- la funzione `traccia.leads_per_foglio`, che legge le segnalazioni e le
+  restituisce in JSON a chi presenta il segreto (`traccia.settings`,
+  `foglio_segreto`);
+- l'Edge Function `leads-csv`, che le traduce in CSV per `=IMPORTDATA(…)`.
+
+Per applicarle da zero, in questo ordine:
+
+    supabase db push                          # applica anche 0026_foglio_lead.sql
+    supabase functions deploy leads-csv       # senza --no-verify-jwt: non serve JWT
+
+La funzione ha `verify_jwt: false` perché `IMPORTDATA` di Google **non manda
+header HTTP**: un token non potrebbe arrivare. La protezione è il segreto
+nell'indirizzo, che è lungo 48 caratteri esadecimali e si cambia dal database.
+
+Se un giorno questa funzione sparisce, il foglio resta vuoto e la console
+continua a mostrare tutto: è una copia, non la fonte.
+
 ---
 
 ## Intestazione e piè di pagina: un solo posto

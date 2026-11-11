@@ -181,6 +181,11 @@ test("la console mostra l'origine in una forma leggibile", () => {
 });
 
 test("gli annunci si rigenerano da un comando, senza un grafico", () => {
+  const pillow = spawnSync("python3", ["-c", "import PIL"], { cwd: RADICE });
+  if (pillow.status !== 0) {
+    console.log("      (saltato: Pillow non è installato in questo ambiente)");
+    return;
+  }
   /* Con 24 $ di budget non c'è un grafico. Se le immagini si fanno a mano,
      il giorno che cambia un colore non si rifanno più. */
   const esito = spawnSync("python3", ["tools/pubblicita.py", "--check"],
