@@ -394,6 +394,11 @@ test("anche i testi invisibili sono tradotti", () => {
     const ammessi = [
       "Traccia", "WhatsApp", "MB", "AC", "SF", "GR", "IT", "EN", "DE", "ES",
       "Italiano", "English", "Deutsch", "Español",
+      /* «Google Tag Manager» è il nome del prodotto: tradurlo sarebbe come
+         tradurre «WhatsApp». Sta qui perché è l'etichetta del `<noscript>`
+         che carica il contenitore, e un lettore di schermo tedesco deve
+         sentirla come si chiama, non come suona in tedesco. */
+      "Google Tag Manager",
     ];
     const colpevoli = rimasti.filter((v) => !ammessi.includes(v) && it[v] === v);
     assert.equal(

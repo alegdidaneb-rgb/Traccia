@@ -152,6 +152,50 @@ alla build successiva, che lo sovrascrive.
 Per bloccare le regressioni, `python3 tools/build_shell.py --check` va eseguito
 prima di ogni pubblicazione: se qualcuno ha toccato una pagina a mano, lo dice.
 
+## Misurazione delle campagne (Google Tag Manager)
+
+Il sito carica il contenitore **GTM-PCHTN7DM** su tutte le pagine servite,
+comprese `en/`, `de/`, `es/` e l'area riservata. Come header e piè di pagina,
+non è incollato a mano: lo scrive uno script, e i marcatori restano in pagina.
+
+```bash
+python3 tools/misurazione.py          # riscrive il blocco in tutte le pagine
+python3 tools/misurazione.py --check  # esce 1 se una pagina è indietro
+```
+
+L'identificatore sta in `tools/misurazione.json` — un posto solo. Cambiare
+contenitore significa cambiare quel file e rilanciare lo script: cercare
+`GTM-…` in 58 file è il modo per dimenticarne uno, e le pagine che misurano
+metà del sito non si distinguono da un sito che non misura.
+
+**Tre cose che rompono la misurazione senza dare un errore visibile:**
+
+1. **La policy di sicurezza.** `vercel.json` dichiara una `Content-Security-Policy`:
+   deve ammettere `https://www.googletagmanager.com` in `script-src` e in
+   `frame-src`, e `*.google-analytics.com` in `connect-src` e `img-src`.
+   Senza, il browser blocca il contenitore e l'unico segnale è un errore
+   nella console di chi apre gli strumenti. `tests/misurazione.test.js`
+   confronta le due cose, così non si scopre a campagna finita.
+2. **Lo snippet doppio.** Due contenitori in pagina contano ogni visita due
+   volte: il costo per lead dimezza per finta e la decisione dopo si prende
+   su un numero falso. Lo script toglie i blocchi vecchi prima di riscrivere.
+3. **Il `<noscript>` fuori dal `<body>`.** Chi naviga senza JavaScript passa
+   solo da lì.
+
+**Dove si mette Analytics**: il tag GA4 va dentro il contenitore, in
+Tag Manager (*Tag → Nuovo → Google Analytics: configurazione GA4*), non
+incollato nelle pagine. Così una modifica alla misurazione non richiede un
+rilascio del sito, e non si rischia di contare due volte la stessa visita
+con due snippet diversi. Se un giorno GA4 va caricato direttamente, il campo
+`ga4` di `tools/misurazione.json` lo fa — ma va svuotato il tag dentro GTM,
+altrimenti sono due.
+
+**Consenso**: il banner «Accetta tutti / Solo necessari» resta com'è, ma la
+misurazione **non dipende** da quella scelta — il contenitore parte al
+caricamento. È una decisione presa il 2026-11-11 per misurare anche chi non
+tocca il banner, ed è annotata qui perché è la prima cosa da rivedere se il
+traffico è austriaco o tedesco e arriva una contestazione sulla cookie policy.
+
 ## Opzione A — drag & drop (2 minuti, nessun comando)
 
 1. Vai su <https://vercel.com/new>
