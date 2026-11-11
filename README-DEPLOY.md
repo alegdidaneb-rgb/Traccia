@@ -190,6 +190,67 @@ con due snippet diversi. Se un giorno GA4 va caricato direttamente, il campo
 `ga4` di `tools/misurazione.json` lo fa — ma va svuotato il tag dentro GTM,
 altrimenti sono due.
 
+**Lo snippet che Google mostra per il contenitore non si incolla così com'è.**
+Quello proposto nel pannello GTM è:
+
+```html
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-…"></script>
+```
+
+e non funziona: `gtm.js` **non è** la libreria di GTM, è il contenitore
+stesso, che si aspetta di essere stato chiamato dal bootstrap — quello che
+scrive `dataLayer` e spinge `gtm.start`. Caricato da solo, il contenitore
+parte senza il suo stato iniziale e il tag dentro non scatta. La versione
+corretta è quella che genera `tools/misurazione.py`. Lo snippet che finisce
+con `gtag('js', new Date())` ma **senza** `gtag('config','G-…')` non manda
+niente a nessuna proprietà: è la forma che si ottiene copiando la prima metà
+del pannello Google tag.
+
+## La conversione: l'evento `lead`
+
+Un contatore di visite non dice se un annuncio porta clienti. Quando uno dei
+tre moduli riesce — via veloce (due campi), modulo completo (sei campi),
+modulo della pagina Contatti — `assets/js/conversione.js` spinge nel
+`dataLayer` un evento:
+
+```js
+{ event: "lead", modulo: "veloce", origine: "meta-de" }
+```
+
+**Nessun dato personale**: né nome, né telefono, né email, né importo. Il
+numero di telefono resta nel database; dentro Analytics sarebbe un dato
+personale in un sistema di Google. Quello che serve alla campagna è *che* un
+lead è arrivato, da quale modulo e da quale origine — e ci sono tutti e tre.
+
+Due dettagli non negoziabili:
+
+- **l'evento parte dal `.then` della chiamata al server**, non dal clic: sul
+  clic conterebbe anche i numeri rifiutati e chi ha sbagliato un campo;
+- **al massimo un lead ogni dieci minuti da un browser**, perché due moduli
+  compilati di seguito sono una persona sola, e tre conversioni per una
+  persona fanno sembrare il costo per lead un terzo di quello vero.
+
+### Farlo diventare una conversione in Google
+
+L'evento esiste già; va solo detto a Google che vale. Servono cinque minuti,
+tutti dentro i due pannelli:
+
+1. **Tag Manager** → *Tag → Nuovo* → *Google Analytics: evento GA4*;
+2. proprietà: quella del sito (l'ID `G-…`, preso in *Amministratore → Flussi
+   di dati*); nome evento: `lead`; parametri: `modulo` e `origine` (facoltativi,
+   servono a leggere i due imbuti separati);
+3. *Attivazione*: **evento personalizzato** → nome `lead` (o, equivalente,
+   *Tutti gli eventi* con la condizione `{{Event}}` uguale a `lead`);
+4. *Anteprima* per verificare, poi *Invia* e pubblica il contenitore;
+5. **GA4** → *Amministratore → Eventi chiave* → *Nuovo evento chiave* → `lead`.
+   Da quel momento compare come conversione nei rapporti e si può importare
+   in Google Ads.
+
+Se invece GA4 va caricato direttamente (senza tag dentro GTM), si mette l'ID
+nel campo `ga4` di `tools/misurazione.json` e si lancia
+`python3 tools/misurazione.py`: `conversione.js` manda l'evento anche a
+`gtag`, senza un secondo codice da mantenere.
+
 **Consenso**: il banner «Accetta tutti / Solo necessari» resta com'è, ma la
 misurazione **non dipende** da quella scelta — il contenitore parte al
 caricamento. È una decisione presa il 2026-11-11 per misurare anche chi non

@@ -39,6 +39,11 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+# Una sola formula per l'impronta degli asset, in un solo posto: due calcoli
+# diversi produrrebbero pagine che si rimandano la colpa a vicenda.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from versione_asset import impronta  # noqa: E402
 CONFIG = ROOT / "tools" / "misurazione.json"
 
 SEGNA_INIZIO = "<!-- shell:misurazione -->"
@@ -65,7 +70,7 @@ def identificatori() -> tuple[str, str]:
     return (dati.get("gtm") or "").strip(), (dati.get("ga4") or "").strip()
 
 
-def blocco_testa(gtm: str, ga4: str) -> str:
+def blocco_testa(gtm: str, ga4: str, versione: str, prefisso: str = "") -> str:
     """Il codice che va in `<head>`, il più in alto possibile.
 
     GTM deve stare **prima** di ogni altro script: se parte dopo, il primo
@@ -76,6 +81,10 @@ def blocco_testa(gtm: str, ga4: str) -> str:
         return ""
 
     righe = [SEGNA_INIZIO]
+    # `assets/<impronta>/` non è in nessuna cache: è il motivo per cui la
+    # cartella ha un nome che cambia. L'impronta la calcola `versione_asset.py`
+    # sulla stessa formula, altrimenti `versione_asset.py --check` direbbe che
+    # le pagine sono indietro dopo che questo script le ha appena riscritte.
     if gtm:
         righe.append(
             f'  <script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{\'gtm.start\':'
@@ -94,8 +103,23 @@ def blocco_testa(gtm: str, ga4: str) -> str:
             "function gtag(){dataLayer.push(arguments);}gtag('js',new Date());"
             f"gtag('config','{ga4}');</script>"
         )
+    # Ultimo, e non primo: l'evento `lead` deve trovare il `dataLayer` che il
+    # contenitore ha appena creato. Prima di GTM finirebbe in un array che
+    # nessuno legge.
+    if gtm or ga4:
+        # `prefisso` è `/` nelle pagine tradotte: `build_i18n.py` porta gli
+        # indirizzi degli asset alla radice assoluta, perché `de/index.html`
+        # sta in una cartella e `assets/…` relativo punterebbe a
+        # `de/assets/…`. Generare qui sempre la forma relativa faceva
+        # risultare «vecchie» tutte e 42 le pagine a ogni giro.
+        righe.append(
+            f'  <script src="{prefisso}assets/{versione}/js/conversione.js" defer></script>'
+        )
     righe.append("  " + SEGNA_FINE)
     return "\n".join(righe)
+
+
+
 
 
 def blocco_corpo(gtm: str) -> str:
@@ -153,7 +177,7 @@ def inserisci_corpo(html: str, blocco: str) -> str:
     return html[:fine] + "\n" + blocco + html[fine:]
 
 
-def riscrivi(html: str, testa: str, corpo: str) -> str:
+def riscrivi(html: str, testa: str, corpo: str, prefisso: str = "") -> str:
     return inserisci_corpo(inserisci_testa(senza_blocchi(html), testa), corpo)
 
 
@@ -168,7 +192,7 @@ def main() -> int:
         return 1
 
     check = "--check" in sys.argv
-    testa, corpo = blocco_testa(gtm, ga4), blocco_corpo(gtm)
+    versione, corpo = impronta(), blocco_corpo(gtm)
     modificate, mancanti, indietro = [], [], []
 
     for percorso in pagine():
@@ -176,7 +200,8 @@ def main() -> int:
             mancanti.append(percorso.relative_to(ROOT).as_posix())
             continue
         prima = percorso.read_text(encoding="utf-8")
-        dopo = riscrivi(prima, testa, corpo)
+        prefisso = "" if percorso.parent == ROOT else "/"
+        dopo = riscrivi(prima, blocco_testa(gtm, ga4, versione, prefisso), corpo, prefisso)
         if dopo == prima:
             continue
         indietro.append(percorso.relative_to(ROOT).as_posix())

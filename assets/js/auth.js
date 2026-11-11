@@ -2,6 +2,16 @@
 (function () {
   "use strict";
 
+  /* Un lead arrivato. Lo script che lo sa mandare è `conversione.js`, e in
+     una pagina servita da una cache vecchia può non esserci: qui si controlla,
+     perché un evento mancante è un dato in meno, un'eccezione è un modulo
+     rotto. */
+  function segnalaConversione(modulo) {
+    try {
+      if (window.TracciaConversione) window.TracciaConversione.lead(modulo);
+    } catch (e) { /* niente: la richiesta è già arrivata al server */ }
+  }
+
   var next = new URLSearchParams(location.search).get("next") || "";
   var loginForm = document.getElementById("login-form");
   var registerForm = document.getElementById("register-form");
@@ -184,6 +194,7 @@
           || "sito"
       }).then(function (res) {
         busy(button, false);
+        segnalaConversione("completo");
         registerForm.reset();
         /* la conferma si legge dove si è appena scritto: portare alla scheda
            dell'accesso, come si faceva prima, faceva sembrare che la
@@ -253,6 +264,9 @@
         origine: (window.TracciaOrigine && window.TracciaOrigine.valore()) || "sito"
       }).then(function (res) {
         busy(bottone, false);
+        /* la conversione si conta qui, quando il server ha detto sì: un
+           evento sul clic conterebbe anche i numeri rifiutati */
+        segnalaConversione("veloce");
         rapidoForm.reset();
         /* la conferma si legge dove si è appena scritto */
         showError(rapidoErrore,
