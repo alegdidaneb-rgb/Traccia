@@ -6,6 +6,9 @@
   var loginForm = document.getElementById("login-form");
   var registerForm = document.getElementById("register-form");
   var rapidoForm = document.getElementById("telefono-form");
+  /* vero quando qualcuno ha premuto «Preferisco scrivere i dettagli»: da quel
+     momento il modulo completo è la sua scelta, e `setMode` non la annulla */
+  var completoAperto = false;
   var loginError = loginForm && loginForm.querySelector("[data-form-error]");
   var registerError = registerForm && registerForm.querySelector("[data-form-error]");
 
@@ -212,6 +215,7 @@
         e.preventDefault();
         rapidoForm.hidden = true;
         completo.hidden = false;
+        completoAperto = true;
         /* il fuoco sul primo campo, altrimenti chi ha appena premuto il link
            non sa dove guardare */
         var primo = completo.querySelector("input");
@@ -276,7 +280,20 @@
   function setMode(mode) {
     var registrazione = mode === "register";
     if (loginForm) loginForm.hidden = registrazione;
-    if (registerForm) registerForm.hidden = !registrazione;
+
+    /* Il modulo veloce appartiene alla segnalazione, non all'accesso: chi deve
+       solo entrare nel suo conto si trovava davanti «Il tuo numero di
+       telefono», che è la domanda di un'altra persona. Sparisce con la scheda
+       a cui appartiene.
+       Il modulo completo resta nascosto anche qui: si apre dal link «Preferisco
+       scrivere i dettagli», o quando si torna da `register`. */
+    if (rapidoForm) rapidoForm.hidden = !registrazione;
+    if (registerForm) {
+      /* se si arriva da un indirizzo `#registrati` si vuole il modulo veloce;
+         se qualcuno ha già aperto quello completo, cambiare scheda e tornare
+         non deve richiuderlo — `completoAperto` lo ricorda */
+      registerForm.hidden = completoAperto ? !registrazione : true;
+    }
     /* la frase «non hai un account» appartiene all'accesso: sulla scheda della
        segnalazione sarebbe una porta che dà sulla stanza in cui sei già */
     var senzaAccount = document.getElementById("auth-no-account");
