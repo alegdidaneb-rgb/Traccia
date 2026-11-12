@@ -339,6 +339,11 @@
     /* Il file va direttamente su Storage (l'API di Storage non passa dalle
        RPC), poi `attach_document_file` verifica che il percorso sia davvero
        nella cartella di quel cliente e di quel documento. */
+    /* togliere un documento caricato per sbaglio: solo finché l'analista non
+       l'ha acquisito (il controllo è nel database) */
+    rimuoviDocumento: function (id) {
+      return call("rimuovi_documento", { p_id: id });
+    },
     uploadDocument: function (payload) {
       var file = payload.file;
       if (!file) return Promise.reject(new Error("Nessun file selezionato."));
@@ -477,6 +482,14 @@
        funzioni sono l'unico modo di vederle e di muoverle. */
     richieste: function (status) {
       return call("admin_richieste", { p_status: status || null });
+    },
+    /* Un solo gesto: lo stato e la nota insieme. `admin_richiesta_stato`
+       esiste ancora e fa la stessa cosa, ma questa è la funzione che la
+       console usa, perché il nome dice cosa fa. */
+    richiestaImposta: function (id, status, note) {
+      return call("admin_richiesta_imposta", {
+        p_id: id, p_status: status, p_note: note || null
+      });
     },
     richiestaStato: function (id, status, note) {
       return call("admin_richiesta_stato", {
