@@ -73,6 +73,15 @@ function tuttiIMedia(css, soglia) {
   return trovati;
 }
 
+/* Il misuratore stampa anche la soglia che ha ricavato dal contenuto: è il
+   numero che il foglio di stile deve usare, e leggerlo da lì è il modo per non
+   averne due copie che divergono. */
+let uscitaUnaVolta = null;
+const uscitaMisura = () => {
+  if (uscitaUnaVolta === null) uscitaUnaVolta = misura([]);
+  return uscitaUnaVolta;
+};
+
 const misura = (larghezze = []) =>
   execFileSync("python3", ["tools/misura_header.py", ...larghezze.map(String)], {
     cwd: RADICE,
@@ -101,12 +110,18 @@ test("le soglie del foglio di stile sono quelle che il misuratore conosce", () =
   /* Se qualcuno sposta l'hamburger a un'altra larghezza e non lo dice al
      misuratore, il misuratore continua a rispondere «sta» su una larghezza
      dove il menu è ancora in riga. Le due verità devono essere una sola. */
+  /* Il numero non si scrive a mano: si chiede al misuratore e si controlla che
+     il foglio di stile usi quello. Prima erano due 1360 copiati in due posti,
+     ed entrambi sbagliati — perché il conto partiva dalla finestra invece che
+     dalla barra. */
+  const soglia = Number((uscitaMisura().match(/hamburger, ricavata dal contenuto: (\d+)px/) || [])[1]);
+  assert.ok(soglia > 1200 && soglia < 1400, "la soglia calcolata deve essere plausibile: " + soglia);
   assert.ok(
-    /@media \(max-width: 1360px\) \{\s*\.nav__toggle \{ display: inline-flex/.test(CSS_BASE),
-    "l'hamburger deve comparire a 1360px, come dice il misuratore"
+    new RegExp(`@media \\(max-width: ${soglia}px\\) \\{\\s*\\.nav__toggle \\{ display: inline-flex`).test(CSS_BASE),
+    "l'hamburger deve comparire a " + soglia + "px, come dice il misuratore"
   );
-  assert.ok(bloccoMedia(CSS, 1360).includes(".nav__lang"),
-    "il selettore deve restare in barra a 1360px, non finire nel pannello");
+  assert.ok(bloccoMedia(CSS, soglia).includes(".nav__lang"),
+    "il selettore deve restare in barra a " + soglia + "px, non finire nel pannello");
 });
 
 /* ---------------------------------------------------------- il selettore -- */
@@ -114,9 +129,16 @@ test("il selettore non finisce dentro il menu a scomparsa", () => {
   /* Su mobile il vecchio selettore aveva `order: 3; width: 100%` dentro
      `.nav__links`: cioè dentro il pannello che si apre con l'hamburger. Chi
      arriva su una pagina in una lingua che non legge non deve prima capire
-     che deve aprire un menu. Ora `.nav__lang` sta in barra. */
-  const blocco = bloccoMedia(CSS, 1360);
-  assert.ok(/margin-inline-start: auto/.test(blocco), "il selettore deve spingersi a destra da solo");
+     che deve aprire un menu. Ora `.nav__lang` sta in barra.
+
+     Il `margin-inline-start: auto` non serve più a spingerlo a destra (a
+     destra ora ci sono i pulsanti, che sotto la soglia sono nascosti): quello
+     che conta è che **non** ci siano le due regole che lo rimettono dentro il
+     pannello. Il test lo dice così, invece di chiedere una proprietà che ora
+     sarebbe un residuo. */
+  const soglia = Number((uscitaMisura().match(/hamburger, ricavata dal contenuto: (\d+)px/) || [])[1]);
+  const blocco = bloccoMedia(CSS, soglia);
+  assert.ok(/\.nav__lang\s*\{/.test(blocco), "il selettore deve avere una regola in barra");
   assert.ok(!/order: 3/.test(blocco), "order:3 lo rimetterebbe dentro il pannello");
   assert.ok(!/width: 100%/.test(blocco), "a tutta larghezza non è più un selettore, è una riga");
 });
@@ -238,6 +260,89 @@ test("il selettore ha il suo blocco, non solo il markup", () => {
     "la pastiglia non ha una larghezza minima: collassa sulla sigla");
   assert.ok(/\.lang__opt \{[^}]*height: \d+px/.test(senzaCommenti),
     "la pastiglia non ha un'altezza: la barra si alza e si abbassa con il font");
+});
+
+
+/* ------------------------------------------------- il difetto che è sfuggito -- */
+test("il contenuto della testata non supera mai lo spazio della barra", () => {
+  /* Il guasto in produzione: «Come / funziona», «Casi / seguiti» su due righe,
+     su ogni schermo. Il misuratore diceva «sta» perché confrontava il
+     contenuto con **la finestra** (1440 − 40) invece che con **la barra**
+     (min(1440, 1360) − 80 = 1280). Con un 27 pollici il conto tornava per
+     caso; a 1280 no, e nessuno guardava lì.
+
+     Questo test non si fida del messaggio dello script: legge i numeri e
+     verifica che il contenuto stia nella barra a ogni larghezza, con un
+     margine minimo. Un margine di 1px passerebbe il confronto e spaccherebbe
+     la riga al primo carattere in grassetto: sotto i 20px è un guasto
+     prossimo, non un successo. */
+  const uscita = uscitaMisura();
+  /* La larghezza della barra si legge dal CSS, non dal messaggio dello
+     script: se lo script sbaglia il modello (per esempio confrontando con la
+     finestra invece che col contenitore), i suoi numeri sono coerenti fra
+     loro e il test passerebbe. Qui lo spazio disponibile viene ricalcolato
+     dal foglio di stile, e i due devono coincidere. */
+  const barra = Number((CSS_BASE.match(/\.site-header \.container \{ max-width: (\d+)px; \}/) || [])[1]);
+  assert.ok(barra > 0, "la larghezza della barra deve stare nel CSS, in px");
+  const PAD = 40; /* --pad-x al massimo */
+
+  const righe = [...uscita.matchAll(/(\d+)px\s+(?:sta|SBORDA).*?servono (\d+) su (\d+)/g)];
+  assert.ok(righe.length > 0, "il misuratore deve stampare le misure del menu in riga");
+  for (const [, larghezza, serve, disponibile] of righe) {
+    const atteso = Math.min(Number(larghezza), barra) - PAD * 2;
+    assert.equal(Number(disponibile), atteso,
+      `a ${larghezza}px il misuratore dichiara ${disponibile}px disponibili ma la barra ` +
+      `ne ha ${atteso} (min(${larghezza}, ${barra}) − ${PAD * 2}): sta misurando lo schermo, ` +
+      `non la barra — ed è così che ha lasciato passare le voci spezzate`);
+    const margine = Number(disponibile) - Number(serve);
+    assert.ok(margine >= 20,
+      `a ${larghezza}px il menu in riga ha solo ${margine}px di margine ` +
+      `(${serve} su ${disponibile}): il prossimo carattere in grassetto lo spezza`);
+  }
+});
+
+test("il contenitore dell'header è più largo del contenuto delle pagine", () => {
+  /* Perché serve un test su questo: la barra deve stare tutta su una riga, e
+     il contenuto delle pagine no. Se qualcuno riporta l'header al `--container`
+     standard, le voci tornano a spezzarsi e il misuratore — che legge il CSS —
+     continua a misurare giusto ma su un contenitore che non esiste più. */
+  const css = CSS_BASE;
+  assert.match(css, /\.site-header \.container \{ max-width: 1400px; \}/,
+    "la barra dell'header deve avere una larghezza sua");
+  assert.match(css, /--container: 1200px/, "il contenuto delle pagine resta a 1200");
+});
+
+test("i pulsanti di accesso stanno fuori dalla lista del menu", () => {
+  /* Dentro la lista, il pannello dell'hamburger (`position: fixed`) li
+     trascinava fuori dallo schermo quando era chiuso, e nel pannello aperto
+     comparivano due volte. Fuori, la barra è calcolabile: lista + pulsanti,
+     ognuno nel suo spazio. */
+  const html = HEADER;
+  /* il taglio non può cercare `data-auth-slot`: il commento sopra i pulsanti
+     nomina la classe, e il test taglierebbe nel posto sbagliato. Si cerca il
+     tag vero. */
+  const lista = html.slice(
+    html.indexOf('<ul class="nav__links"'),
+    html.indexOf('<div class="nav__actions" data-auth-slot>')
+  );
+  assert.ok(lista.length > 0, "la lista e i pulsanti devono esserci entrambi");
+  assert.ok(!/<li class="nav__actions"/.test(lista), "i pulsanti non devono stare dentro `.nav__links`");
+  assert.ok(/<div class="nav__actions" data-auth-slot>/.test(html),
+    "i pulsanti devono essere un fratello della lista, con la stessa classe");
+});
+
+test("sotto la soglia i pulsanti in barra sono nascosti, e il pannello li offre", () => {
+  /* Nasconderli senza offrirli nel pannello vorrebbe dire togliere «Accedi»
+     a chi apre il sito da un telefono. */
+  const soglia = Number((uscitaMisura().match(/hamburger, ricavata dal contenuto: (\d+)px/) || [])[1]);
+  const blocco = bloccoMedia(CSS_BASE, soglia);
+  assert.ok(/\.nav__actions \{ display: none; \}/.test(blocco),
+    "sotto la soglia i pulsanti in barra devono sparire");
+  /* e ci devono essere come voci del menu: senza, su un telefono non ci
+     sarebbe più nessun modo di accedere. Le voci sono quelle del partial,
+     perché i pulsanti nascosti sono il suo stesso markup. */
+  assert.ok(/data-auth-guest[^>]*>Accedi</.test(HEADER), "«Accedi» deve esistere");
+  assert.ok(/data-auth-guest[^>]*>Segnala un caso</.test(HEADER), "«Segnala un caso» deve esistere");
 });
 
 module.exports = caso;
