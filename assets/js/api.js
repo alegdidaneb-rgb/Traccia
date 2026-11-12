@@ -533,6 +533,14 @@
       return call("admin_document_action", { p_id: id, p_action: action, p_note: note || null });
     },
     viewClient: function (id) { return call("admin_view_client", { p_user_id: id }); },
+    /* Correggere i dati di una pratica: si passano solo i campi cambiati, così
+       due analisti che salvano schede diverse non si sovrascrivono il lavoro.
+       I campi ammessi sono nel database (`admin_salva_pratica`), non qui:
+       aggiungerne uno in questa lista senza la migrazione dà un errore
+       chiaro invece di un salvataggio a metà. */
+    salvaPratica: function (id, dati) {
+      return call("admin_salva_pratica", { p_id: id, p_dati: dati });
+    },
     walletAction: function (id, action, note) {
       return call("admin_wallet_action", { p_id: id, p_action: action, p_note: note || null });
     },

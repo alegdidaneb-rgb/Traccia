@@ -168,9 +168,101 @@
       .join("");
   }
 
+  /* ------------------------------------------------------------- form -- */
+  /* Un modulo dentro un modale, per quando i campi sono più di uno.
+
+     Perché non `ask`: `ask` ha **un** campo, e va bene per «confermi? scrivi
+     una nota». Correggere i dati di una pratica sono cinque campi, e cinque
+     `ask` in fila sono cinque clic, cinque attese e cinque occasioni di
+     perdere quello che si è scritto. Qui si compila una volta e si salva.
+
+     Il risultato è `null` se si annulla, altrimenti un oggetto con i valori.
+     `campi` è `[{ nome, etichetta, valore, tipo, suggerimento, opzioni }]`;
+     il tipo è `text`, `tel`, `number`, `textarea` o `select`. */
+  function form(opzioni) {
+    return new Promise(function (resolve) {
+      var campi = opzioni.campi || [];
+      var backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop";
+      backdrop.innerHTML =
+        '<form class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="form-title">' +
+        '<h3 id="form-title">' + esc(opzioni.title) + "</h3>" +
+        (opzioni.message ? "<p>" + esc(opzioni.message) + "</p>" : "") +
+        '<div class="form-row">' +
+        campi.map(function (c) {
+          var id = "campo-" + c.nome;
+          var comune = 'id="' + id + '" name="' + esc(c.nome) + '"';
+          var etichetta = '<label for="' + id + '">' + esc(c.etichetta) + "</label>";
+          var aiuto = c.suggerimento
+            ? '<span class="xs muted">' + esc(c.suggerimento) + "</span>" : "";
+          if (c.tipo === "textarea") {
+            return '<div class="field field--full">' + etichetta +
+              "<textarea " + comune + ' rows="3">' + esc(c.valore || "") + "</textarea>" +
+              aiuto + "</div>";
+          }
+          if (c.tipo === "select") {
+            return '<div class="field">' + etichetta + "<select " + comune + ">" +
+              (c.opzioni || []).map(function (o) {
+                return '<option value="' + esc(o.valore) + '"' +
+                  (String(o.valore) === String(c.valore) ? " selected" : "") + ">" +
+                  esc(o.testo) + "</option>";
+              }).join("") + "</select>" + aiuto + "</div>";
+          }
+          return '<div class="field">' + etichetta +
+            '<input ' + comune + ' type="' + (c.tipo || "text") + '"' +
+            ' value="' + esc(c.valore === null || c.valore === undefined ? "" : c.valore) + '"' +
+            (c.tipo === "number" ? ' step="0.01" min="0" inputmode="decimal"' : "") +
+            ' autocomplete="off">' +
+            /* il suggerimento sta sotto e non nel placeholder: un campo
+               compilato il placeholder non lo mostra più, e proprio quando il
+               valore c'è serve sapere che cosa è (l'importo dichiarato, non il
+               saldo). */
+            aiuto +
+            "</div>";
+        }).join("") +
+        "</div>" +
+        '<div class="btn-row">' +
+        '<button class="btn btn--ghost" data-form-cancel type="button">' +
+        esc(opzioni.cancel || "Annulla") + "</button>" +
+        '<button class="btn btn--accent" type="submit">' +
+        esc(opzioni.confirm || "Salva") + "</button>" +
+        "</div></form>";
+
+      function close(risultato) {
+        backdrop.remove();
+        document.removeEventListener("keydown", onKey);
+        resolve(risultato);
+      }
+      function onKey(e) {
+        if (e.key === "Escape") close(null);
+      }
+
+      backdrop.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var dati = {};
+        campi.forEach(function (c) {
+          var nodo = backdrop.querySelector('[name="' + c.nome + '"]');
+          if (nodo) dati[c.nome] = nodo.value;
+        });
+        close(dati);
+      });
+      backdrop.querySelector("[data-form-cancel]").addEventListener("click", function () {
+        close(null);
+      });
+      backdrop.addEventListener("click", function (e) {
+        if (e.target === backdrop) close(null);
+      });
+      document.addEventListener("keydown", onKey);
+      document.body.appendChild(backdrop);
+
+      var primo = backdrop.querySelector("input, textarea, select");
+      if (primo) primo.focus();
+    });
+  }
+
   global.ui = {
     money: money, num: num, when: when, time: time, esc: esc,
-    pill: pill, toast: toast, ask: ask,
+    pill: pill, toast: toast, ask: ask, form: form,
     requireAuth: requireAuth, requireAdmin: requireAdmin, isAuthError: isAuthError,
     initials: initials, labels: LABELS
   };

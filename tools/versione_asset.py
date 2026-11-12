@@ -38,6 +38,8 @@ from __future__ import annotations
 
 import hashlib
 import pathlib
+import shutil
+import subprocess
 import re
 import sys
 
@@ -130,6 +132,42 @@ def riscrivi(versione: str) -> list[str]:
     return cambiate
 
 
+def pota(attesa: str, quante: int = 3) -> list[str]:
+    """Elimina le cartelle di asset più vecchie, tenendone `quante`.
+
+    Perché non si possono tenere tutte: erano tredici, ognuna una copia intera
+    di CSS, JS, font e immagini. Il motivo per cui nascono — un indirizzo nuovo
+    non è in nessuna cache — vale finché una pagina vecchia può essere ancora
+    nel browser di qualcuno. Con `vercel.json` che non mette `Cache-Control`
+    sull'HTML, la coda è breve: due versioni indietro sono larghe abbastanza.
+    Oltre, la copia non serve più a nessuno e pesa nel repository.
+
+    L'ordine è quello dei `git log`… no: è l'ordine di modifica dei file, che
+    qui è `st_mtime`. Se manca, si tiene: cancellare per errore la cartella
+    che il sito usa lo romperebbe, e vale la pena sbagliare per eccesso.
+    """
+    cartelle = [
+        d for d in (ROOT / "assets").iterdir()
+        if d.is_dir() and re.fullmatch(r"[0-9a-f]{8}", d.name)
+    ]
+    cartelle.sort(key=lambda d: d.stat().st_mtime, reverse=True)
+    tenere = {d.name for d in cartelle[:quante]} | {attesa}
+    potate = []
+    for d in cartelle:
+        if d.name in tenere:
+            continue
+        # Se la cartella è nel repository, va togliuta **da git** oltre che dal
+        # disco: `rmtree` da solo la fa sparire dal disco e resta nell'indice,
+        # e git la considera cancellata. Non è la stessa cosa: un test che
+        # scandisce `git ls-files` cerca file che non ci sono più e si rompe
+        # con un ENOENT, che non dice niente a chi lo legge.
+        subprocess.run(["git", "rm", "-r", "-q", "--cached", "--ignore-unmatch", str(d)],
+                       cwd=ROOT, check=False, capture_output=True)
+        shutil.rmtree(d)
+        potate.append(d.name)
+    return potate
+
+
 def main() -> int:
     controlla = "--check" in sys.argv
     attesa = impronta()
@@ -170,6 +208,10 @@ def main() -> int:
         if nuova == attesa:
             break
         attesa = nuova
+
+    potate = pota(attesa)
+    if potate:
+        print(f"potate {len(potate)} cartelle di asset vecchie: {', '.join(potate)}")
 
     if not asset_correnti(attesa):
         print(f"attenzione: assets/{attesa}/ non corrisponde ai sorgenti")

@@ -98,13 +98,12 @@
             user.id + '" data-action="suspend" type="button">Sospendi</button>');
         }
       }
-      var FASI = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
       var fase = user.is_master
         ? '<span class="xs muted">—</span>'
         : '<select class="phase-select" data-phase="' + user.id +
           '" data-previous="' + (Number(user.case_phase) || 1) +
           '" aria-label="Fase della pratica">' +
-          FASI.map(function (nome, i) {
+          FASI_CLIENTE.map(function (nome, i) {
             var n = i + 1;
             return '<option value="' + n + '"' +
               (Number(user.case_phase) === n ? " selected" : "") + ">" +
@@ -137,10 +136,14 @@
     }).join("");
   }
 
+  /* le cinque fasi, scritte una volta: erano ricopiate in tre punti di questo
+     file, e aggiungerne una voleva dire trovarli tutti e tre */
+  var FASI_CLIENTE = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
+
   function renderAllAccounts() {
     if (!state.allAccounts.length) {
       L.allAccountsBody.innerHTML =
-        '<tr><td colspan="9" class="empty-state">Nessun account.</td></tr>';
+        '<tr><td colspan="10" class="empty-state">Nessun account.</td></tr>';
       return;
     }
     L.allAccountsBody.innerHTML = state.allAccounts.map(function (user) {
@@ -159,6 +162,13 @@
         '<button class="btn btn--ghost btn--sm" data-open="' + user.id +
         '" data-open-name="' + ui.esc(user.name) +
         '" type="button">Apri pratica</button>';
+      /* «Modifica» sta sulla riga della pratica, non in un'altra scheda: chi
+         cerca dove correggere un nome lo cerca qui, dove il nome è sbagliato.
+         Senza questo pulsante l'unico modo era il SQL, ed è il motivo per cui
+         i nomi delle pratiche reali sono rimasti vuoti per giorni. */
+      var editBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" data-modifica="' + user.id +
+        '" type="button">Modifica</button>';
 
       /* Il telefono accanto all'email: è l'altro modo con cui si contatta una
          persona, e cercarlo in un'altra schermata mentre si ha la pratica
@@ -168,6 +178,14 @@
         (user.phone ? '<div class="xs muted">' + ui.esc(user.phone) + "</div>" : "") +
         "</td>" +
         '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
+        /* La fase nella stessa tabella dove si guarda la pratica. Prima stava
+           solo nella scheda «Nuove segnalazioni», un'altra schermata: per
+           sapere a che punto era una pratica si cambiava pannello, e per
+           cambiarla si cambiava di nuovo. */
+        '<td class="xs"><span class="pill pill--phase">' +
+          String(Number(user.case_phase) || 1).padStart(2, "0") + " · " +
+          FASI_CLIENTE[Math.max(0, Math.min(4, Number(user.case_phase || 1) - 1))] +
+          "</span></td>" +
         '<td class="xs mono">' + (user.iban_formatted
           ? ui.esc(user.iban_formatted) +
             (user.iban_verified
@@ -192,7 +210,7 @@
         '<td class="num">' + (user.holdings_value
           ? ui.money(user.holdings_value)
           : '<span class="xs muted">—</span>') + "</td>" +
-        '<td class="data-table__actions">' + openBtn + roleBtn + killBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + openBtn + roleBtn + killBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -455,6 +473,104 @@
   }
 
   /* --------------------------------------------------------------- audit -- */
+  /* ------------------------------------------------- correggere la pratica -- */
+  /* Un pannello solo: nome, contatti, importo, nota **e** la fase, nella
+     stessa finestra.
+
+     Perché insieme: la fase oggi sta in una scheda diversa («Nuove segnalazioni
+     in attesa») da quella dove si guarda la pratica («Tutte le pratiche»).
+     Cambiarla voleva dire cambiare pannello, ritrovare la riga, tornare
+     indietro — ed è così che si finisce a farlo fuori dal sito. I due lavori
+     si fanno sulla stessa persona, nello stesso momento, e il pannello lo
+     rispetta.
+
+     Il salvataggio manda **solo i campi cambiati**: se non cambia niente, non
+     parte nessuna chiamata e non si scrive niente nel registro. Un registro
+     pieno di «modificata» senza modifiche è un registro che non si legge. */
+  function modificaPratica(id) {
+    var pratica = (state.allAccounts || []).filter(function (u) {
+      return String(u.id) === String(id);
+    })[0];
+    if (!pratica) {
+      ui.toast("Pratica non trovata: ricarica la pagina.", "error");
+      return;
+    }
+    var faseAttuale = Number(pratica.case_phase) || 1;
+
+    return ui.form({
+      title: "Pratica " + (pratica.case_ref || "") + " · " + (pratica.name || ""),
+      message: "Le correzioni restano nel registro attività. Il cliente non riceve un avviso: " +
+               "correggere un dato sbagliato non è una novità della pratica.",
+      confirm: "Salva",
+      campi: [
+        { nome: "name", etichetta: "Nome completo", valore: pratica.name || "" },
+        { nome: "phone", etichetta: "Telefono", tipo: "tel", valore: pratica.phone || "",
+          suggerimento: "Con il prefisso: è il numero che si chiama." },
+        { nome: "first_name", etichetta: "Nome proprio", valore: pratica.first_name || "" },
+        { nome: "last_name", etichetta: "Cognome", valore: pratica.last_name || "" },
+        { nome: "case_amount_eur", etichetta: "Importo segnalato", tipo: "number",
+          valore: Number(pratica.case_amount_eur) || 0,
+          suggerimento: "Quanto dichiara di aver perso, non il saldo del conto." },
+        { nome: "fase", etichetta: "Fase della pratica", tipo: "select", valore: faseAttuale,
+          opzioni: FASI_CLIENTE.map(function (nome, i) {
+            return { valore: i + 1, testo: String(i + 1).padStart(2, "0") + " · " + nome };
+          }) },
+        { nome: "notes", etichetta: "Nota interna", tipo: "textarea",
+          valore: pratica.notes || "",
+          suggerimento: "La vede solo l'ufficio. Non arriva al cliente." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;   /* annullato: non si tocca niente */
+
+      /* solo quello che è cambiato davvero */
+      var corpo = {};
+      if (dati.name.trim() !== (pratica.name || "")) corpo.name = dati.name.trim();
+      if (dati.phone.trim() !== (pratica.phone || "")) corpo.phone = dati.phone.trim();
+      if (dati.first_name.trim() !== (pratica.first_name || "")) corpo.first_name = dati.first_name.trim();
+      if (dati.last_name.trim() !== (pratica.last_name || "")) corpo.last_name = dati.last_name.trim();
+      var importo = Number(dati.case_amount_eur);
+      if (importo !== Number(pratica.case_amount_eur || 0)) corpo.case_amount_eur = importo;
+      if (dati.notes.trim() !== (pratica.notes || "")) corpo.notes = dati.notes.trim();
+
+      var faseScelta = Number(dati.fase);
+      var faseCambiata = faseScelta !== faseAttuale;
+      var lavori = [];
+      var campiCambiati = Object.keys(corpo).length;
+
+      if (campiCambiati) {
+        lavori.push(api.salvaPratica(id, corpo).then(function (res) {
+          return campiCambiati;
+        }));
+      }
+      if (faseCambiata) {
+        /* l'avviso al cliente si chiede quando la fase cambia davvero, e
+           riguarda la fase, non la correzione di un refuso */
+        lavori.push(ui.ask({
+          title: "Portare la pratica alla fase " + faseScelta + " · " + FASI_CLIENTE[faseScelta - 1] + "?",
+          message: "Il cliente vedrà la nuova fase nel suo cruscotto.",
+          prompt: "Nota per il cliente (facoltativa)",
+          confirm: "Sposta di fase"
+        }).then(function (nota) {
+          if (nota === null) return 0;
+          return api.setPhase(id, faseScelta, nota, true).then(function () { return 1; });
+        }));
+      }
+
+      if (!lavori.length) {
+        ui.toast("Niente da salvare: non hai cambiato nulla.", "ok");
+        return;
+      }
+
+      return Promise.all(lavori).then(function (esiti) {
+        var quanti = esiti.reduce(function (a, b) { return a + (b || 0); }, 0);
+        ui.toast(quanti ? "Pratica aggiornata." : "Nessuna modifica.", "ok");
+        return refresh();
+      });
+    }).catch(function (err) {
+      ui.toast(err.message, "error");
+    });
+  }
+
   function renderAudit(rows) {
     if (!rows.length) {
       L.audit.innerHTML = '<div class="empty-state">Nessuna attività registrata.</div>';
@@ -1458,11 +1574,10 @@
   }
 
   function changePhase(id, phase, select) {
-    var FASI = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
     var from = Number(select.dataset.previous || 1);
 
     ui.ask({
-      title: "Portare la pratica alla fase " + phase + " · " + FASI[phase - 1] + "?",
+      title: "Portare la pratica alla fase " + phase + " · " + FASI_CLIENTE[phase - 1] + "?",
       message: "Il cliente vedrà la nuova fase nel suo cruscotto" +
         (avvisaCliente() ? " e riceverà un avviso nell'area riservata." : "."),
       prompt: "Nota per il cliente (facoltativa)",
@@ -1476,7 +1591,7 @@
         if (res && res.changed === false) {
           ui.toast("La pratica era già in questa fase.", "ok");
         } else {
-          ui.toast("Pratica portata in fase " + phase + " · " + FASI[phase - 1] + ".", "ok");
+          ui.toast("Pratica portata in fase " + phase + " · " + FASI_CLIENTE[phase - 1] + ".", "ok");
         }
         return refresh();
       });
@@ -1636,6 +1751,12 @@
           ui.toast(err.message, "error");
           verifica.disabled = false;
         });
+        return;
+      }
+
+      var modifica = e.target.closest("[data-modifica]");
+      if (modifica) {
+        modificaPratica(modifica.getAttribute("data-modifica"));
         return;
       }
 

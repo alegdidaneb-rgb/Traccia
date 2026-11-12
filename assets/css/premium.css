@@ -3692,26 +3692,37 @@ body.is-staff-view #sicurezza { display: none !important; }
 /* ------------------------------------------------------------------------
    Le larghezze, in ordine di come si stringono
 
-   Il selettore sono quattro pastiglie da 172px in tutto, dentro una riga che
-   ha già sette voci di menu, due pulsanti e il marchio. A 1280 il conto era
-   1306px su 1240 disponibili: 66px fuori dallo schermo, con i pulsanti di
-   accesso tagliati. Non era un problema di colore, era di ingombro.
+   Il conto, misurato con il font vero (`tools/misura_header.py`): marchio
+   130 + sette voci 676 + quattro pastiglie di lingua 172 + due pulsanti 235
+   + i due spazi del `.nav` (40 × 2, perché i gruppi sono tre) = **1292px**
+   di contenuto. La barra dell'header si allarga a 1400, quindi restano 1320
+   utili: 28px di margine. Se il menu cresce di una voce, il misuratore lo
+   dice invece di lasciare che le parole si spezzino.
 
-   Le soglie sono tre, e ognuna serve:
+   Le soglie sono due, e ognuna si ricava, non si sceglie:
 
-   - **1360**: il menu in riga non ci sta più (1361 è la prima larghezza che
-     regge), quindi entra l'hamburger. Il selettore però **non** va dentro il
-     pannello: resta in barra, accanto all'hamburger. Chi apre una pagina in
-     una lingua che non legge deve vedere l'uscita senza aprire un menu in una
-     lingua che non capisce;
+   - **1395**: sotto, il menu in riga non ci sta più. La soglia nasce dal
+     conto, non da un numero tondo: perché le voci stiano in fila, con 24px di
+     margine, servono 1292 + 80 di padding + 24 = 1396px di finestra. Entra
+     l'hamburger.
+     Il selettore però **non** va dentro il pannello: resta in barra, accanto
+     all'hamburger. Chi apre una pagina in una lingua che non legge deve
+     vedere l'uscita senza aprire un menu in una lingua che non capisce;
    - **480**: la barra è marchio + selettore + hamburger. Il nome «Traccia»
      lascia il posto alla sola «T» e le pastiglie perdono 4px l'una.
+
+   Il difetto che ha portato a riscrivere questo conto: le voci del menu non
+   hanno `nowrap`, quindi quando la riga non ci sta il browser non le manda a
+   capo una sotto l'altra — **spezza le parole**. «Come / funziona», «Casi /
+   seguiti», su ogni schermo, anche su un 27 pollici, perché il limite era il
+   contenitore (1200) e non lo schermo. Il misuratore diceva «sta» perché
+   confrontava con la larghezza della finestra e non con quella della barra.
 
    `tools/misura_header.py` rifà questo conto con il font vero, e
    `tests/header_larghezza.test.js` lo esegue a ogni giro: se una di queste
    misure cambia, il test dice a quale larghezza si sborda.
    ------------------------------------------------------------------------ */
-@media (max-width: 1360px) {
+@media (max-width: 1395px) {
   .nav { gap: clamp(0.75rem, 2vw, 1.5rem); }
   .nav__lang {
     order: 2;
@@ -3720,6 +3731,8 @@ body.is-staff-view #sicurezza { display: none !important; }
     padding: 0;
     border-top: 0;
     width: auto;
+    /* con i pulsanti nascosti, è lui l'ultimo pezzo a destra: la distanza
+       dall'hamburger la dà il gap del `.nav`, non un margine suo */
   }
   .lang { width: auto; }
   .lang__opt { min-width: 30px; height: 28px; padding: 0 6px; font-size: 11px; }
