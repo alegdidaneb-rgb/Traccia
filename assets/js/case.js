@@ -891,7 +891,18 @@
     var lista = document.querySelector("[data-movimenti]");
     if (!lista) return;
     if (!dati.movimenti || !dati.movimenti.length) {
-      lista.innerHTML = '<li class="empty-state">Nessun movimento sul conto.</li>';
+      /* Su un conto senza movimenti il saldo non è «zero»: non c'è nessun
+         movimento che lo giustifichi. Il numero può esserci lo stesso (una
+         rettifica importata, un saldo iniziale) e allora va tenuto — ma va
+         detto che non si può ricostruire, altrimenti chi legge crede di aver
+         perso dei soldi. Prima la pagina scriveva «Nessun movimento» sotto un
+         saldo senza spiegazione. */
+      var saldo = Number(dati.saldo) || 0;
+      lista.innerHTML = saldo
+        ? '<li class="empty-state">Nessun movimento sul conto. Il saldo di ' +
+          euro(saldo) + " è stato registrato dall'ufficio e non risulta da " +
+          "movimenti: chiedi il dettaglio all'analista.</li>"
+        : '<li class="empty-state">Nessun movimento sul conto.</li>';
       return;
     }
     lista.innerHTML = "";
