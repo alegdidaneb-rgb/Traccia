@@ -331,18 +331,47 @@ test("i pulsanti di accesso stanno fuori dalla lista del menu", () => {
     "i pulsanti devono essere un fratello della lista, con la stessa classe");
 });
 
-test("sotto la soglia i pulsanti in barra sono nascosti, e il pannello li offre", () => {
-  /* Nasconderli senza offrirli nel pannello vorrebbe dire togliere «Accedi»
-     a chi apre il sito da un telefono. */
+test("sotto la soglia i pulsanti stanno nel pannello, non spenti", () => {
+  /* Prima erano `display: none` con la scusa che «il pannello ha già le sue
+     voci»: non era vero da quando i pulsanti sono stati spostati fuori dalla
+     lista. Risultato: da un telefono il menu offriva sette voci e nessun modo
+     né di accedere né di segnalare un caso. Ora i pulsanti sono un figlio del
+     pannello, e sotto la soglia si vedono in colonna. */
   const soglia = Number((uscitaMisura().match(/hamburger, ricavata dal contenuto: (\d+)px/) || [])[1]);
   const blocco = bloccoMedia(CSS_BASE, soglia);
-  assert.ok(/\.nav__actions \{ display: none; \}/.test(blocco),
-    "sotto la soglia i pulsanti in barra devono sparire");
-  /* e ci devono essere come voci del menu: senza, su un telefono non ci
-     sarebbe più nessun modo di accedere. Le voci sono quelle del partial,
-     perché i pulsanti nascosti sono il suo stesso markup. */
+  assert.ok(/\.nav__panel \.nav__actions \{/.test(blocco),
+    "sotto la soglia i pulsanti devono stare nel pannello");
+  assert.ok(!/\.nav__actions \{ display: none/.test(blocco),
+    "i pulsanti non si spengono più: sarebbero un menu senza accesso");
+  /* il pannello è la scatola che contiene voci e pulsanti: se il partial non
+     li avvolgge insieme, il CSS qui sopra non li trova */
+  assert.match(HEADER, /<div class="nav__panel"[^>]*>\s*<ul class="nav__links"/,
+    "i pulsanti devono essere dentro il pannello, fratelli della lista");
+  assert.match(HEADER, /aria-controls="nav-panel"/,
+    "l'hamburger deve aprire il pannello, non la sola lista");
   assert.ok(/data-auth-guest[^>]*>Accedi</.test(HEADER), "«Accedi» deve esistere");
   assert.ok(/data-auth-guest[^>]*>Segnala un caso</.test(HEADER), "«Segnala un caso» deve esistere");
+});
+
+test("a larghezza da telefono la lista non è più una tendina: ci pensa il pannello", () => {
+  /* Media query in cascata: dentro `premium.css` la lista torna
+     `display: contents`, così le lingue restano nella barra e le voci sono
+     figlie del pannello. Se quella regola sparisse, o arrivasse un
+     `display: flex` dopo, la lista tornerebbe una tendina *dentro* la tendina:
+     due scatole sovrapposte, e i pulsanti sotto quella sbagliata. */
+  const blocco = bloccoMedia(CSS, 1395);
+  assert.ok(/\.nav__links \{\s*display: contents;/.test(blocco),
+    "premium.css non riporta la lista a `display: contents` sotto la soglia");
+  assert.ok(/\.nav__panel \.nav__actions \{/.test(CSS_BASE),
+    "i pulsanti del pannello devono essere stilizzati");
+});
+
+test("su desktop il pannello non esiste come scatola", () => {
+  /* `display: contents` è ciò che rende innocua l'introduzione del pannello:
+     la barra desktop resta lista + pulsanti nel flusso, e il misuratore — che
+     misura quei due pezzi — continua a valere. */
+  assert.match(CSS_BASE, /\.nav__panel \{ display: contents; \}/,
+    "senza, su desktop il pannello sarebbe una scatola che va a capo");
 });
 
 module.exports = caso;

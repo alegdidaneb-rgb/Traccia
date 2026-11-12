@@ -3724,6 +3724,12 @@ body.is-staff-view #sicurezza { display: none !important; }
    ------------------------------------------------------------------------ */
 @media (max-width: 1395px) {
   .nav { gap: clamp(0.75rem, 2vw, 1.5rem); }
+  /* Le lingue restano nella **barra**, non nel pannello: cambiarle è un gesto
+     che non deve chiedere di aprire un menu. Il selettore si prende lo spazio
+     che resta fra il marchio e l'hamburger. */
+  .nav__links {
+    display: contents;
+  }
   .nav__lang {
     order: 2;
     margin-inline-start: auto;
@@ -3731,8 +3737,6 @@ body.is-staff-view #sicurezza { display: none !important; }
     padding: 0;
     border-top: 0;
     width: auto;
-    /* con i pulsanti nascosti, è lui l'ultimo pezzo a destra: la distanza
-       dall'hamburger la dà il gap del `.nav`, non un margine suo */
   }
   .lang { width: auto; }
   .lang__opt { min-width: 30px; height: 28px; padding: 0 6px; font-size: 11px; }

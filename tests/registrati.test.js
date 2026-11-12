@@ -59,8 +59,13 @@ function pagina(frammento) {
   ["login-form", "register-form", "auth-title", "auth-subtitle", "email",
    "password", "reg-first-name", "reg-last-name", "reg-email", "reg-phone",
    "reg-amount", "reg-tipo",
-   /* la via veloce: un campo e un pulsante, sopra il modulo completo */
+   /* `telefono-form` resta nel DOM finto **apposta**: serve a dimostrare che
+      `auth.js` non lo cerca più. Un modulo che lo script ignora è un modulo
+      che non esiste. */
    "telefono-form", "rapido-phone"].forEach((id) => { nodi[id] = fatto(id); });
+  /* nel markup di allora, il modulo corto si accendeva da `auth.js`; ora non
+     c'è più, e il finto parte spento come un nodo che nessuno tocca */
+  nodi["telefono-form"].hidden = true;
   /* la frase «Non hai ancora un account?» sotto il pulsante di accesso */
   nodi["auth-no-account"] = fatto("auth-no-account", { hidden: true });
   nodi["auth-no-account"].closest = null;
@@ -137,26 +142,35 @@ test("login: nella scheda della segnalazione non si crea una password", () => {
     "la pagina deve dire che non serve una password");
 });
 
-test("login: il modulo di segnalazione è nascosto all'arrivo", () => {
+test("login: all'arrivo si vede l'accesso, e la segnalazione è a un clic", () => {
+  /* Il modulo di segnalazione è la scheda: si vede quando la scheda è scelta, e
+     non prima. «Non prima» è il punto — la pagina si apre sull'accesso, e chi
+     non ha un account lo scopre sotto il pulsante. */
   assert.match(LOGIN, /id="login-form"(?![^>]*hidden)/,
-    "il modulo di accesso deve essere visibile");
-  assert.match(LOGIN, /id="register-form"[^>]*hidden/,
-    "il modulo di segnalazione deve partire nascosto");
+    "il modulo di accesso deve essere visibile all'arrivo");
+  assert.ok(!/id="register-form"[^>]*\shidden/.test(LOGIN),
+    "il modulo di segnalazione non deve partire nascosto: è la scheda, non un pannello interno");
+  const { nodi } = pagina("");
+  assert.strictEqual(nodi["register-form"].hidden, true,
+    "senza #registrati la scheda della segnalazione deve restare chiusa");
 });
 
 /* ------------------------------------------------------- l'indirizzo -- */
 test("#registrati apre la scheda della segnalazione, non quella dell'accesso", () => {
   const { nodi, schede } = pagina("#registrati");
-  /* sulla scheda della segnalazione si vede la via veloce — un campo — e non
-     il modulo completo, che sta dietro il link «Preferisco scrivere i
-     dettagli». Fino al 2026-11-08 questo test cercava `register-form`
-     visibile: era vero quando il modulo completo era l'unica porta. */
-  assert.strictEqual(nodi["telefono-form"].hidden, false,
-    "il modulo veloce non è visibile sulla scheda della segnalazione");
-  assert.strictEqual(nodi["register-form"].hidden, true,
-    "il modulo completo si apre da solo: la via veloce non serve a niente");
+  /* La scheda della segnalazione è il modulo completo, visibile. Fino al
+     2026-11-12 qui si controllava il modulo corto (`telefono-form`) e si
+     pretendeva `register-form` nascosto: era vero quando il dettaglio era
+     dietro un link, ed è il comportamento che il cliente ha bocciato. */
+  assert.strictEqual(nodi["register-form"].hidden, false,
+    "il modulo completo non si vede: la scheda della segnalazione è vuota");
   assert.strictEqual(nodi["login-form"].hidden, true,
     "il campo password è ancora in vista");
+  /* il modulo corto non esiste più, e `auth.js` non lo nomina nemmeno: un
+     elemento che lo script ignora resterebbe com'è nel markup, e il markup
+     non ce l'ha più */
+  assert.ok(AUTH.indexOf("telefono-form") === -1,
+    "auth.js cerca ancora il modulo corto");
   const accesa = schede.filter((s) => s.getAttribute("aria-selected") === "true");
   assert.equal(accesa.length, 1, "deve essere accesa una sola scheda");
   assert.equal(accesa[0].getAttribute("data-auth-tab"), "register",
@@ -169,10 +183,9 @@ test("senza #registrati si arriva sull'accesso", () => {
   const { nodi, schede } = pagina("");
   assert.strictEqual(nodi["login-form"].hidden, false);
   assert.strictEqual(nodi["register-form"].hidden, true);
-  /* e il modulo veloce non deve comparire qui: chi deve entrare nel suo conto
-     non deve trovare «Il tuo numero di telefono» (visto il 2026-11-08) */
+  /* e il modulo corto non torna nemmeno qui: `auth.js` non lo nomina */
   assert.strictEqual(nodi["telefono-form"].hidden, true,
-    "il modulo veloce compare anche sulla scheda dell'accesso");
+    "qualcosa ha mostrato il modulo corto sulla scheda dell'accesso");
   assert.equal(schede.find((s) => s.getAttribute("aria-selected") === "true")
     .getAttribute("data-auth-tab"), "login");
 });
@@ -189,8 +202,8 @@ test("il tasto indietro riporta alla scheda giusta", () => {
   assert.strictEqual(nodi["register-form"].hidden, true);
   sandbox.location.hash = "#registrati";
   eventi.hashchange();
-  assert.strictEqual(nodi["telefono-form"].hidden, false,
-    "tornando su #registrati deve riapparire il modulo veloce");
+  assert.strictEqual(nodi["register-form"].hidden, false,
+    "tornando su #registrati deve riapparire il modulo completo");
   assert.equal(schede.filter((s) => s.getAttribute("aria-selected") === "true").length, 1);
 });
 
@@ -198,7 +211,7 @@ test("premendo la scheda «Segnala un caso» l'indirizzo resta condivisibile", (
   const { nodi, schede, sandbox } = pagina("");
   const scheda = schede.find((s) => s.getAttribute("data-auth-tab") === "register");
   scheda._ev.click({ preventDefault() {} });
-  assert.strictEqual(nodi["telefono-form"].hidden, false);
+  assert.strictEqual(nodi["register-form"].hidden, false);
   assert.strictEqual(sandbox.location.hash, "#registrati",
     "l'indirizzo non dice più che si è sulla segnalazione");
 });
@@ -209,7 +222,7 @@ test("una sola funzione decide quale pannello si vede", () => {
   const definizioni = AUTH.match(/function setMode/g) || [];
   assert.equal(definizioni.length, 1, "`setMode` deve essere una sola");
   const assegnazioni = AUTH.match(/registerForm\.hidden|loginForm\.hidden/g) || [];
-  assert.ok(assegnazioni.length <= 3,
+  assert.ok(assegnazioni.length <= 2,
     "lo stato dei pannelli viene cambiato in troppi punti");
 });
 
@@ -225,8 +238,8 @@ test("chi non ha un account lo scopre sotto il pulsante di accesso", () => {
     "la frase per chi non ha un account resta nascosta");
   const scheda = schede.find((s) => s.getAttribute("data-auth-tab") === "register");
   scheda._ev.click({ preventDefault() {} });
-  assert.strictEqual(nodi["telefono-form"].hidden, false,
-    "premendo «Segnala un caso» non si apre il modulo veloce");
+  assert.strictEqual(nodi["register-form"].hidden, false,
+    "premendo «Segnala un caso» non si apre il modulo completo");
   assert.strictEqual(nodi["auth-no-account"].hidden, true,
     "sulla scheda della segnalazione la frase resta in vista");
 });

@@ -15,10 +15,8 @@
   var next = new URLSearchParams(location.search).get("next") || "";
   var loginForm = document.getElementById("login-form");
   var registerForm = document.getElementById("register-form");
-  var rapidoForm = document.getElementById("telefono-form");
   /* vero quando qualcuno ha premuto «Preferisco scrivere i dettagli»: da quel
      momento il modulo completo è la sua scelta, e `setMode` non la annulla */
-  var completoAperto = false;
   var loginError = loginForm && loginForm.querySelector("[data-form-error]");
   var registerError = registerForm && registerForm.querySelector("[data-form-error]");
 
@@ -211,77 +209,6 @@
     });
   }
 
-  /* --------------------------------------------------------- via veloce -- */
-  /* Un campo, un pulsante. Il modulo con i sei dati resta sotto e non si
-     tocca: chi vuole scrivere tutto subito lo apre dal link. Chi arriva da un
-     annuncio scrive il numero e va via — che è quello che serve, perché a
-     freddo ogni campo in più costa circa l'11% di compilazioni. */
-  if (rapidoForm) {
-    var rapidoErrore = rapidoForm.querySelector("[data-form-error]");
-    var completo = document.querySelector("[data-completo]");
-    var apriCompleto = rapidoForm.querySelector("[data-apri-completo]");
-
-    if (apriCompleto && completo) {
-      apriCompleto.addEventListener("click", function (e) {
-        e.preventDefault();
-        rapidoForm.hidden = true;
-        completo.hidden = false;
-        completoAperto = true;
-        /* il fuoco sul primo campo, altrimenti chi ha appena premuto il link
-           non sa dove guardare */
-        var primo = completo.querySelector("input");
-        if (primo) primo.focus();
-      });
-    }
-
-    rapidoForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      clearError(rapidoErrore);
-      pulisciCampi(rapidoForm);
-
-      var nome = ((document.getElementById("rapido-nome") || {}).value || "").trim();
-      var numero = ((document.getElementById("rapido-phone") || {}).value || "").trim();
-
-      /* il nome prima del numero, come sul modulo: è il dato che rende utile
-         la riga in console e nel foglio. Senza, il lead si chiama «Telefono in
-         attesa» e chi apre la tabella non sa chi sta per chiamare. */
-      if (nome.length < 2) {
-        return segnalaCampo(document.getElementById("rapido-nome"), "Inserisci il tuo nome.");
-      }
-      if (!regolaTelefono.test(numero) ||
-          numero.replace(/\D/g, "").length < 8) {
-        return segnalaCampo(document.getElementById("rapido-phone"),
-          "Inserisci il numero con il prefisso, per esempio +43 660 123 4567.");
-      }
-
-      var bottone = rapidoForm.querySelector('button[type="submit"]');
-      busy(bottone, true);
-
-      api.richiestaTelefono({
-        nome: nome,
-        phone: numero,
-        /* da dove arriva: è l'unica cosa che i 24 $ devono comprare */
-        origine: (window.TracciaOrigine && window.TracciaOrigine.valore()) || "sito"
-      }).then(function (res) {
-        busy(bottone, false);
-        /* la conversione si conta qui, quando il server ha detto sì: un
-           evento sul clic conterebbe anche i numeri rifiutati */
-        segnalaConversione("veloce");
-        rapidoForm.reset();
-        /* la conferma si legge dove si è appena scritto */
-        showError(rapidoErrore,
-          (res && res.message) || "Ricevuto. Ti chiamiamo entro 48 ore lavorative.");
-        if (rapidoErrore) rapidoErrore.style.color = "var(--accent)";
-        /* e il pulsante sparisce: lasciarlo invita a ripremere, e chi ripreme
-           aspetta una seconda telefonata che non arriverà */
-        if (bottone) bottone.hidden = true;
-      }).catch(function (err) {
-        showError(rapidoErrore, err.message || "Invio non riuscito. Riprova.");
-        busy(bottone, false);
-      });
-    });
-  }
-
   /* ------------------------------------------------ switch / autofill -- */
   /* Due schede, un solo pannello visibile per volta. `setMode` è l'unico
      punto che cambia stato: prima il titolo e i due moduli si muovevano
@@ -303,19 +230,13 @@
     var registrazione = mode === "register";
     if (loginForm) loginForm.hidden = registrazione;
 
-    /* Il modulo veloce appartiene alla segnalazione, non all'accesso: chi deve
-       solo entrare nel suo conto si trovava davanti «Il tuo numero di
-       telefono», che è la domanda di un'altra persona. Sparisce con la scheda
-       a cui appartiene.
-       Il modulo completo resta nascosto anche qui: si apre dal link «Preferisco
-       scrivere i dettagli», o quando si torna da `register`. */
-    if (rapidoForm) rapidoForm.hidden = !registrazione;
-    if (registerForm) {
-      /* se si arriva da un indirizzo `#registrati` si vuole il modulo veloce;
-         se qualcuno ha già aperto quello completo, cambiare scheda e tornare
-         non deve richiuderlo — `completoAperto` lo ricorda */
-      registerForm.hidden = completoAperto ? !registrazione : true;
-    }
+    /* Un modulo solo. Fino al 2026-11-12 qui c'erano due porte: la via veloce
+       (nome e numero) e il modulo completo dietro il link «Preferisco scrivere
+       i dettagli». Il cliente l'ha bocciata — «these type of registration
+       should not even be there» — e ha ragione: chi ha appena perso dei soldi
+       non deve scoprire che il modulo serio era nascosto sotto quello corto.
+       La scheda della segnalazione mostra il modulo completo, e basta. */
+    if (registerForm) registerForm.hidden = !registrazione;
     /* la frase «non hai un account» appartiene all'accesso: sulla scheda della
        segnalazione sarebbe una porta che dà sulla stanza in cui sei già */
     var senzaAccount = document.getElementById("auth-no-account");

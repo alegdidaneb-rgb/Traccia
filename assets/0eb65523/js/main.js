@@ -3,32 +3,49 @@
   "use strict";
 
   /* ---------------------------------------------------------------- nav -- */
+  /* La tendina è il **pannello** (voci + pulsanti), non la lista: da quando
+     «Accedi» e «Segnala un caso» stanno dentro il pannello, aprirne solo la
+     lista lascerebbe i pulsanti fuori, appesi sotto la barra. */
   var toggle = document.querySelector(".nav__toggle");
-  var links = document.querySelector(".nav__links");
+  var pannello = document.querySelector(".nav__panel");
   var header = document.querySelector(".site-header");
 
-  if (toggle && links) {
-    toggle.addEventListener("click", function () {
-      var open = toggle.getAttribute("aria-expanded") === "true";
-      toggle.setAttribute("aria-expanded", String(!open));
-      links.classList.toggle("is-open", !open);
-      document.body.classList.toggle("nav-open", !open);
+  function chiudiMenu() {
+    if (!toggle || !pannello) return;
+    toggle.setAttribute("aria-expanded", "false");
+    pannello.classList.remove("is-open");
+    document.body.classList.remove("nav-open");
+  }
+
+  if (toggle && pannello) {
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var aperto = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!aperto));
+      pannello.classList.toggle("is-open", !aperto);
+      document.body.classList.toggle("nav-open", !aperto);
     });
 
-    links.addEventListener("click", function (e) {
-      if (e.target.closest("a")) {
-        toggle.setAttribute("aria-expanded", "false");
-        links.classList.remove("is-open");
-        document.body.classList.remove("nav-open");
-      }
+    /* un clic su una voce chiude il menu prima di seguire il link; un clic
+       fuori lo chiude senza navigare (era il modo più facile per restare con
+       la tendina aperta sopra il contenuto) */
+    pannello.addEventListener("click", function (e) {
+      if (e.target.closest("a")) chiudiMenu();
+    });
+    document.addEventListener("click", function (e) {
+      if (!pannello.classList.contains("is-open")) return;
+      if (pannello.contains(e.target) || toggle.contains(e.target)) return;
+      chiudiMenu();
     });
 
     window.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        toggle.setAttribute("aria-expanded", "false");
-        links.classList.remove("is-open");
-        document.body.classList.remove("nav-open");
-      }
+      if (e.key === "Escape") chiudiMenu();
+    });
+
+    /* cambiando larghezza (ruotando il telefono, o allargando la finestra) il
+       pannello non deve restare aperto con la barra che non ha più l'hamburger */
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 1395) chiudiMenu();
     });
   }
 

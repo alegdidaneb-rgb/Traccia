@@ -6,10 +6,19 @@
         <span>Traccia</span>
       </a>
 
-      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Apri il menu">
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-panel" aria-label="Apri il menu">
         <span></span>
       </button>
 
+      <!-- Il pannello: una scatola sola che contiene le voci **e** i pulsanti.
+           Su desktop questa scatola sparisce (`display: contents`) e i due
+           figli sono quello che erano: la lista a destra e i pulsanti dopo di
+           lei, con la barra misurata che resta identica. Sotto la soglia
+           dell'hamburger diventa la tendina, e allora «Accedi» e «Segnala un
+           caso» stanno dentro, sotto le voci, invece di essere spenti: prima
+           sparivano, e sul telefono non c'era nessun modo di accedere o di
+           segnalare un caso senza scorrere la pagina. -->
+      <div class="nav__panel" id="nav-panel">
       <ul class="nav__links" id="nav-links">
 {{nav_links}}
 
@@ -70,6 +79,7 @@
           </button>
         </div>
       </div>
+      </div><!-- /nav__panel -->
     </nav>
   </div>
 </header>

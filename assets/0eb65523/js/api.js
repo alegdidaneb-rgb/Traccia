@@ -173,16 +173,11 @@
           return data;
         });
     },
-    /* La via veloce: un numero, niente altro. Il nome e l'importo li prende
-       l'analista al telefono (vedi `richiesta_telefono`, migrazione 0027). */
-    richiestaTelefono: function (payload) {
-      return rpc("richiesta_telefono", {
-        p_phone: payload.phone,
-        p_nome: payload.nome || null,
-        p_situation: payload.situation || null,
-        p_origine: payload.origine || "sito"
-      });
-    },
+    /* Niente più «via veloce» dal 2026-11-12: la scheda della segnalazione
+       mostra un modulo solo, quello completo, e passa da `register`. La
+       funzione `richiesta_telefono` resta nel database — le richieste già
+       arrivate la citano — ma il sito non la chiama più: un metodo qui dentro
+       sarebbe solo la strada per reintrodurla per distrazione. */
     register: function (payload) {
       /* Una richiesta di informazioni, non un account: non c'è password da
          mandare, e non c'è un utente da creare. L'account nasce dopo, quando
