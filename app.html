@@ -3,7 +3,7 @@
 <head>
 <!-- shell:misurazione -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PCHTN7DM');</script>
-  <script src="assets/c3c47e6e/js/conversione.js" defer></script>
+  <script src="assets/9caf186d/js/conversione.js" defer></script>
   <!-- /shell:misurazione -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,18 +20,18 @@
   <meta property="og:title" content="La mia pratica — Traccia">
   <meta property="og:description" content="Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.">
   <meta property="og:url" content="https://traccia.it.com/app.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/c3c47e6e/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/9caf186d/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="assets/c3c47e6e/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/c3c47e6e/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/c3c47e6e/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/c3c47e6e/css/style.css">
-  <link rel="stylesheet" href="assets/c3c47e6e/css/premium.css">
+  <link rel="apple-touch-icon" href="assets/9caf186d/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/9caf186d/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/9caf186d/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/9caf186d/css/style.css">
+  <link rel="stylesheet" href="assets/9caf186d/css/premium.css">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -43,9 +43,9 @@
     })();
   </script>
 
-  <script src="assets/c3c47e6e/js/config.js" defer></script>
-  <script src="assets/c3c47e6e/js/api.js" defer></script>
-  <script src="assets/c3c47e6e/js/session.js" defer></script>
+  <script src="assets/9caf186d/js/config.js" defer></script>
+  <script src="assets/9caf186d/js/api.js" defer></script>
+  <script src="assets/9caf186d/js/session.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -241,7 +241,7 @@
               Documenti ricevuti
             </span>
             <span class="kpi__value"><span data-stat-docs>—</span></span>
-            <span class="kpi__hint" data-docs-missing>2 da integrare</span>
+            <span class="kpi__hint" data-docs-missing>&nbsp;</span>
           </div>
 
           <div class="kpi__cell">
@@ -262,43 +262,23 @@
           </div>
           <div class="pnl__body">
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.6rem">
-              <span class="small" style="font-weight:600">Fase <span data-phase-index>03</span> di 05 · <span data-phase-name>Perizia</span></span>
-              <span class="xs muted">Avanzamento <b class="num" data-phase-pct>60%</b></span>
+              <span class="small" style="font-weight:600">Fase <span data-phase-index>—</span> di 05 · <span data-phase-name>in caricamento</span></span>
+              <!-- i valori partono da zero e li mette `case.js` appena
+                   arrivano i dati: prima qui c'erano il 60% e la fase 03
+                   dell'esempio, e chi apriva la pagina per un istante li
+                   leggeva come se fossero i suoi -->
+              <span class="xs muted">Avanzamento <b class="num" data-phase-pct>—</b></span>
             </div>
-            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60" aria-label="Avanzamento della pratica" data-progress>
-              <span class="progress__fill" style="--p:.6"></span>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Avanzamento della pratica" data-progress>
+              <span class="progress__fill" style="--p:0"></span>
             </div>
 
             <ul class="tl mt-4" data-phase-track>
-              <li class="tl__item tl__item--done">
-                <span class="tl__dot" aria-hidden="true">
-                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <div class="tl__main"><b>01 · Raccolta</b><span>Documenti e colloquio iniziale acquisiti.</span></div>
-                <span class="tl__when">12 mar</span>
-              </li>
-              <li class="tl__item tl__item--done">
-                <span class="tl__dot" aria-hidden="true">
-                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <div class="tl__main"><b>02 · Ricostruzione</b><span>Flussi e indirizzi ricostruiti, 2 punti di aggancio.</span></div>
-                <span class="tl__when">24 mar</span>
-              </li>
-              <li class="tl__item tl__item--current">
-                <span class="tl__dot" aria-hidden="true"></span>
-                <div class="tl__main"><b>03 · Perizia</b><span>Redazione del documento tecnico. Consegna prevista entro 10 giorni lavorativi.</span></div>
-                <span class="tl__when">in corso</span>
-              </li>
-              <li class="tl__item">
-                <span class="tl__dot" aria-hidden="true"></span>
-                <div class="tl__main"><b>04 · Denunce</b><span>Predisposizione degli atti per la denuncia.</span></div>
-                <span class="tl__when">—</span>
-              </li>
-              <li class="tl__item">
-                <span class="tl__dot" aria-hidden="true"></span>
-                <div class="tl__main"><b>05 · Legale</b><span>Passaggio all'avvocato che assiste il recupero.</span></div>
-                <span class="tl__when">—</span>
-              </li>
+              <!-- Le cinque fasi le disegna `case.js` dalla storia vera della
+                   pratica (`case_events`). Prima erano scritte qui a mano con
+                   date di marzo: su una pratica aperta a novembre, quella
+                   cronologia raccontava lavoro fatto cinque mesi prima che la
+                   persona esistesse. -->
             </ul>
           </div>
           <div class="pnl__foot">
@@ -490,48 +470,21 @@
 
           <div class="pnl__head">
             <h2>Documenti della pratica</h2>
-            <span class="chip"><span data-docs-count>2</span> / 4 file</span>
+            <span class="chip"><span data-docs-count>0</span> <span data-docs-word>documenti</span></span>
           </div>
           <ul class="vault" id="docs-table">
-            <li class="vault__item">
-              <span class="vault__ico" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              </span>
-              <div class="vault__main">
-                <b>Estratto conto</b>
-                <span>PDF · verificato il 12 mar</span>
-              </div>
-              <span class="vault__act"><span class="pill pill--active">Ricevuto</span></span>
-            </li>
-            <li class="vault__item">
-              <span class="vault__ico" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              </span>
-              <div class="vault__main">
-                <b>Ricevute dei bonifici</b>
-                <span>PDF · verificato il 12 mar</span>
-              </div>
-              <span class="vault__act"><span class="pill pill--active">Ricevuto</span></span>
-            </li>
-            <li class="vault__item vault__item--missing">
+            <!-- Una riga per documento vero, da `documents`. Prima qui
+                 c'erano quattro file d'esempio («verificato il 12 mar») che
+                 il cliente scambiava per i suoi. -->
+            <li class="vault__item vault__item--missing" data-docs-empty>
               <span class="vault__ico" aria-hidden="true">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>
               </span>
               <div class="vault__main">
-                <b>Screenshot della piattaforma</b>
-                <span>Serve per documentare l'interfaccia del broker</span>
+                <b>Nessun documento ancora</b>
+                <span>Carica il primo qui sotto: estratto conto, ricevute dei bonifici, screenshot della piattaforma.</span>
               </div>
-              <span class="vault__act"><span class="pill pill--pending">Da integrare</span></span>
-            </li>
-            <li class="vault__item vault__item--missing">
-              <span class="vault__ico" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>
-              </span>
-              <div class="vault__main">
-                <b>Conversazioni con il venditore</b>
-                <span>Email, chat o messaggi con il «consulente»</span>
-              </div>
-              <span class="vault__act"><span class="pill pill--pending">Da integrare</span></span>
+              <span class="vault__act"><span class="pill pill--pending">Vuoto</span></span>
             </li>
           </ul>
           <div class="pnl__foot">
@@ -602,22 +555,10 @@
           </div>
           <div class="pnl__body">
             <ul class="feed" id="ops-table">
-              <li class="feed__item">
-                <span class="feed__dot feed__dot--on" aria-hidden="true"></span>
-                <div><b>Perizia in redazione.</b> Analisi dei flussi completata, stesura del documento in corso.<span class="feed__when">oggi · 09:12</span></div>
-              </li>
-              <li class="feed__item">
-                <span class="feed__dot" aria-hidden="true"></span>
-                <div><b>Documenti verificati.</b> Estratti conto e ricevute acquisiti al fascicolo.<span class="feed__when">24 mar · 16:40</span></div>
-              </li>
-              <li class="feed__item">
-                <span class="feed__dot" aria-hidden="true"></span>
-                <div><b>Ricostruzione conclusa.</b> Individuati 2 punti di aggancio su exchange con KYC.<span class="feed__when">22 mar · 11:05</span></div>
-              </li>
-              <li class="feed__item">
-                <span class="feed__dot" aria-hidden="true"></span>
-                <div><b>Colloquio iniziale.</b> Raccolta del racconto e prima valutazione di ammissibilità.<span class="feed__when">12 mar · 10:30</span></div>
-              </li>
+              <!-- Riempita da `case.js`: la storia delle fasi (con la data
+                   vera) e i documenti caricati. Le quattro righe che stavano
+                   qui parlavano di «colloquio iniziale» e «2 punti di
+                   aggancio» per chiunque aprisse la pagina. -->
             </ul>
           </div>
         </section>
@@ -1087,19 +1028,19 @@
 </div>
 
 
-  <script src="assets/c3c47e6e/js/ui.js" defer></script>
-  <script src="assets/c3c47e6e/js/contract.js" defer></script>
-  <script src="assets/c3c47e6e/js/case.js" defer></script>
-  <script src="assets/c3c47e6e/js/main.js" defer></script>
-  <script src="assets/c3c47e6e/js/market.js" defer></script>
-  <script src="assets/c3c47e6e/js/premium.js" defer></script>
-  <!-- WhatsApp: il numero sta in assets/c3c47e6e/js/config.js; senza numero il
+  <script src="assets/9caf186d/js/ui.js" defer></script>
+  <script src="assets/9caf186d/js/contract.js" defer></script>
+  <script src="assets/9caf186d/js/case.js" defer></script>
+  <script src="assets/9caf186d/js/main.js" defer></script>
+  <script src="assets/9caf186d/js/market.js" defer></script>
+  <script src="assets/9caf186d/js/premium.js" defer></script>
+  <!-- WhatsApp: il numero sta in assets/9caf186d/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
      aria-label="Scrivici su WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/c3c47e6e/js/whatsapp.js" defer></script>
+  <script src="assets/9caf186d/js/whatsapp.js" defer></script>
 </body>
 </html>

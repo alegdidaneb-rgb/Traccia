@@ -70,6 +70,122 @@
     });
   }
 
+  /* ------------------------------------------------- la pratica, dal vero -- */
+  /* Le cinque fasi non sono più scritte nell'HTML: qui si disegnano dalla
+     storia (`case_events`). Una fase è «fatta» solo se nella storia c'è una
+     riga che dice che è stata raggiunta, e la data accanto è quella di quella
+     riga. Se la storia non ha date — è il caso delle pratiche aperte prima
+     del 2026-11-12 — la fase si mostra senza data invece di inventarne una.
+     È il punto: meglio un trattino che una bugia. */
+  var FASI = [
+    { n: 1, nome: "Raccolta", testo: "Documenti e colloquio iniziale." },
+    { n: 2, nome: "Ricostruzione", testo: "Flussi e indirizzi ricostruiti." },
+    { n: 3, nome: "Perizia", testo: "Redazione del documento tecnico." },
+    { n: 4, nome: "Denunce", testo: "Predisposizione degli atti per la denuncia." },
+    { n: 5, nome: "Legale", testo: "Passaggio all'avvocato che assiste il recupero." }
+  ];
+
+  function quandoFase(storia, numero) {
+    for (var i = 0; i < storia.length; i++) {
+      if (Number(storia[i].phase) === numero) return storia[i].quando || null;
+    }
+    return null;
+  }
+
+  function paintStoria(kase, data) {
+    var storia = (kase && kase.storia) || [];
+    var attuale = Number(kase.phase_index || 1);
+    var track = document.querySelector("[data-phase-track]");
+    var feed = document.getElementById("ops-table");
+
+    if (track) {
+      track.innerHTML = "";
+      FASI.forEach(function (fase) {
+        var quando = quandoFase(storia, fase.n);
+        var fatta = !!quando || fase.n < attuale;
+        var corrente = fase.n === attuale;
+        var li = document.createElement("li");
+        li.className = "tl__item" +
+          (fatta && !corrente ? " tl__item--done" : "") +
+          (corrente ? " tl__item--current" : "");
+        li.innerHTML =
+          '<span class="tl__dot" aria-hidden="true">' +
+          (fatta && !corrente
+            ? '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            : "") +
+          "</span>" +
+          '<div class="tl__main"><b></b><span></span></div>' +
+          '<span class="tl__when"></span>';
+        li.querySelector("b").textContent =
+          String(fase.n).padStart(2, "0") + " · " + fase.nome;
+        li.querySelector(".tl__main span").textContent = fase.testo;
+        li.querySelector(".tl__when").textContent =
+          quando ? dataISO(quando)
+            : corrente ? "in corso"
+            : fatta ? "completata"     /* fatta ma senza data: non si inventa */
+            : "—";
+        track.appendChild(li);
+      });
+    }
+
+    if (!feed) return;
+    /* La cronologia mette insieme le due cose che il cliente ha diritto di
+       sapere e che il database conosce davvero: la storia delle fasi e i
+       documenti caricati. In ordine di tempo, dal più recente. */
+    var voci = [];
+    storia.forEach(function (e) {
+      if (primaDellaNascita(e.quando)) return;
+      voci.push({
+        quando: e.quando,
+        titolo: e.phase === 0 ? "Pratica aperta"
+                              : "Fase " + e.phase + " · " + (e.phase_name || ""),
+        testo: e.note || (e.phase === 0
+          ? "La pratica è stata registrata e presa in carico dall'ufficio."
+          : "Passaggio registrato dall'ufficio analisi."),
+        chi: e.chi
+      });
+    });
+    (data.documents || []).forEach(function (d) {
+      var giorno = d.created_at
+        ? new Date(d.created_at * 1000).toISOString() : null;
+      if (primaDellaNascita(giorno)) return;
+      voci.push({
+        quando: giorno,
+        titolo: "Documento · " + (d.label || "caricato"),
+        testo: d.status === "received" ? "Acquisito al fascicolo."
+             : d.status === "rejected" ? (d.decision_note || "Da ricaricare.")
+             : "In verifica da parte dell'ufficio.",
+        chi: null
+      });
+    });
+    voci.sort(function (a, b) {
+      return new Date(b.quando || 0) - new Date(a.quando || 0);
+    });
+
+    if (!voci.length) {
+      feed.innerHTML = '<li class="feed__item"><span class="feed__dot" aria-hidden="true"></span>' +
+        '<div><b>Ancora nessun aggiornamento.</b> Qui compare tutto ciò che succede ' +
+        'alla pratica, con la data: appena l\'ufficio registra il primo passaggio lo vedi.</div></li>';
+      return;
+    }
+
+    feed.innerHTML = "";
+    voci.forEach(function (v, indice) {
+      var li = document.createElement("li");
+      li.className = "feed__item" + (indice === 0 ? " feed__item--new" : "");
+      li.innerHTML =
+        '<span class="feed__dot' + (indice === 0 ? " feed__dot--on" : "") +
+        '" aria-hidden="true"></span>' +
+        "<div><b></b> <span class=\"feed__testo\"></span>" +
+        '<span class="feed__when"></span></div>';
+      li.querySelector("b").textContent = v.titolo + ".";
+      li.querySelector(".feed__testo").textContent = v.testo;
+      li.querySelector(".feed__when").textContent =
+        dataISO(v.quando) + (v.chi ? " · " + v.chi : "");
+      feed.appendChild(li);
+    });
+  }
+
   function animateProgress(value) {
     var bar = document.querySelector("[data-progress]");
     var fill = bar && bar.querySelector(".progress__fill");
@@ -428,10 +544,40 @@
     return (negativo ? "-" : "") + intero + "," + String(cent).padStart(2, "0") + " €";
   }
 
+  /* La data intera, con l'anno.
+     Prima era `{day:"2-digit", month:"short"}`: «12 mar». Su una pagina che
+     deve dire quando è nata una pratica, senza l'anno «12 mar» non si può
+     verificare — e chi legge pensa al marzo di quest'anno anche quando è un
+     altro. Costa quattro caratteri e toglie un dubbio. */
   function shortDate(epoch) {
     if (!epoch) return "—";
-    return new Intl.DateTimeFormat("it-IT", { day: "2-digit", month: "short" })
+    return new Intl.DateTimeFormat("it-IT",
+      { day: "2-digit", month: "short", year: "numeric" })
       .format(new Date(epoch * 1000));
+  }
+
+  /* La stessa cosa per una data che arriva già in ISO dal database (la
+     storia delle fasi). Se la stringa non è una data, si restituisce com'è:
+     meglio una cosa scritta male che «Invalid Date» in faccia al cliente. */
+  function dataISO(iso) {
+    if (!iso) return "—";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return new Intl.DateTimeFormat("it-IT",
+      { day: "2-digit", month: "short", year: "numeric" })
+      .format(d);
+  }
+
+  /* Quando la pratica è nata. È il confine: nessuna riga della pagina può
+     portare una data anteriore a questa, e se ne arriva una si nasconde
+     invece di mostrarla — un evento prima della nascita è un dato sbagliato,
+     non una notizia. */
+  var nascita = null;
+
+  function primaDellaNascita(iso) {
+    if (!nascita || !iso) return false;
+    var d = new Date(iso);
+    return !isNaN(d.getTime()) && d.getTime() < nascita.getTime();
   }
 
   /* ------------------------------------------------- sola lettura analista -- */
@@ -508,20 +654,27 @@
     set("stat-phase", kase.phase_name || "—");
     set("stat-updated", shortDate(user.last_login_at) || "—");
     set("stat-amount", euro(kase.amount_eur));
-    set("stat-docs", String(data.documents_count || 0) + " / 4");
+    /* senza il «/ 4»: non esiste un numero giusto di documenti, dipende dal
+       caso. «2 / 4» faceva sembrare mancante qualcosa che nessuno ha chiesto. */
+    set("stat-docs", String(data.documents_count || 0));
     set("docs-count", String(data.documents_count || 0));
     set("phase-index", String(kase.phase_index || 1).padStart(2, "0"));
     set("phase-name", kase.phase_name || "—");
     set("phase-pct", (kase.percent || 0) + "%");
 
-    var missing = Math.max(4 - (data.documents_count || 0), 0);
-    set("docs-missing", missing ? missing + " da integrare" : "tutti acquisiti");
+    set("docs-missing", (data.documents_count || 0)
+      ? "nel fascicolo" : "nessuno ancora caricato");
 
     var statusLine = "Pratica " + (kase.ref || "—") + " · Fase " +
       String(kase.phase_index || 1).padStart(2, "0") + " — " + (kase.phase_name || "");
     set("user-status-line", statusLine);
 
-    paintPhases(kase.phase_index || 1, document.querySelectorAll("[data-phase-track] .tl__item"));
+    /* la nascita della pratica: la data più vecchia che questa pagina può
+       mostrare, e il filtro di tutto ciò che segue */
+    nascita = kase.aperta_il ? new Date(kase.aperta_il) : null;
+    if (nascita && isNaN(nascita.getTime())) nascita = null;
+
+    paintStoria(kase, data);
     animateProgress((kase.percent || 0) / 100);
 
     renderFees(data.fees);
@@ -546,22 +699,59 @@
      La nota del rifiuto va mostrata: senza, il cliente sa che c'è un problema
      ma non cosa correggere. */
   function statoDocumento(doc) {
+    /* `pill--rejected` non esiste nel foglio di stile: la pillola usciva
+       senza colore, cioè un avviso che sembrava una nota. Lo stato «da
+       ricaricare» è la cosa più urgente che questa pagina può dire, e ora ha
+       il rosso delle cose da fare (`pill--denied`). */
     if (doc.status === "received") {
       return { classe: "", pill: "pill--active", testo: "Acquisito",
                sotto: "acquisito il " + shortDate(doc.created_at) };
     }
     if (doc.status === "rejected") {
-      return { classe: " vault__item--missing", pill: "pill--rejected", testo: "Da ricaricare",
+      return { classe: " vault__item--missing", pill: "pill--denied", testo: "Da ricaricare",
                sotto: doc.decision_note || "L'analista ha chiesto un nuovo documento." };
     }
     return { classe: "", pill: "pill--pending", testo: "In verifica",
              sotto: doc.has_file ? "caricato il " + shortDate(doc.created_at) : "in attesa di caricamento" };
   }
 
+  var rigaVuotaSalvata = null;
+
+  function rigaVuota() {
+    if (rigaVuotaSalvata) {
+      var copia = rigaVuotaSalvata.cloneNode(true);
+      copia.setAttribute("data-docs-empty", "");
+      return copia;
+    }
+    var li = document.createElement("li");
+    li.className = "vault__item vault__item--missing";
+    li.setAttribute("data-docs-empty", "");
+    li.innerHTML =
+      '<span class="vault__ico" aria-hidden="true">' +
+      '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5.4v3.2M8 11.2v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/></svg>' +
+      "</span>" +
+      '<div class="vault__main"><b>Nessun documento ancora</b>' +
+      "<span>Carica il primo qui sotto: estratto conto, ricevute dei bonifici, screenshot della piattaforma.</span></div>" +
+      '<span class="vault__act"><span class="pill pill--pending">Vuoto</span></span>';
+    return li;
+  }
+
   function renderDocuments(docs) {
     var vault = document.getElementById("docs-table");
     if (!vault || !docs) return;
+    if (!rigaVuotaSalvata) {
+      var esistente = vault.querySelector("[data-docs-empty]");
+      if (esistente) rigaVuotaSalvata = esistente.cloneNode(true);
+    }
     vault.innerHTML = "";
+    if (!docs.length) {
+      /* La riga che spiega il vuoto sta nell'HTML: la prima volta si prende
+         da lì, le volte dopo si ricostruisce — perché quella originale viene
+         staccata appena arriva il primo documento, e senza questo una pratica
+         che tornasse vuota mostrerebbe un riquadro bianco. */
+      vault.appendChild(rigaVuota());
+      return;
+    }
     docs.forEach(function (doc) {
       var stato = statoDocumento(doc);
       var item = document.createElement("li");
@@ -576,6 +766,12 @@
         '<span class="vault__act">' +
         (doc.has_file
           ? '<button class="link-arrow xs" type="button" data-open-file="' + doc.id + '">Apri file</button> '
+          : "") +
+        /* Caricare il file sbagliato è normale (è la ricevuta di un'altra
+           banca, uno screenshot illeggibile). Senza questo bottone l'unica
+           via era scrivere all'assistenza per farlo togliere. */
+        (doc.status !== "received"
+          ? '<button class="link-arrow xs" type="button" data-remove-doc="' + doc.id + '">Togli</button> '
           : "") +
         '<span class="pill ' + stato.pill + '">' + stato.testo + "</span></span>";
       item.querySelector("b").textContent = doc.label;
@@ -606,8 +802,36 @@
     if (!vault) return;
     vault.addEventListener("click", function (e) {
       var bottone = e.target.closest("[data-open-file]");
-      if (!bottone) return;
-      apriDocumento(bottone.getAttribute("data-open-file"), bottone);
+      if (bottone) {
+        apriDocumento(bottone.getAttribute("data-open-file"), bottone);
+        return;
+      }
+      /* Togliere un documento: si chiede conferma, perché non c'è un
+         «annulla» e il file va ricaricato. La conferma dice anche cosa si
+         perde, che è la sola cosa che rende la domanda utile. */
+      var togli = e.target.closest("[data-remove-doc]");
+      if (!togli) return;
+      var riga = togli.closest(".vault__item");
+      var nome = riga && riga.querySelector("b") ? riga.querySelector("b").textContent : "questo documento";
+      /* `ask` restituisce `null` se si annulla e una stringa se si conferma
+         (vuota quando non c'è campo da compilare): il vero è nel primo caso
+         `null`, nel secondo una stringa — anche vuota, che con `if (!si)`
+         sarebbe stata letta come un rifiuto. */
+      window.ui.ask({
+        title: "Togliere il documento?",
+        message: "«" + nome + "» verrà rimosso dal fascicolo. Potrai caricarlo di nuovo quando vuoi.",
+        confirm: "Togli",
+        danger: true
+      }).then(function (si) {
+        if (si === null) return;
+        togli.disabled = true;
+        api.rimuoviDocumento(togli.getAttribute("data-remove-doc"))
+          .then(function () { return load(); })
+          .catch(function (err) {
+            togli.disabled = false;
+            window.ui.toast(err.message || "Non è stato possibile togliere il documento.", "error");
+          });
+      });
     });
   }
 

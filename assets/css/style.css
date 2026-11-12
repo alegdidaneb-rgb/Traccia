@@ -3210,3 +3210,34 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* --------------------------------------------------- nota nella riga ---
+   La nota di una segnalazione si scrive dentro la riga della tabella, non in
+   un modale: chi lavora dieci segnalazioni di fila non deve riaprire una
+   finestra ogni volta, e deve vedere le note delle altre mentre scrive la
+   sua. Il campo sembra testo finché non ci si passa sopra, perché una tabella
+   piena di riquadri bianchi si legge peggio di una tabella di testo. */
+.lead-note { min-width: 12rem; }
+
+.lead-note__input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  padding: 0.3rem 0.4rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ink);
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.lead-note__input::placeholder { color: var(--muted); opacity: 0.7; }
+
+.lead-note__input:hover { border-color: var(--line-soft); }
+
+.lead-note__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}

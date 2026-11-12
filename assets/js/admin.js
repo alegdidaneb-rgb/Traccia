@@ -1135,24 +1135,30 @@
     return '<span class="' + classe + '"><strong>' + testo + "</strong></span>";
   }
 
+  /* I bottoni sono tre al massimo, e ognuno fa **una** cosa. Prima ce n'erano
+     fino a quattro con etichette che si somigliavano («Contattata», «Non
+     nostra», «Chiudi») e nessuno stato mostrava a che punto era il lavoro.
+     Ora c'è sempre la chiamata, poi l'azione che fa avanzare, poi quella che
+     chiude — nell'ordine in cui si fanno. */
   function azioniRichiesta(r) {
     var id = ui.esc(r.id);
     var bottoni = [];
     bottoni.push('<a class="btn btn--ghost btn--sm" href="tel:' + ui.esc(r.phone) +
       '">Chiama</a>');
+
     if (r.status === "new") {
-      bottoni.push('<button class="btn btn--sm" data-richiesta="' + id +
+      bottoni.push('<button class="btn btn--accent btn--sm" data-richiesta="' + id +
         '" data-stato="contacted" type="button">Contattata</button>');
-    }
-    if (r.status === "new" || r.status === "contacted") {
-      bottoni.push('<button class="btn btn--ghost btn--sm" data-richiesta="' + id +
-        '" data-stato="denied" type="button">Non nostra</button>');
-    }
-    if (r.status === "contacted") {
+    } else if (r.status === "contacted") {
       bottoni.push('<button class="btn btn--approve btn--sm" data-richiesta="' + id +
         '" data-stato="account" type="button">Apri pratica</button>');
     }
-    if (r.status === "account" || r.status === "contacted") {
+
+    if (r.status === "new" || r.status === "contacted") {
+      bottoni.push('<button class="btn btn--ghost btn--sm" data-richiesta="' + id +
+        '" data-stato="denied" type="button" title="Archivia: non è un caso nostro">Non nostra</button>');
+    }
+    if (r.status === "account") {
       bottoni.push('<button class="btn btn--ghost btn--sm" data-richiesta="' + id +
         '" data-stato="closed" type="button">Chiudi</button>');
     }
@@ -1174,20 +1180,21 @@
     if (!L.richiesteBody) return;
     if (!state.richieste.length) {
       L.richiesteBody.innerHTML =
-        '<tr><td colspan="7" class="empty-state">Nessuna segnalazione in questo filtro.' +
+        '<tr><td colspan="8" class="empty-state">Nessuna segnalazione in questo filtro.' +
         '<div class="xs muted mt-1">Le nuove arrivano dal modulo «Segnala un caso» del sito.</div>' +
         "</td></tr>";
       return;
     }
     L.richiesteBody.innerHTML = state.richieste.map(function (r) {
-      return "<tr>" +
+      /* La riga è modificabile: la nota si scrive qui, non in un modale, e
+         chi lavora la segnalazione non perde il posto in tabella. */
+      return "<tr data-lead-row=\"" + ui.esc(r.id) + "\">" +
         "<td>" + attesaLeggibile(r) + "</td>" +
         "<td><strong>" + ui.esc(r.name) + "</strong>" +
-          '<div class="xs muted">' + ui.esc(r.email) + "</div>" +
-          '<div class="xs muted">' + ui.esc(r.phone) + "</div></td>" +
+          (r.email ? '<div class="xs muted">' + ui.esc(r.email) + "</div>" : "") +
+          '<div class="xs muted"><a href="tel:' + ui.esc(r.phone) + '">' + ui.esc(r.phone) + "</a></div></td>" +
         '<td class="num">' + ui.money(r.amount_eur) + "</td>" +
-        '<td title="' + ui.esc(r.message || "") + '">' + etichettaSituazione(r.situation) +
-          (r.note ? '<div class="xs muted">' + ui.esc(r.note) + "</div>" : "") + "</td>" +
+        '<td title="' + ui.esc(r.message || "") + '">' + etichettaSituazione(r.situation) + "</td>" +
         /* «META-DE» non si legge: si legge «Meta · de». Con una campagna
            accesa questa colonna è la sola che dice quale annuncio ha portato
            quella persona, e deve costare zero decodifica. */
@@ -1195,6 +1202,10 @@
         "<td>" + ui.pill(r.status, r.status === "new" ? "pending" : null) +
           (r.taken_by_name ? '<div class="xs muted">' + ui.esc(r.taken_by_name) + "</div>" : "") +
         "</td>" +
+        '<td class="lead-note"><input class="lead-note__input" type="text"' +
+          ' data-note-for="' + ui.esc(r.id) + '"' +
+          ' value="' + ui.esc(r.note || "") + '"' +
+          ' placeholder="Scrivi una nota…" aria-label="Nota per ' + ui.esc(r.name) + '"></td>' +
         '<td class="data-table__actions">' + azioniRichiesta(r) + "</td>" +
         "</tr>";
     }).join("");
@@ -1276,26 +1287,70 @@
     }).catch(function () { /* rete assente: si riprova al giro dopo */ });
   }, 60000);
 
-  function richiestaStato(id, stato) {
-    var etichette = {
-      contacted: { titolo: "Segnare come contattata?", testo: "La persona è stata chiamata." },
-      account: { titolo: "Aprire la pratica?", testo: "Da qui nasce l'account: la password la sceglie il cliente al primo accesso." },
-      closed: { titolo: "Chiudere la segnalazione?", testo: "Non serve più rispondere." },
-      denied: { titolo: "Non è un nostro caso?", testo: "La segnalazione viene archiviata; nessun messaggio parte da sola." }
-    }[stato] || { titolo: "Aggiornare la segnalazione?", testo: "" };
-    ui.ask({
-      title: etichette.titolo,
-      message: etichette.testo + " L'azione viene registrata nel registro attività.",
-      prompt: "Nota (opzionale)",
-      confirm: stato === "denied" ? "Archivia" : "Conferma",
-      danger: stato === "denied"
-    }).then(function (nota) {
-      if (nota === null) return;
-      return api.richiestaStato(id, stato, nota).then(function () {
-        ui.toast("Segnalazione aggiornata.", "ok");
+  /* Cambiare stato a una segnalazione.
+     Prima ogni cambio passava da un modale con un campo nota: tre clic e una
+     finestra per dire «l'ho chiamata», e la nota si poteva annullare *dopo*
+     aver già scelto lo stato — due gesti pensati per essere uno.
+     Ora: un clic cambia lo stato, e la nota si scrive nella riga, dove resta
+     visibile. Il modale resta solo per le due azioni che non si annullano:
+     aprire la pratica (crea un account) e archiviare. */
+  function richiestaStato(id, stato, nota) {
+    var irreversibili = {
+      account: { titolo: "Aprire la pratica?",
+                 testo: "Da qui nasce l'account: la password la sceglie il cliente al primo accesso." },
+      denied:  { titolo: "Non è un nostro caso?",
+                 testo: "La segnalazione viene archiviata; nessun messaggio parte da sola." }
+    };
+
+    function applica(notaFinale) {
+      return api.richiestaImposta(id, stato, notaFinale).then(function () {
+        /* il messaggio dice cosa è cambiato: «aggiornata» da solo non dice a
+           chi guarda se il clic ha fatto quello che voleva */
+        ui.toast("Segnalazione: " + (etichettaStato(stato) || stato) + ".", "ok");
         return refresh();
       });
+    }
+
+    if (!irreversibili[stato]) {
+      return applica(nota).catch(function (err) { ui.toast(err.message, "error"); });
+    }
+
+    var testo = irreversibili[stato];
+    return ui.ask({
+      title: testo.titolo,
+      message: testo.testo + " L'azione viene registrata nel registro attività.",
+      prompt: "Nota (opzionale)",
+      confirm: stato === "denied" ? "Archivia" : "Apri la pratica",
+      danger: stato === "denied"
+    }).then(function (notaModale) {
+      if (notaModale === null) return;
+      return applica(notaModale);
     }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  function etichettaStato(stato) {
+    return {
+      new: "da chiamare", contacted: "contattata", account: "con pratica aperta",
+      closed: "chiusa", denied: "archiviata"
+    }[stato] || stato;
+  }
+
+  /* La nota si modifica nella riga. `Enter` salva, `Escape` lascia com'era:
+     è il comportamento di ogni campo che si modifica per sbaglio. */
+  function salvaNota(id, testo, nodo, originale) {
+    api.richiestaImposta(id, statoDellaRiga(id), testo)
+      .then(function () { ui.toast("Nota salvata.", "ok"); return loadRichieste(); })
+      .catch(function (err) {
+        ui.toast(err.message, "error");
+        if (nodo) nodo.value = originale || "";
+      });
+  }
+
+  /* Lo stato attuale della riga: serve perché `richiestaImposta` vuole uno
+     stato, e cambiare la nota non deve cambiare lo stato. */
+  function statoDellaRiga(id) {
+    var r = (state.richieste || []).filter(function (x) { return String(x.id) === String(id); })[0];
+    return r ? r.status : "new";
   }
 
   function refresh() {
@@ -1730,12 +1785,45 @@
        righe vengono ricostruite a ogni aggiornamento e i listener singoli
        sparirebbero al primo giro */
     if (L.richiesteBody) {
+      /* La nota nella riga: si salva con Enter o uscendo dal campo, se è
+         cambiata. Salvare a ogni tasto voleva dire una chiamata per
+         lettera; salvare solo col bottone voleva dire perdere quello che si
+         è scritto chiudendo la pagina. */
+      L.richiesteBody.addEventListener("keydown", function (e) {
+        var campo = e.target.closest ? e.target.closest("[data-note-for]") : null;
+        if (!campo) return;
+        if (e.key === "Enter") {
+          e.preventDefault();
+          campo.blur();
+        } else if (e.key === "Escape") {
+          campo.value = campo.defaultValue;
+          campo.blur();
+        }
+      });
+      L.richiesteBody.addEventListener("focusin", function (e) {
+        var campo = e.target.closest ? e.target.closest("[data-note-for]") : null;
+        if (campo) campo.dataset.prima = campo.value;
+      });
+      L.richiesteBody.addEventListener("focusout", function (e) {
+        var campo = e.target.closest ? e.target.closest("[data-note-for]") : null;
+        if (!campo) return;
+        var prima = campo.dataset.prima === undefined ? campo.defaultValue : campo.dataset.prima;
+        if (campo.value === prima) return;
+        salvaNota(campo.getAttribute("data-note-for"), campo.value.trim(), campo, prima);
+      });
+
       L.richiesteBody.addEventListener("click", function (e) {
         var bottone = e.target.closest ? e.target.closest("[data-richiesta]") : null;
         if (!bottone) return;
         e.preventDefault();
+        /* la nota già scritta nella riga viaggia con il cambio di stato:
+           «contattata» e «ho parlato con lei, richiamare lunedì» sono la
+           stessa informazione e devono restare insieme */
+        var riga = bottone.closest("tr");
+        var campoNota = riga ? riga.querySelector("[data-note-for]") : null;
         richiestaStato(bottone.getAttribute("data-richiesta"),
-                       bottone.getAttribute("data-stato"));
+                       bottone.getAttribute("data-stato"),
+                       campoNota ? campoNota.value.trim() : null);
       });
     }
 
