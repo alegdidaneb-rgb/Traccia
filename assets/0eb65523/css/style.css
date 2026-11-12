@@ -364,6 +364,13 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+/* Su desktop il pannello non è una scatola: `display: contents` fa sì che i
+   suoi due figli (la lista e i pulsanti) stiano nel flusso della barra come se
+   fossero sempre stati lì — cioè esattamente come prima di introdurlo. La
+   misura della testata non cambia di un pixel, e `tools/misura_header.py`
+   continua a valere. */
+.nav__panel { display: contents; }
+
 .nav__links {
   display: flex;
   align-items: center;
@@ -536,14 +543,21 @@ textarea:focus-visible {
    coincidano: scritto a mano in due posti, era già sbagliato in entrambi. */
 @media (max-width: 1395px) {
   .nav__toggle { display: inline-flex; }
-  .nav__links {
+
+  /* La tendina è il **pannello**, non la lista: così «Accedi» e «Segnala un
+     caso» sono dentro, sotto le voci, invece di essere spenti come prima (per
+     due versioni sono stati `display: none`, e sul telefono il menu non aveva
+     né accesso né segnalazione). Una scatola sola, un solo stato da aprire e
+     chiudere: due elementi che compaiono ognuno per conto suo sono due
+     occasioni di restare fuori sincrono. */
+  .nav__panel {
+    display: block;
     position: fixed;
     inset: var(--header-h) 0 auto 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    margin: 0;
-    padding: 1rem var(--pad-x) 1.5rem;
+    max-height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.6rem var(--pad-x) 1.25rem;
     background: #fff;
     border-bottom: 1px solid var(--line);
     box-shadow: var(--shadow-lg);
@@ -553,16 +567,57 @@ textarea:focus-visible {
     transition: opacity 0.2s var(--ease), transform 0.2s var(--ease),
       visibility 0.2s;
   }
-  .nav__links.is-open {
+  .nav__panel.is-open {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
   }
-  .nav-link { padding: 0.9rem 0.5rem; font-size: 1rem; }
-  /* I pulsanti sono fuori dal pannello: in barra resterebbero accanto
-     all'hamburger e a 360px la cacherebbero. Il pannello ha già «Accedi» e
-     «Segnala un caso» fra le sue voci — non si perde niente. */
-  .nav__actions { display: none; }
+
+  .nav__links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    position: static;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  /* Le voci, una per riga e larghe quanto il pannello: il dito che mira
+     «Onorari» non deve prendere «Il team». */
+  .nav__links > li { width: 100%; }
+  .nav__links > li > .nav-link {
+    display: block;
+    padding: 0.9rem 0.75rem;
+    font-size: 1rem;
+    border-radius: var(--r-sm);
+  }
+  .nav__links > li > .nav-link:hover,
+  .nav__links > li > .nav-link.is-active { background: var(--bg-soft); }
+  /* il puntino della voce attiva cade sul bordo del pannello e sembra un
+     difetto di stampa: nel pannello la voce attiva si accende di sfondo */
+  .nav__panel .nav-link.is-active::after { display: none; }
+
+  /* i pulsanti: in colonna, larghi come le voci, sotto un filo che li separa */
+  .nav__panel .nav__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+    padding: 0.9rem 0 0;
+    border-top: 1px solid var(--line);
+  }
+  .nav__panel .nav__actions .btn { width: 100%; justify-content: center; }
+  /* la pillola utente ha già una riga sua: nel pannello va a capo invece di
+     comprimere il nome */
+  .nav__panel .nav-user { flex-wrap: wrap; white-space: normal; }
+
   body.nav-open { overflow: hidden; }
 }
 
@@ -1511,15 +1566,25 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
     var(--bg-soft);
 }
 
+/* La scheda dell'accesso sta sulla stessa griglia del resto del sito.
+   Era larga 1080 mentre il contenuto delle pagine è 1200: su un portatile si
+   vedeva la testata arrivare a un punto e la scheda fermarsi prima, e il
+   modulo completo — sei campi, ora che la via veloce non c'è — restava stretto
+   in una colonna da 500px. Ora è `--container` come tutto il resto, e la
+   colonna del modulo ha la sua misura. */
 .auth-layout {
-  width: min(1080px, 100%);
+  width: min(var(--container), 100%);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: clamp(1.5rem, 4vw, 3rem);
   align-items: stretch;
 }
+/* la colonna del modulo non si allarga oltre il leggibile: un campo da 700px
+   è più difficile da compilare di uno da 480 */
+.auth-layout > .auth-card { max-width: 620px; justify-self: end; width: 100%; }
 @media (max-width: 920px) {
-  .auth-layout { grid-template-columns: 1fr; max-width: 520px; }
+  .auth-layout { grid-template-columns: 1fr; max-width: 560px; }
+  .auth-layout > .auth-card { max-width: none; justify-self: stretch; }
   .auth-aside { display: none; }
 }
 
@@ -3237,25 +3302,9 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   .pillars--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* --------------------------------------------------------------------------
-   La via veloce (login.html)
-   --------------------------------------------------------------------------
-   Un campo e un pulsante. Non è un modulo più corto dello stesso modulo: è
-   un'altra cosa, e deve sembrarlo — chi arriva da un annuncio deve capire in
-   due secondi che l'impegno richiesto è un numero di telefono.
-   -------------------------------------------------------------------------- */
-.form--rapido {
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-  border-radius: 14px;
-  padding: 1.1rem 1.1rem 0.9rem;
-}
-.form--rapido .field__hint { margin-top: 0.35rem; }
-.form--rapido .form__note a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+/* La «via veloce» (nome + numero, con il modulo vero nascosto sotto) è stata
+   tolta il 2026-11-12: il suo CSS è andato con lei. Se un giorno servisse di
+   nuovo, va ripensata da capo — non riaccesa reintroducendo una classe. */
 
 /* --------------------------------------------------- nota nella riga ---
    La nota di una segnalazione si scrive dentro la riga della tabella, non in

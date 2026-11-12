@@ -113,17 +113,20 @@ test("senza gtag e senza dataLayer il modulo non si rompe", () => {
 
 /* ---------------------------------------------- i punti di aggancio -- */
 
-test("i tre moduli segnalano la conversione dopo la risposta del server", () => {
+test("i due moduli segnalano la conversione dopo la risposta del server", () => {
   const auth = R("assets/js/auth.js");
-  /* veloce e completo: la chiamata sta dentro il `.then`, non nel clic */
+  /* Uno solo dal 2026-11-12: la scheda della segnalazione ha un modulo, quello
+     completo, e la «via veloce» non esiste più. Le conversioni da contare
+     restano due — questa e il modulo della pagina Contatti — e una voce
+     `"veloce"` qui dentro sarebbe un evento che non parte più. */
   const agganci = [...auth.matchAll(/segnalaConversione\("(\w+)"\)/g)].map((m) => m[1]);
-  assert.deepEqual(agganci.sort(), ["completo", "veloce"],
+  assert.deepEqual(agganci.sort(), ["completo"],
     `auth.js segnala: ${agganci.join(", ") || "niente"}`);
 
-  const iVeloce = auth.indexOf('segnalaConversione("veloce")');
-  const iThenVeloce = auth.lastIndexOf(".then(", iVeloce);
-  assert.ok(iThenVeloce > 0 && iVeloce - iThenVeloce < 600,
-    "la conversione veloce non è dentro il `.then` della chiamata");
+  const iCompleto = auth.indexOf('segnalaConversione("completo")');
+  const iThenCompleto = auth.lastIndexOf(".then(", iCompleto);
+  assert.ok(iThenCompleto > 0 && iCompleto - iThenCompleto < 900,
+    "la conversione del modulo completo non è dentro il `.then` della chiamata");
 
   const main = R("assets/js/main.js");
   assert.match(main, /TracciaConversione\.lead\("supporto"\)/,

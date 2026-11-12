@@ -1,18 +1,21 @@
 /* ==========================================================================
-   La via veloce: un numero di telefono
+   Una porta sola: il modulo completo
    ==========================================================================
-   Il cliente: «I NEED LEAD GENERATION NOTHING ELSE».
+   Questo file difendeva la «via veloce» — nome e numero, con il modulo vero
+   dietro il link «Preferisco scrivere i dettagli». Era una scelta di
+   conversione nata da «I NEED LEAD GENERATION NOTHING ELSE», ed è stata
+   bocciata dal cliente il 2026-11-12: «these type of registration should not
+   even be there, it has to be detailed».
 
-   Il modulo con i sei dati — nome, cognome, email, telefono, importo perso,
-   tipo di truffa — non si tocca: sono i sei che il cliente ha chiesto per nome,
-   due volte, e servono a sapere prima di comporre il numero di che caso si
-   tratta. Ma a freddo, su un annuncio, ogni campo in più costa circa l'11% di
-   compilazioni (HubSpot: 3 campi ≈ 25%, 6 campi ≈ 15%), e con 24 $ di budget
-   quella differenza è tutto.
+   Il file resta perché la promessa che lo aveva fatto nascere resta: i sei
+   dati si chiedono, si chiedono subito, e nessuno li nasconde. Cambia il
+   verso — qui sotto si verifica che la scorciatoia **non** ci sia più, e che
+   toglierla non abbia portato via il modulo completo, la funzione del
+   database o il foglio dei lead.
 
-   Quindi due porte sullo stesso database. Questi test difendono la seconda:
-   che esista, che convinca, che non duplichi un lead quando qualcuno preme due
-   volte, e che non abbia mangiato la prima.
+   `richiesta_telefono` resta nel database (le richieste già arrivate la
+   citano) ma il sito non la chiama: le righe su di lei restano come memoria
+   di com'era fatta, non come prescrizione.
    ========================================================================== */
 const assert = require("assert");
 const fs = require("fs");
@@ -30,28 +33,31 @@ const API = R("assets/js/api.js");
 const SQL = R("supabase/migrations/0027_via_veloce.sql");
 const LINGUE = ["", "en/", "de/", "es/"];
 
-test("la via veloce chiede nome e numero, e nient'altro", () => {
-  /* Un campo solo era la scelta giusta sulla carta, sbagliata nei fatti: il
-     2026-11-11 una richiesta vera è arrivata con il solo numero, e in console
-     e nel foglio si leggeva «Telefono in attesa». Chi guarda la tabella non
-     sapeva chi stava per chiamare — e al telefono «buongiorno» a uno
-     sconosciuto costa più di due secondi di compilazione.
-     Quindi due campi: il nome e il numero. Non tre: il resto (importo, tipo di
-     truffa) si chiede parlando, che è dove si sarebbe chiesto comunque. */
+test("la via veloce non c'è più, in nessuna lingua", () => {
+  /* Il cliente: «these type of registration should not even be there, it has
+     to be detailed». Quindi: nessun modulo corto, nessun link che nasconde il
+     modulo serio, in tutte e quattro le lingue. Se un giorno la scorciatoia
+     tornasse, deve tornare con una decisione — non con un copia e incolla. */
   LINGUE.forEach((cartella) => {
     const html = R(cartella + "login.html");
-    const inizio = html.indexOf('id="telefono-form"');
-    assert.ok(inizio > -1, `${cartella || "it/"}login.html: manca il modulo veloce`);
-    const fine = html.indexOf("</form>", inizio);
-    const blocco = html.slice(inizio, fine);
-    const campi = (blocco.match(/<input\b/g) || []).length;
-    assert.strictEqual(campi, 2, `${cartella || "it/"}: il modulo veloce ha ${campi} campi, deve averne 2`);
-    assert.match(blocco, /id="rapido-nome"/, "manca il nome: la riga arriverebbe senza");
-    assert.match(blocco, /type="tel"/, "il campo del numero non è type=tel: la tastiera non è numerica");
-    /* il nome deve arrivare al database, altrimenti è decorazione */
-    assert.match(AUTH, /nome:\s*nome/, "il nome non viene mandato a richiesta_telefono");
-    assert.match(AUTH, /nome\.length < 2/, "il nome non viene controllato prima dell'invio");
+    assert.ok(html.indexOf('id="telefono-form"') === -1,
+      `${cartella || "it/"}login.html: c'è ancora il modulo corto`);
+    assert.ok(html.indexOf("data-apri-completo") === -1,
+      `${cartella || "it/"}login.html: c'è ancora il link che nasconde il modulo completo`);
+    /* il modulo completo, invece, si vede all'arrivo: non è un pannello */
+    const i = html.indexOf('id="register-form"');
+    const tag = html.slice(i, html.indexOf(">", i));
+    assert.ok(!/\shidden\b/.test(tag),
+      `${cartella || "it/"}: il modulo completo parte nascosto`);
+    /* e i due campi che la via veloce chiedeva da sola non sono spariti dal
+       modulo: sono i primi due di quello completo */
+    assert.match(html, /id="reg-first-name"/);
+    assert.match(html, /id="reg-phone"/);
   });
+  /* e non resta nemmeno il client che la chiamava */
+  assert.ok(API.indexOf("richiestaTelefono") === -1,
+    "api.js offre ancora la chiamata: è la strada per reintrodurla per sbaglio");
+  assert.ok(AUTH.indexOf("rapidoForm") === -1, "auth.js ha ancora il gestore del modulo corto");
 });
 
 test("il foglio mostra il nome, non una cella vuota", () => {
@@ -67,31 +73,36 @@ test("il foglio mostra il nome, non una cella vuota", () => {
     "nel foglio una riga senza nome resta vuota");
 });
 
-test("il modulo completo non è stato mangiato", () => {
-  /* La promessa fatta due volte resta: i sei campi ci sono ancora, tutti, e
-     tutti obbligatori. La via veloce si aggiunge, non sostituisce. */
+test("il modulo completo c'è ancora tutto, e si vede subito", () => {
+  /* La promessa fatta due volte: i sei campi, tutti, tutti obbligatori. Toglierli
+     per accorciare il modulo era l'altra strada, ed era quella sbagliata. */
   ["reg-first-name", "reg-last-name", "reg-email", "reg-phone",
    "reg-amount", "reg-tipo"].forEach((id) => {
-    assert.ok(LOGIN.includes(`id="${id}"`), `manca il campo «${id}»: la via veloce ha sostituito il modulo`);
+    assert.ok(LOGIN.includes(`id="${id}"`), `manca il campo «${id}»`);
   });
-  /* e il modulo completo si apre da un link, non è nascosto per sempre */
-  assert.match(LOGIN, /data-apri-completo/, "manca il modo di aprire il modulo completo");
-  assert.match(AUTH, /apriCompleto\.addEventListener/,
-    "il link non apre niente: chi vuole scrivere i dettagli resta bloccato sul numero");
+  const i = LOGIN.indexOf('id="register-form"');
+  const blocco = LOGIN.slice(i, LOGIN.indexOf("</form>", i));
+  assert.strictEqual((blocco.match(/<input\b/g) || []).length, 5,
+    "i campi di testo sono cinque (nome, cognome, email, telefono, importo)");
+  assert.match(blocco, /<select\b[^>]*name="situation"/,
+    "manca il tipo di truffa");
+  assert.ok(!/data-apri-completo/.test(LOGIN),
+    "il modulo completo è ancora dietro un link: deve essere la scheda stessa");
 });
 
-test("la via veloce arriva al database, con la sua funzione", () => {
-  /* Una seconda porta con la stessa funzione non è una seconda porta: è la
-     stessa, con i controlli aggirati da un parametro. `auth_register` chiede
-     sei dati e ne pretende sei; questa ne pretende uno. */
-  assert.match(API, /rpc\("richiesta_telefono"/, "api.js non chiama richiesta_telefono");
-  assert.match(AUTH, /api\.richiestaTelefono\(/);
-  assert.match(SQL, /create or replace function traccia\.richiesta_telefono/);
-  /* e non deve chiamare la funzione del modulo completo */
-  const inizio = AUTH.indexOf("rapidoForm.addEventListener");
-  const blocco = AUTH.slice(inizio, inizio + 2000);
-  assert.ok(!/api\.register\(/.test(blocco),
-    "la via veloce chiama `register`: passerebbe dai sei campi e fallirebbe");
+test("il modulo completo passa da auth_register, l'unica porta rimasta", () => {
+  /* Una seconda porta con una funzione più permissiva è la stessa porta con i
+     controlli aggirati. Ora ce n'è una: sei dati, e `auth_register` li
+     pretende tutti. */
+  assert.match(API, /rpc\("auth_register"/, "api.js non chiama auth_register");
+  assert.match(AUTH, /api\.register\(/);
+  assert.ok(API.indexOf('rpc("richiesta_telefono"') === -1,
+    "il client chiama ancora la funzione del modulo corto");
+  /* la funzione resta nel database: le richieste arrivate con lei la citano, e
+     cancellarla renderebbe illeggibile lo storico. Ma non è più raggiungibile
+     da qui: il controllo è sul client, dove si decide cosa il sito offre. */
+  assert.match(SQL, /create or replace function traccia\.richiesta_telefono/,
+    "la funzione è stata cancellata dal database: lo storico non si spiega più");
 });
 
 test("due clic non sono due clienti", () => {
@@ -114,18 +125,18 @@ test("una richiesta senza nome si legge lo stesso in console", () => {
     "il nome della riga non è calcolato in modo tollerante ai NULL");
 });
 
-test("il modulo veloce non promette niente", () => {
+test("il modulo di segnalazione non promette niente", () => {
   /* Le stesse parole vietate ovunque nel progetto: il pubblico è chi è appena
-    stato truffato, e sta cercando le parole dei truffatori per riconoscerle. */
+     stato truffato, e sta cercando le parole dei truffatori per riconoscerle. */
   const VIETATE = [/\bgarantit[oi]\b/i, /\bguarantee[ds]?\b/i, /\bgarantiert/i,
                    /\brecuperiamo\b/i, /\bwir holen\b/i, /\b100 ?%/];
-  ["", "en/", "de/", "es/"].forEach((cartella) => {
+  LINGUE.forEach((cartella) => {
     const html = R(cartella + "login.html");
-    const inizio = html.indexOf('id="telefono-form"');
+    const inizio = html.indexOf('id="register-form"');
     const blocco = html.slice(inizio, html.indexOf("</form>", inizio));
     VIETATE.forEach((re) => {
       assert.ok(!re.test(blocco),
-        `${cartella || "it/"}: il modulo veloce promette un risultato`);
+        `${cartella || "it/"} : il modulo di segnalazione promette un risultato`);
     });
   });
 });
