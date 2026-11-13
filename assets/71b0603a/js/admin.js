@@ -571,6 +571,27 @@
     });
   }
 
+  /* ------------------------------------------------------- da fare adesso --
+     Le quattro (cinque) cose che aspettano una persona, in cima alla pagina e
+     come collegamenti: si legge quanto c'è, si clicca, si è lì.
+
+     Zero non si mostra — un riquadro con dentro «0 da chiamare» insegna a
+     ignorare il riquadro. Se sono tutti zero sparisce il blocco intero. */
+  function aggiornaDaFare(numeri) {
+    var blocco = document.querySelector("[data-da-fare]");
+    if (!blocco) return;
+    var qualcosa = false;
+    Object.keys(numeri).forEach(function (chiave) {
+      var voce = document.querySelector("[data-da-fare-" + chiave + "]");
+      var cifra = document.querySelector("[data-da-fare-" + chiave + "-n]");
+      var quanti = Number(numeri[chiave]) || 0;
+      if (voce) voce.hidden = quanti === 0;
+      if (cifra) cifra.textContent = String(quanti);
+      if (quanti > 0) qualcosa = true;
+    });
+    blocco.hidden = !qualcosa;
+  }
+
   function renderAudit(rows) {
     if (!rows.length) {
       L.audit.innerHTML = '<div class="empty-state">Nessuna attività registrata.</div>';
@@ -608,6 +629,17 @@
         card.classList.toggle("has-items", pending > 0);
       });
       renderAudit(data.audit);
+      state.pendingAccounts = Number(data.pending_accounts) || 0;
+      state.pendingOperations = Number(data.pending_operations) || 0;
+      state.pendingWallets = Number(data.pending_wallets) || 0;
+      state.pendingDocuments = Number(data.pending_documents) || 0;
+      aggiornaDaFare({
+        lead: state.leadNew || 0,
+        richieste: state.pendingAccounts,
+        operazioni: state.pendingOperations,
+        wallet: state.pendingWallets,
+        documenti: state.pendingDocuments,
+      });
     });
   }
 
@@ -1340,6 +1372,16 @@
         L.cardLead.classList.toggle("is-zero", !data.new_count);
         L.cardLead.classList.toggle("has-items", !!data.new_count);
       }
+      /* lo stesso numero anche in cima, nel blocco «da fare adesso»: due punti
+         della stessa schermata non possono dire due cifre diverse */
+      state.leadNew = Number(data.new_count) || 0;
+      aggiornaDaFare({
+        lead: state.leadNew,
+        richieste: state.pendingAccounts,
+        operazioni: state.pendingOperations,
+        wallet: state.pendingWallets,
+        documenti: state.pendingDocuments,
+      });
       avvisaSeNuove(data.new_count || 0, data.richieste || []);
     });
   }
@@ -1972,13 +2014,57 @@
 
     bindBanca();
 
+    bindSezioni();
+  }
+
+  /* ------------------------------------------------------------- sezioni --
+     Nove pannelli, uno per volta. Prima erano tutti aperti in fila: per
+     arrivare al registro attività si attraversavano segnalazioni, richieste,
+     operazioni, pratiche, wallet, banca, soglie e documenti — e chi ci
+     arrivava non sapeva più cosa aveva guardato.
+
+     La sezione attiva si deduce dall'indirizzo (`#richieste`), non dal clic:
+     un solo posto decide cosa si vede, chiamato all'apertura, al clic e al
+     tasto indietro del browser. Così si può mandare a un collega il punto
+     esatto, e tornare indietro funziona.
+
+     Senza JavaScript i pannelli restano tutti visibili: si legge, si scorre,
+     si usa. Peggio di prima ma non rotto — che è la sola differenza
+     accettabile. */
+  function sezioneDaIndirizzo() {
+    var id = (window.location.hash || "").replace("#", "");
+    var esiste = id && document.getElementById(id) &&
+      document.getElementById(id).classList.contains("panel");
+    return esiste ? id : "overview";
+  }
+
+  function mostraSezione(id, scorri) {
+    document.querySelectorAll(".panel[id]").forEach(function (pannello) {
+      pannello.hidden = pannello.id !== id;
+    });
     document.querySelectorAll(".app-side a[data-tab]").forEach(function (link) {
-      link.addEventListener("click", function () {
-        document.querySelectorAll(".app-side a").forEach(function (a) {
-          a.classList.remove("is-active");
-        });
-        link.classList.add("is-active");
-      });
+      var attiva = link.getAttribute("data-tab") === id;
+      link.classList.toggle("is-active", attiva);
+      if (attiva) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    if (scorri !== false) window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  function bindSezioni() {
+    if (!document.querySelector(".app-side a[data-tab]")) return;
+    mostraSezione(sezioneDaIndirizzo(), false);
+    window.addEventListener("hashchange", function () {
+      mostraSezione(sezioneDaIndirizzo());
+    });
+    /* i collegamenti che portano a un pannello senza essere nel menu (una
+       riga «apri» che salta alle verifiche) devono aprire la sua sezione */
+    document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      if (link.getAttribute("data-tab")) return;
+      var id = link.getAttribute("href").replace("#", "");
+      var bersaglio = id && document.getElementById(id);
+      if (!bersaglio || !bersaglio.classList.contains("panel")) return;
+      link.addEventListener("click", function () { mostraSezione(id); });
     });
   }
 

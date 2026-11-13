@@ -586,76 +586,6 @@ html.no-anim .reveal-img,
   padding-bottom: 4rem;
 }
 
-/* barra superiore dell'area */
-.appv2__bar {
-  background: #fff;
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: var(--header-h);
-  z-index: 30;
-}
-.appv2__bar-inner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  height: 62px;
-  max-width: 1320px;
-  margin-inline: auto;
-  padding-inline: var(--pad-x);
-}
-.appv2__tabs { display: flex; gap: 0.15rem; margin-inline-end: auto; overflow-x: auto; scrollbar-width: none; }
-.appv2__tabs::-webkit-scrollbar { display: none; }
-.appv2__tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.85rem;
-  border-radius: var(--r-pill);
-  font-size: 0.84rem;
-  font-weight: 500;
-  color: var(--muted);
-  white-space: nowrap;
-  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
-}
-.appv2__tab:hover { background: var(--bg-soft); color: var(--ink); }
-.appv2__tab.is-active {
-  background: var(--ink);
-  color: #fff;
-}
-.appv2__tab.is-active svg { opacity: 1; }
-.appv2__tab svg { opacity: 0.7; }
-
-.appv2__search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.42rem 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  background: var(--bg-soft);
-  color: var(--muted);
-  font-size: 0.82rem;
-  min-width: 190px;
-  transition: border-color 0.2s, background 0.2s;
-}
-.appv2__search:focus-within { border-color: #cfcfd8; background: #fff; }
-.appv2__search input {
-  border: 0;
-  background: none;
-  outline: none;
-  font-size: 0.82rem;
-  width: 100%;
-  color: var(--ink);
-}
-.appv2__search kbd {
-  font-family: var(--font-num);
-  font-size: 0.65rem;
-  padding: 0.1rem 0.3rem;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--muted);
-}
 .appv2__icon-btn {
   position: relative;
   width: 34px;
@@ -702,14 +632,148 @@ html.no-anim .reveal-img,
 }
 .appv2__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  /* `minmax(0, …)` su tutte e due le tracce: con `1fr` una tabella larga
+     dentro il contenuto allarga la traccia fino a sfondare la pagina, e la
+     barra laterale finisce fuori dallo schermo. È il difetto che aveva la
+     vecchia griglia, solo spostato di lato. */
+  grid-template-columns: minmax(0, 236px) minmax(0, 1fr) minmax(0, 300px);
+  gap: clamp(1.25rem, 2.2vw, 1.75rem);
   align-items: start;
 }
-@media (max-width: 1080px) {
-  .appv2__grid { grid-template-columns: 1fr; }
+@media (max-width: 1240px) {
+  .appv2__grid { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); }
+  /* sotto i 1240px la colonna di destra (referente, azioni rapide) scende in
+     fondo: due colonne di contenuto più il menu non ci stanno */
+  .appv2__grid > .appv2__col:last-child { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+@media (max-width: 860px) {
+  .appv2__grid { grid-template-columns: minmax(0, 1fr); }
+  .appv2__grid > .appv2__col:last-child { display: flex; }
+}
+
+/* --- barra laterale dell'area --------------------------------------------
+   Otto voci, tutte visibili, nessuno scorrimento orizzontale. Resta ferma
+   mentre il contenuto scorre: cambiare sezione è sempre a portata di mano,
+   anche a metà di un elenco lungo. */
+.area-nav { position: sticky; top: calc(var(--header-h) + 1.25rem); }
+.area-nav__box {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg, 16px);
+  padding: .7rem;
+}
+.area-nav__label {
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: .45rem .6rem .3rem;
+}
+.area-nav__links { display: flex; flex-direction: column; gap: .1rem; }
+.area-nav__link {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem .6rem;
+  border-radius: 10px;
+  font-size: .86rem;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.area-nav__link span:first-of-type { flex: 1 1 auto; min-width: 0; }
+.area-nav__link svg { flex: 0 0 auto; opacity: .65; }
+.area-nav__link:hover { background: var(--bg-soft); color: var(--ink); }
+.area-nav__link.is-active { background: var(--ink); color: #fff; }
+.area-nav__link.is-active svg { opacity: 1; }
+/* il numero: solo dove c'è qualcosa che aspetta te */
+.area-nav__count {
+  flex: 0 0 auto;
+  min-width: 20px;
+  padding: 0 .35rem;
+  border-radius: 99px;
+  background: var(--lime, #c8f169);
+  color: var(--ink);
+  font-size: .69rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 18px;
+}
+.area-nav__link.is-active .area-nav__count { background: #fff; }
+/* Sul telefono la barra diventa una fila che scorre: lì lo scorrimento
+   orizzontale è il gesto naturale, e una colonna di otto voci occuperebbe
+   tutto lo schermo prima del contenuto. */
+@media (max-width: 860px) {
+  .area-nav { position: static; }
+  .area-nav__box { padding: .4rem; gap: 0; }
+  .area-nav__label { display: none; }
+  .area-nav__links { flex-direction: row; gap: .25rem; overflow-x: auto; scrollbar-width: none; }
+  .area-nav__links::-webkit-scrollbar { display: none; }
+  .area-nav__link { white-space: nowrap; padding: .45rem .7rem; font-size: .8rem; }
+  .area-nav__link svg { display: none; }
 }
 .appv2__col { display: flex; flex-direction: column; gap: clamp(1rem, 2vw, 1.35rem); min-width: 0; }
+
+/* Una sezione per volta: il resto è `hidden` e non occupa spazio. Senza
+   JavaScript l'attributo non c'è e si vedono tutte, una sotto l'altra — il
+   sito resta leggibile a chi ha lo script bloccato, e questa è l'unica
+   differenza fra i due casi. */
+.pnl[hidden] { display: none; }
+
+/* Il pannello dentro un pannello (il caricamento dei file dentro i documenti):
+   ha già la cornice del padre, quindi non ne porta una seconda. */
+.pnl--inner { border-top: 1px solid var(--line); border-radius: 0; padding-inline: 0; box-shadow: none; }
+
+/* --- console dell'ufficio -------------------------------------------------
+   Stesse regole dell'area cliente, per la stessa ragione: una sezione per
+   volta. Il riepilogo è una sezione come le altre, quindi non porta il bordo
+   del pannello. */
+.panel[hidden] { display: none; }
+.summary-panel { background: transparent; border: 0; padding: 0; box-shadow: none; }
+
+/* --- «da fare adesso» -----------------------------------------------------
+   Le poche cose che aspettano una persona, prima delle cifre. Ogni voce è un
+   collegamento: leggere «3 da chiamare» e dover cercare dove si chiamano è
+   metà del lavoro sprecata. */
+.da-fare {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--lime, #c8f169);
+  border-radius: 14px;
+  padding: .8rem 1rem;
+  margin-bottom: 1.1rem;
+}
+.da-fare__label {
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-weight: 700;
+  color: var(--muted);
+}
+.da-fare__lista { display: flex; gap: .5rem; flex-wrap: wrap; }
+.da-fare__voce {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .4rem;
+  padding: .38rem .7rem;
+  border-radius: 99px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  font-size: .82rem;
+  color: var(--ink);
+  transition: border-color .18s, background .18s;
+}
+.da-fare__voce b { font-variant-numeric: tabular-nums; }
+.da-fare__voce:hover { background: #fff; border-color: #c9c9d2; }
+.da-fare__voce[hidden] { display: none; }
 
 /* intestazione pagina */
 .appv2__head { margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem); }
@@ -1123,10 +1187,8 @@ html.js-anim .frame[data-reveal].is-visible {
    18. Schermi stretti
    -------------------------------------------------------------------------- */
 @media (max-width: 720px) {
-  .appv2__tabs { gap: 0; }
-  .appv2__search { display: none; }
-  .appv2__bar-inner { gap: 0.5rem; }
-  .appv2__tab { padding: 0.45rem 0.7rem; font-size: 0.8rem; }
+  .area-nav__link { padding: 0.4rem 0.55rem; font-size: 0.76rem; }
+  .area-nav__count { display: none; }   /* lo spazio è poco: la voce prima del numero */
 }
 
 /* --------------------------------------------------------------------------
