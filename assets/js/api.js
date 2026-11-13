@@ -218,6 +218,7 @@
 
     /* --- area cliente --- */
     dashboard: function () { return call("me_dashboard"); },
+
     /* --- conto --- */
     conto: function () { return call("conto"); },
     estrattoConto: function (da, a, limite) {

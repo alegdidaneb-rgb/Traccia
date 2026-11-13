@@ -144,7 +144,8 @@ def main() -> int:
         if not percorso.exists():
             continue
         prima = percorso.read_text(encoding="utf-8")
-        dopo = sostituisci(prima, SEGNA_INIZIO, SEGNA_FINE, costruisci_header(pagina))
+        intestazione = costruisci_header(pagina)
+        dopo = sostituisci(prima, SEGNA_INIZIO, SEGNA_FINE, intestazione)
         dopo = sostituisci(dopo, SEGNA_INIZIO_FOOTER, SEGNA_FINE_FOOTER, footer)
         if dopo != prima:
             disallineati.append(pagina)

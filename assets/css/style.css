@@ -2006,6 +2006,19 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   font-size: var(--fs-small);
 }
 
+/* --- avviso in linea -----------------------------------------------------
+   Una nota dentro il flusso della pagina, non un riquadro d'allarme: serve a
+   dire «da qui puoi fare questa cosa», non «è successo un guasto». Stessa
+   famiglia di `.panel--note`, ma senza intestazione e senza bordo: l'occhio
+   deve arrivarci dopo aver letto, non prima. */
+.callout {
+  background: var(--accent-wash);
+  border-radius: var(--r-lg);
+  padding: clamp(1.4rem, 3vw, 2rem);
+}
+.callout p { color: var(--ink-soft); }
+.callout .btn--ghost { background: #fff; }
+
 /* filter chips */
 .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
@@ -2088,13 +2101,18 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   .app-side {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    /* le voci vanno **a capo** invece di scorrere di lato: dieci voci in una
+       striscia da 330px ne mostravano tre, e le altre sette esistevano solo
+       per chi pensava di trascinare. A capo si vedono tutte, e la barra è
+       alta il giusto invece di essere una fila mozzata. */
+    flex-wrap: wrap;
     flex-direction: row;
-    overflow-x: auto;
-    padding: 0.75rem;
-    gap: 0.35rem;
+    align-items: flex-start;
+    padding: 0.6rem;
+    gap: 0.3rem;
   }
   .app-side__label, .app-side__foot { display: none; }
-  .app-side a { white-space: nowrap; }
+  .app-side a { white-space: nowrap; padding: 0.4rem 0.6rem; font-size: 0.82rem; }
 }
 
 /* inline "summary" rows used in the admin overview */

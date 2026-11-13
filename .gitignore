@@ -21,3 +21,6 @@ traccia-sito.zip
 # nessuno e che, una volta tracciata, cambia a ogni versione di Python.
 __pycache__/
 *.py[cod]
+# Banco di prova locale delle storie: serve a guardare le pagine senza
+# scrivere dati veri. Non è materiale del sito, non deve essere versionato.
+.anteprima/

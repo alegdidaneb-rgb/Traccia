@@ -267,6 +267,17 @@ LD_JSON = re.compile(
 )
 
 
+def versione_asset_corrente(pagina: str) -> str:
+    """L'impronta degli asset che la pagina italiana cita davvero.
+
+    `versione_asset.py` riscrive tutte le sorgenti italiane a ogni giro; la
+    traduzione nasce da lì, quindi la versione giusta è quella che la sorgente
+    dichiara nel primo riferimento che trova.
+    """
+    trovata = re.search(r'/assets/([0-9a-f]{8})/', pagina)
+    return trovata.group(1) if trovata else ""
+
+
 def attributi_lingua(testata: str, lingua: str, catalogo: dict[str, str] | None = None,
                      pagina: str = "index.html") -> str:
     """`lang`, `canonical`, `og:locale`, `hreflang` e Open Graph.
@@ -402,6 +413,20 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
         return m.group(1) + valore + m.group(3)
 
     intera = re.sub(r'(srcset=")([^"]*)(")', riscrivi_srcset, intera)
+
+    # E il **numero di versione** va allineato a quello vero. La pagina tradotta
+    # nasce da una copia della sorgente italiana fatta *prima* che
+    # `versione_asset.py` giri: se il giro successivo cambia la versione (basta
+    # toccare un CSS), la sorgente punta alla nuova e la traduzione resta sulla
+    # vecchia. Risultato: `/de/` serve CSS di una versione e immagini di
+    # un'altra, e la regola del sito — «una pagina cita una sola versione» — si
+    # rompe senza che nessuno abbia toccato la pagina.
+    #
+    # La versione corrente la dice la sorgente italiana: è lei che
+    # `versione_asset.py` riscrive per prima, e da lì si legge.
+    reale = versione_asset_corrente(sorgente)
+    if reale:
+        intera = re.sub(r'/assets/[0-9a-f]{8}/', f'/assets/{reale}/', intera)
 
     prima, corpo, dopo = parti_della_pagina(intera)
     testata = attributi_lingua(prima, lingua, catalogo, pagina_nome)

@@ -211,34 +211,82 @@
     });
   }
 
-  function bindTabs() {
-    var tabs = document.querySelectorAll(".appv2__tab");
-    if (!tabs.length) return;
-    tabs.forEach(function (tab) {
-      tab.addEventListener("click", function () {
-        tabs.forEach(function (t) { t.classList.remove("is-active"); });
-        tab.classList.add("is-active");
+  /* ------------------------------------------------------------ sezioni --
+     Otto sezioni, una visibile per volta. Prima erano tutte una sotto
+     l'altra: per arrivare agli onorari bisognava scorrere conto, bonifici,
+     addebiti, interessi, carta. Chi non lo faceva non li vedeva.
+
+     Il menu è fatto di collegamenti veri e la sezione è nell'indirizzo
+     (`#onorari`): così si può mandare a qualcuno il punto esatto, il tasto
+     indietro torna dove si era, e senza JavaScript le sezioni restano tutte
+     visibili — degrada, non si rompe.
+
+     La sezione attiva si deduce dall'indirizzo, non dal clic: un solo posto
+     decide cosa si vede (`mostraSezione`), chiamato sia dal clic sia
+     dall'apertura della pagina sia dal tasto indietro. */
+  var SEZIONI = ["panoramica", "pratica", "documenti", "cronologia", "conto",
+                 "onorari", "contratto", "sicurezza"];
+
+  function sezioneDaIndirizzo() {
+    var id = (window.location.hash || "").replace("#", "");
+    return SEZIONI.indexOf(id) >= 0 ? id : "panoramica";
+  }
+
+  function mostraSezione(id, scorri) {
+    SEZIONI.forEach(function (nome) {
+      var sezione = document.getElementById(nome);
+      if (sezione) sezione.hidden = nome !== id;
+    });
+    /* anche i pannelli dentro una sezione (`#carica`, dentro i documenti):
+       senza questa riga restano visibili anche quando la loro sezione è
+       nascosta, e comparivano in cima a ogni altra. Il caricamento dei file
+       appartiene ai documenti, quindi si vede solo lì. */
+    Array.prototype.forEach.call(document.querySelectorAll(".pnl--inner[id]"), function (pannello) {
+      pannello.hidden = id !== (DOVE_STA[pannello.id] || id);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".area-nav__link"), function (link) {
+      var attiva = link.getAttribute("data-tab") === id;
+      link.classList.toggle("is-active", attiva);
+      if (attiva) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    /* cambiando sezione si riparte dall'inizio del contenuto: restare a metà
+       pagina dopo aver scelto «Contratto» fa credere che non sia successo
+       niente */
+    if (scorri !== false) {
+      var testa = document.getElementById("main");
+      if (testa) testa.scrollIntoView({ block: "start", behavior: "auto" });
+    }
+  }
+
+  /* I collegamenti che portano a un pannello dentro una sezione — «Aggiungi un
+     file» → il caricamento, dentro i documenti — devono prima aprire la
+     sezione, altrimenti il pannello è `hidden` e il clic sembra non fare
+     niente. Vale anche per la voce «Versa» dell'intestazione, che porta al
+     conto e apre già il modulo del versamento. */
+  var DOVE_STA = { carica: "documenti" };
+
+  function bindAncoreInterne() {
+    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#"]'), function (link) {
+      var id = link.getAttribute("href").replace("#", "");
+      if (!id || id === "main" || SEZIONI.indexOf(id) >= 0) return;
+      if (!document.getElementById(id)) return;
+      link.addEventListener("click", function () {
+        mostraSezione(DOVE_STA[id] || "panoramica");
+        var bersaglio = document.getElementById(id);
+        if (bersaglio && bersaglio.scrollIntoView) bersaglio.scrollIntoView({ block: "start" });
       });
     });
+  }
 
-    /* la tab attiva segue lo scroll: la sezione visibile più in alto vince */
-    var targets = Array.prototype.map.call(tabs, function (tab) {
-      var id = tab.getAttribute("href").replace("#", "");
-      return { tab: tab, section: document.getElementById(id) };
-    }).filter(function (t) { return t.section; });
-
-    if (!targets.length || !("IntersectionObserver" in window)) return;
-
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        targets.forEach(function (t) {
-          t.tab.classList.toggle("is-active", t.section === entry.target);
-        });
-      });
-    }, { rootMargin: "-15% 0px -70% 0px", threshold: 0 });
-
-    targets.forEach(function (t) { observer.observe(t.section); });
+  function bindTabs() {
+    var link = document.querySelectorAll(".area-nav__link");
+    if (!link.length) return;
+    mostraSezione(sezioneDaIndirizzo(), false);
+    window.addEventListener("hashchange", function () {
+      mostraSezione(sezioneDaIndirizzo());
+    });
+    bindAncoreInterne();
   }
 
   function bindRefresh(reload) {
@@ -658,6 +706,16 @@
        caso. «2 / 4» faceva sembrare mancante qualcosa che nessuno ha chiesto. */
     set("stat-docs", String(data.documents_count || 0));
     set("docs-count", String(data.documents_count || 0));
+    /* il numero accanto alla voce «Documenti» nella barra laterale: serve a
+       sapere se c'è qualcosa nella sezione **senza aprirla**. Zero non si
+       mostra: un «0» accanto a una voce è un avviso, e non c'è niente da
+       avvisare. */
+    var navDocumenti = document.querySelector("[data-nav-documenti]");
+    if (navDocumenti) {
+      var quanti = Number(data.documents_count) || 0;
+      navDocumenti.textContent = String(quanti);
+      navDocumenti.hidden = quanti === 0;
+    }
     set("phase-index", String(kase.phase_index || 1).padStart(2, "0"));
     set("phase-name", kase.phase_name || "—");
     set("phase-pct", (kase.percent || 0) + "%");
@@ -2229,6 +2287,7 @@
       }, 600);
     });
   }
+
 
   function load() {
     caricaNotifiche();
