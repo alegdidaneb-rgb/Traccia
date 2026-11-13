@@ -167,7 +167,12 @@ test("nessuna password in chiaro in nessun file versionato", () => {
     if (saltate.test(f)) return;
     /* binari e immagini non si leggono come testo */
     if (/\.(png|jpe?g|webp|ico|woff2?|ttf|pdf|zip)$/i.test(f)) return;
-    const testo = fs.readFileSync(path.join(radice, f), "utf8");
+    /* un file che git traccia ma che non è sul disco è una cancellazione non
+       ancora registrata: non contiene password, e leggere un file assente
+       faceva fallire questo test con un ENOENT che non c'entra niente */
+    const percorso = path.join(radice, f);
+    if (!fs.existsSync(percorso)) return;
+    const testo = fs.readFileSync(percorso, "utf8");
     sospette.forEach(function (re) {
       if (re.test(testo)) trovate.push(f + " → " + re);
     });

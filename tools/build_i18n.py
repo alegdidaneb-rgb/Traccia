@@ -390,6 +390,18 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     # sembrerebbero «un po' diverse» invece che rotte. Verificato servendole da
     # un server locale.
     intera = re.sub(r'(src|href)="assets/', r'\1="/assets/', intera)
+    # ...e lo stesso vale per `srcset`, che è un attributo a parte: contiene
+    # **più** indirizzi separati da virgole. La riga qui sopra non lo toccava,
+    # quindi ogni `<img srcset="assets/…">` di una pagina tradotta chiedeva
+    # `/de/assets/…`: 404 su tutte le immagini con più misure. Erano rotte le
+    # fotografie del team, le immagini dei casi e quelle della home — in tre
+    # lingue — mentre in italiano si vedevano benissimo, che è il motivo per
+    # cui nessuno se n'era accorto.
+    def riscrivi_srcset(m: re.Match[str]) -> str:
+        valore = re.sub(r'(^|,\s*)assets/', r'\1/assets/', m.group(2))
+        return m.group(1) + valore + m.group(3)
+
+    intera = re.sub(r'(srcset=")([^"]*)(")', riscrivi_srcset, intera)
 
     prima, corpo, dopo = parti_della_pagina(intera)
     testata = attributi_lingua(prima, lingua, catalogo, pagina_nome)
@@ -490,6 +502,11 @@ def main() -> int:
                 f"{lingua}: {len(mancanti)} chiavi mancanti (es. «{mancanti[0][:60]}»)"
             )
         for pagina_nome in pagine:
+            # una pagina che non esiste in questa versione del sito si salta:
+            # l'elenco è condiviso fra rami, e una riga in più non deve far
+            # fallire un giro di traduzione con un FileNotFoundError
+            if not (ROOT / pagina_nome).exists():
+                continue
             nuova, non_tradotti = costruisci(pagina_nome, lingua, catalogo)
             relativo = f"{lingua}/{pagina_nome}"
             destinazione = ROOT / lingua / pagina_nome

@@ -52,7 +52,7 @@ PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html",
     "login.html", "privacy.html", "termini.html", "cookie.html",
-    "note-legali.html", "404.html", "app.html", "admin.html",
+    "note-legali.html", "404.html", "app.html", "admin.html", "storie.html",
 ]
 
 # La versione è un'impronta del **contenuto**, non una data: due giorni in cui
@@ -69,25 +69,44 @@ def impronta() -> str:
     return sommario.hexdigest()[:8]
 
 
-# Un indirizzo nuovo non è in nessuna cache. La cartella vecchia resta dov'è:
-# qualcuno ha ancora in memoria una pagina che la chiama, e un 404 gli
-# toglierebbe il foglio di stile — peggio di una copia vecchia.
+# L'indirizzo degli asset è un'impronta del contenuto: quando il contenuto
+# cambia, cambia l'indirizzo, e chi ha ancora in memoria la pagina vecchia
+# trova la sua cartella dov'era. Ma una cartella **già creata** può essere
+# incompleta: è quello che è successo con `img/team/`, copiata a un livello
+# solo per mesi. Per questo la funzione non si limita a creare: sincronizza.
+# Se trova un file mancante o diverso lo riscrive, e dice se ha toccato
+# qualcosa. Senza, il difetto sarebbe stato irreparabile senza cambiare hash.
 def crea_cartella(versione: str) -> bool:
     destinazione = ASSET / versione
-    if destinazione.exists():
-        return False
+    scritto = False
     for sorgente in sorted(ASSET.glob("*")):
         if sorgente.is_dir() and re.fullmatch(r"[0-9a-f]{8}", sorgente.name):
             continue
         if sorgente.is_dir():
-            (destinazione / sorgente.name).mkdir(parents=True, exist_ok=True)
-            for f in sorted(sorgente.glob("*")):
-                if f.is_file():
-                    (destinazione / sorgente.name / f.name).write_bytes(f.read_bytes())
+            # **Ricorsivo**, non un livello solo: `img/team/` e `img/marchio/`
+            # stanno due gradini sotto, e con `glob("*")` non venivano copiate
+            # affatto. Le pagine però puntavano lo stesso a
+            # `assets/<versione>/img/team/…`: nove ritratti erano 404 su tutto
+            # il sito, e non se ne accorgeva nessuno perché il resto della
+            # pagina si caricava benissimo. Il 404 di un'immagine non fa
+            # rumore: lascia un riquadro vuoto.
+            for f in sorted(sorgente.rglob("*")):
+                if not f.is_file():
+                    continue
+                copia = destinazione / f.relative_to(ASSET)
+                if copia.exists() and copia.read_bytes() == f.read_bytes():
+                    continue
+                copia.parent.mkdir(parents=True, exist_ok=True)
+                copia.write_bytes(f.read_bytes())
+                scritto = True
         elif sorgente.is_file():
+            copia = destinazione / sorgente.name
+            if copia.exists() and copia.read_bytes() == sorgente.read_bytes():
+                continue
             destinazione.mkdir(parents=True, exist_ok=True)
-            (destinazione / sorgente.name).write_bytes(sorgente.read_bytes())
-    return True
+            copia.write_bytes(sorgente.read_bytes())
+            scritto = True
+    return scritto
 
 
 # Le pagine scritte prima del 2026-11-08 chiamano gli asset con `assets/…` e un
@@ -112,6 +131,16 @@ def asset_correnti(versione: str) -> bool:
         copia = ASSET / versione / "css" / f.name
         if not copia.exists() or copia.read_bytes() != f.read_bytes():
             return False
+    # e le immagini: è il controllo che mancava. Senza, una cartella creata
+    # quando la copia era ancora a un livello solo sarebbe passata per buona,
+    # e i ritratti sarebbero rimasti 404 per sempre.
+    for cartella in ("img", "fonts"):
+        for f in sorted((ASSET / cartella).rglob("*")):
+            if not f.is_file():
+                continue
+            copia = ASSET / versione / f.relative_to(ASSET)
+            if not copia.exists() or copia.read_bytes() != f.read_bytes():
+                return False
     return True
 
 
@@ -204,6 +233,19 @@ def main() -> int:
         cambiate = riscrivi(attesa)
         if cambiate:
             print(f"versione {attesa}: aggiornate {len(cambiate)} pagine")
+        nuova = impronta()
+        if nuova == attesa:
+            break
+        attesa = nuova
+
+    # Si rifà il giro prima di potare: `riscrivi` può cambiare l'impronta (i
+    # sorgenti contengono riferimenti agli asset), e potare sul numero vecchio
+    # vorrebbe dire cancellare la cartella appena creata.
+    for _ in range(5):
+        if asset_correnti(attesa):
+            break
+        crea_cartella(attesa)
+        riscrivi(attesa)
         nuova = impronta()
         if nuova == attesa:
             break
