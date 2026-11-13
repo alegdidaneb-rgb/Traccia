@@ -43,20 +43,8 @@ PAGINE_PUBBLICHE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
     "privacy.html", "termini.html", "cookie.html", "note-legali.html",
-    "404.html", "admin.html", "storie.html",
+    "404.html", "admin.html",
 ]
-
-# La pagina delle storie non ha una voce nel menu, e non è una dimenticanza.
-# Con «Storie» la barra passerebbe da 1292 a 1359px su 1320 disponibili: 39px
-# di troppo, cioè l'hamburger a 1440 — su portatili comunissimi, su tutto il
-# sito, per una pagina che si raggiunge dalla home, dal piè di pagina e dalla
-# fine di ogni caso. Il calcolo è in `tools/misura_header.py`, che a ogni giro
-# dice di quanto si sfora: aggiungendo la voce, il test della testata si
-# accende. La barra di questa pagina resta quella delle altre, identica.
-#
-# La pagina sta in `PAGINE_PUBBLICHE` proprio per questo: `nav_links` non le
-# accende nessuna voce (non è in `voci_menu`), ma lei deve comunque passare di
-# qui, o il suo header e il suo piè di pagina invecchiano da soli.
 
 # Le pagine tradotte (`en/`, `de/`, `es/`) non passano da qui: le scrive
 # `build_i18n.py`, che è l'unico proprietario di quei file. Due script che

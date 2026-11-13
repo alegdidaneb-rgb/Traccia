@@ -63,10 +63,6 @@ PAGINE = [
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
     "privacy.html", "termini.html", "cookie.html", "note-legali.html",
     "404.html",
-    # Le storie dei clienti: è una pagina pubblica come le altre, e la voce nel
-    # menu esiste in tutte le lingue. Se qui non ci fosse, `/en/storie.html`
-    # sarebbe un 404 raggiunto dal menu di ogni pagina tradotta.
-    "storie.html",
 ]
 
 # Dati che non sono testo: non vanno toccati nemmeno dentro il corpo.

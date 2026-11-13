@@ -52,9 +52,6 @@
     settingsForm: document.querySelector("#settings-form"),
     messages: document.querySelector("[data-messages]"),
     messagesCount: document.querySelector("[data-messages-count]"),
-    storieBody: document.querySelector("[data-storie-body]"),
-    storieCount: document.querySelector("[data-storie-count]"),
-    countStorie: document.querySelector("[data-count-storie]"),
     scope: document.querySelector("[data-admin-scope]")
   };
 
@@ -572,108 +569,6 @@
     }).catch(function (err) {
       ui.toast(err.message, "error");
     });
-  }
-
-  /* ------------------------------------------------------------- storie --
-     Le storie dei clienti. Tre stati possibili, e vanno detti con parole
-     diverse perché l'analista deve capire in un colpo d'occhio se c'è
-     qualcosa da fare:
-
-       · «Pubblicata» — è online così com'è;
-       · «Da sistemare» — il filtro ha trovato un dato personale (email,
-         telefono, IBAN, una cifra). **Non** è online;
-       · «Ritirata» — il cliente ha cambiato idea. Resta scritta, non si
-         cancella: è la prova che il consenso c'era e che è stato revocato.
-
-     Un blocco si scioglie solo quando il cliente riscrive il testo senza il
-     dato personale: non c'è un pulsante «ignora il filtro», ed è voluto. Un
-     filtro che si può scavalcare con un clic non è un filtro. */
-  var TIPI_STORIA = {
-    broker: "Finto broker", crypto: "Criptovalute", unlock: "Prelievo bloccato",
-    recovery: "Finto recupero", altro: "Altro"
-  };
-
-  function statoStoria(s) {
-    if (s.ritirata) return { testo: "Ritirata", classe: "pill--denied" };
-    if (!s.consenso) return { testo: "Senza consenso", classe: "pill--denied" };
-    if (s.blocco) return { testo: "Da sistemare", classe: "pill--pending" };
-    return { testo: "Pubblicata", classe: "pill--approved" };
-  }
-
-  function renderStorie(storie) {
-    if (!L.storieBody) return;
-    state.storie = storie;
-
-    var pubblicate = storie.filter(function (s) {
-      return s.pubblicata;
-    }).length;
-    if (L.storieCount) {
-      L.storieCount.textContent = storie.length
-        ? pubblicate + " online su " + storie.length
-        : "Nessuna storia";
-    }
-    if (L.countStorie) L.countStorie.textContent = String(pubblicate || "");
-
-    if (!storie.length) {
-      L.storieBody.innerHTML =
-        '<tr><td colspan="6" class="empty-state">Nessun cliente ha ancora scritto la sua storia.</td></tr>';
-      return;
-    }
-
-    L.storieBody.innerHTML = storie.map(function (s) {
-      var stato = statoStoria(s);
-      var testo = s.testo || "";
-      var corto = testo.length > 180 ? testo.slice(0, 180).trim() + "…" : testo;
-      /* in evidenza: solo se la storia è pubblicabile. Il database lo rifiuta
-         comunque, ma un pulsante che si può premere e poi risponde «non si
-         può» è un pulsante che mente. */
-      var stella = s.pubblicata
-        ? '<button class="btn btn--ghost btn--sm" data-storia-evidenza="' + ui.esc(s.id) +
-          '" data-acceso="' + (s.in_evidenza ? "1" : "0") + '">' +
-          (s.in_evidenza ? "Togli dalla home" : "Metti in home") + "</button>"
-        : '<span class="xs muted">—</span>';
-      return "<tr>" +
-        '<td><strong>' + ui.esc(s.firma || "—") + "</strong><br>" +
-          '<span class="xs muted">' + ui.esc(s.email || "") + "</span></td>" +
-        "<td>" + ui.esc(TIPI_STORIA[s.tipo] || TIPI_STORIA.altro) + "</td>" +
-        "<td>" + ui.esc(s.citta || "—") + "</td>" +
-        '<td><span class="pill ' + stato.classe + '">' + stato.testo + "</span>" +
-          (s.blocco ? '<br><span class="xs muted">' + ui.esc(s.blocco) + "</span>" : "") +
-        "</td>" +
-        '<td><span class="xs">' + ui.esc(corto) + "</span>" +
-          (s.in_evidenza ? '<br><span class="pill pill--approved">In home</span>' : "") + "</td>" +
-        '<td class="data-table__actions">' + stella + "</td>" +
-        "</tr>";
-    }).join("");
-
-    L.storieBody.querySelectorAll("[data-storia-evidenza]").forEach(function (bottone) {
-      bottone.addEventListener("click", function () {
-        var acceso = bottone.getAttribute("data-acceso") !== "1";
-        bottone.disabled = true;
-        api.storiaEvidenza(bottone.getAttribute("data-storia-evidenza"), acceso)
-          .then(function () {
-            ui.toast(acceso ? "Storia messa in home." : "Storia tolta dalla home.", "ok");
-            return loadStorie();
-          })
-          .catch(function (err) {
-            bottone.disabled = false;
-            ui.toast(err.message, "error");
-          });
-      });
-    });
-  }
-
-  function loadStorie() {
-    if (!L.storieBody) return Promise.resolve();
-    return api.storieAdmin()
-      .then(function (data) { renderStorie(data.storie || []); })
-      .catch(function (err) {
-        /* la consolle non deve sparire perché una funzione nuova non c'è
-           ancora su un ambiente: la si segnala e si va avanti */
-        L.storieBody.innerHTML =
-          '<tr><td colspan="6" class="empty-state">Storie non disponibili: ' +
-          ui.esc(err.message) + "</td></tr>";
-      });
   }
 
   function renderAudit(rows) {
@@ -1578,7 +1473,6 @@
     return Promise.all([
       loadOverview(), loadRichieste(), loadAccounts(), loadAllAccounts(), loadOperations(),
       loadWallets(), loadDocuments(), loadSettings(), loadMessages(), loadBanca(),
-      loadStorie()
     ]);
   }
 
