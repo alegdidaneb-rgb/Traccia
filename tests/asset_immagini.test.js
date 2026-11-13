@@ -158,4 +158,24 @@ test("le pagine tradotte chiedono le immagini alla radice, non dentro la lingua"
     "indirizzi relativi in una pagina tradotta:\n  " + relativi.slice(0, 6).join("\n  "));
 });
 
+test("vercel.json è fatto di regole che Vercel accetta", () => {
+  /* Il difetto: `"/assets/(fonts|img)/(.*)"` non è una sintassi valida per
+     `headers[].source`, e Vercel **rifiuta l'intero deploy** con
+     «Header at index 3 has invalid `source` pattern». Non un avviso: il sito
+     resta fermo alla versione precedente, senza che nessuno se ne accorga —
+     il merge era passato, il deploy no.
+
+     Le parentesi di raggruppamento `(a|b)` non sono ammesse; i parametri
+     nominati `:nome` e le espressioni `(.*)` sì. */
+  const regole = JSON.parse(fs.readFileSync(path.join(RADICE, "vercel.json"), "utf8")).headers || [];
+  const rotte = regole.map((r) => r.source).filter((s) => /\([^)]*\|[^)]*\)/.test(s));
+  assert.deepStrictEqual(rotte, [],
+    "regole con raggruppamento `(a|b)`, che Vercel rifiuta: " + rotte.join(", "));
+  regole.forEach((r) => {
+    assert.ok(Array.isArray(r.headers) && r.headers.length,
+      "regola senza intestazioni: " + r.source);
+  });
+});
+
 module.exports = casi;
+
