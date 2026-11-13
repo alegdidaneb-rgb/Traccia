@@ -218,6 +218,27 @@
 
     /* --- area cliente --- */
     dashboard: function () { return call("me_dashboard"); },
+
+    /* --- le storie dei clienti ---------------------------------------------
+       Il cliente scrive la sua, la ritira, la rilegge. Il pubblico le legge
+       senza sessione (`storie`). Non c'è una chiamata per approvare: la
+       pubblicazione è immediata, e quello che può fermarla è il controllo sui
+       dati personali, che sta nel database — non qui. */
+    storie: function (quante) { return call("public_storie", { p_limite: quante || 50 }); },
+    miaStoria: function () { return call("me_testimonianza"); },
+    salvaStoria: function (dati) {
+      return call("salva_testimonianza", {
+        p_testo: dati.testo,
+        p_tipo: dati.tipo || "altro",
+        p_citta: dati.citta || null,
+        p_consenso: !!dati.consenso,
+        p_ritira: !!dati.ritira
+      });
+    },
+    storieAdmin: function () { return call("admin_testimonianze"); },
+    storiaEvidenza: function (id, acceso) {
+      return call("admin_storia_evidenza", { p_id: id, p_accesso: !!acceso });
+    },
     /* --- conto --- */
     conto: function () { return call("conto"); },
     estrattoConto: function (da, a, limite) {

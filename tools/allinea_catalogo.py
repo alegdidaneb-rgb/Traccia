@@ -44,7 +44,7 @@ PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html",
     "login.html", "privacy.html", "termini.html", "cookie.html",
-    "note-legali.html", "404.html",
+    "note-legali.html", "404.html", "storie.html",
 ]
 PARTIAL = ["partials/header.html", "partials/footer.html", "partials/area-bar.html"]
 

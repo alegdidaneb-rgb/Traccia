@@ -4035,3 +4035,135 @@ body.is-staff-view #sicurezza { display: none !important; }
 .data-table td { font-size: 0.84rem; }
 .data-table tbody tr { transition: background 0.18s var(--ease-out); }
 .data-table tbody tr:hover { background: #fcfcfa; }
+
+/* --- storie dei clienti --------------------------------------------------
+   Testimonianze scritte dai clienti dalla loro area (`app.html` → «La mia
+   storia»), mostrate qui in tre posti: la sezione in home, la pagina
+   `storie.html` e l'anteprima dentro l'area riservata.
+
+   Perché non riuso `.case`: i casi seguiti li scrive l'ufficio e hanno una
+   scheda (riferimento, importo, esito, fatti in tabella); una storia è la voce
+   di una persona e ha una firma, una citazione e una data. Sono due cose che
+   si somigliano solo perché sono rettangoli bianchi — vestirle uguale
+   confonderebbe l'unica distinzione che conta: chi parla.
+
+   Le tessere arrivano da `assets/js/stories.js`, quindi il CSS non deve
+   sperare in un contenuto: se sono zero, la griglia resta vuota e la sezione
+   in home resta `hidden`. Nessun segnaposto, nessun riquadro vuoto. */
+.storie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  /* In home le tre tessere affiancate non devono diventare due e mezza: con
+     `auto-fit` e un minimo di 300px su una griglia da 1200 stanno sempre in
+     tre. Sotto i 1000 il minimo scende e vanno in colonna, che è quello che
+     serve. */
+  align-items: stretch;
+}
+
+.storia {
+  /* è un `figure`: il margine predefinito del browser non lo vogliamo */
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: clamp(1.25rem, 2.6vw, 1.75rem);
+  transition: box-shadow 0.25s var(--ease-out), border-color 0.25s var(--ease-out),
+    transform 0.25s var(--ease-out);
+}
+.storia:hover {
+  border-color: transparent;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+/* chi parla viene prima di quello che dice: la firma è la prima cosa
+   leggibile, perché è l'unica prova che dietro la frase c'è una persona */
+.storia__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.storia__firma {
+  font-weight: 600;
+  font-size: var(--fs-small);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+/* l'iniziale del cognome è l'unico punto della tessera in cui si può
+   permettere un colore: è un timbro, non un titolo */
+.storia__firma::first-letter { color: var(--accent); }
+.storia__dove {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.storia__dove::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Il testo: corpo da lettura, non da didascalia. Il limite di caratteri lo
+   impone il database (2500), qui si impone la misura della riga — oltre le
+   ~65 lettere l'occhio perde il segno. `overflow-wrap` perché una storia può
+   contenere un indirizzo lungo: senza, allarga la tessera e sfonda la
+   griglia. */
+.storia__testo {
+  margin: 0;
+  flex: 1;
+  font-size: 0.97rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.storia__testo p { margin: 0; white-space: pre-line; }
+/* Le virgolette non sono un'immagine né un carattere decorativo: sono la
+   convenzione tipografica che dice «questo lo ha detto qualcun altro».
+   In `::before` per non finire nel testo copiato. */
+.storia__testo p::before { content: "«"; color: var(--accent); }
+.storia__testo p::after { content: "»"; color: var(--accent); }
+
+.storia__piede {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* Sulla pagina dedicata le tessere possono respirare di più: lì non c'è
+   niente che le affianchi. */
+.storie-grid--pagina { gap: clamp(1.25rem, 2.4vw, 1.75rem); }
+.storie-grid--pagina .storia__testo { font-size: 1rem; }
+
+@media (max-width: 640px) {
+  .storie-grid { grid-template-columns: 1fr; }
+  .storia:hover { transform: none; }   /* su touch non esiste l'hover: niente salto */
+}
+
+/* --- anteprima della propria storia (area cliente) -----------------------
+   In `app.html` il cliente vede come apparirà la sua storia prima di
+   pubblicarla. Non è una tessera della griglia: sta dentro un pannello, è più
+   piccola, e non ha l'ombra al passaggio del mouse — non è cliccabile, e
+   fingere che lo sia è il modo più rapido per far cliccare qualcuno a vuoto. */
+.storia-anteprima .storia {
+  box-shadow: none;
+  background: var(--bg-soft);
+  border-style: dashed;
+}
+.storia-anteprima .storia:hover { transform: none; box-shadow: none; border-color: var(--line); }

@@ -2230,10 +2230,187 @@
     });
   }
 
+  /* ------------------------------------------------------------- la storia --
+     Il cliente scrive la sua testimonianza: testo libero, tipo di truffa,
+     città facoltativa, consenso esplicito. Pubblicazione immediata — non c'è
+     una coda di approvazione — e quello che può fermarla è il controllo sui
+     dati personali, che sta nel database (`perche_non_pubblicabile`).
+
+     Qui si fa una cosa sola in più: **l'anteprima mentre scrive**. Il cliente
+     deve vedere le proprie iniziali e la frase come apparirà sul sito prima di
+     premere, altrimenti «perché c'è scritto M. L.?» arriva dopo, per email, e
+     qualcuno deve toglierla in fretta. */
+  function bindStoria() {
+    var pannello = document.getElementById("storia");
+    if (!pannello) return;
+    var form = document.getElementById("storia-form");
+    var testo = document.getElementById("storia-testo");
+    var tipo = document.getElementById("storia-tipo");
+    var citta = document.getElementById("storia-citta");
+    var consenso = document.getElementById("storia-consenso");
+    var errore = pannello.querySelector("[data-form-error]");
+    var conteggio = pannello.querySelector("[data-storia-conteggio]");
+    var anteprima = pannello.querySelector("[data-storia-anteprima]");
+    var prevTesto = pannello.querySelector("[data-storia-preview-testo]");
+    var prevFirma = pannello.querySelector("[data-storia-preview-firma]");
+    var stato = pannello.querySelector("[data-storia-stato]");
+    var attesa = pannello.querySelector("[data-storia-attesa]");
+    var fatta = pannello.querySelector("[data-storia-fatta]");
+    var ritira = pannello.querySelector("[data-storia-ritira]");
+    var salva = pannello.querySelector("[data-storia-salva]");
+    var firma = "";
+
+    function scriviErrore(msg) {
+      if (!errore) return;
+      errore.hidden = !msg;
+      errore.textContent = msg || "";
+    }
+
+    function aggiornaAnteprima() {
+      var valore = (testo.value || "").trim();
+      if (conteggio) conteggio.textContent = String((testo.value || "").length);
+      if (!anteprima) return;
+      anteprima.hidden = valore.length < 40;
+      if (prevTesto) prevTesto.textContent = valore.length > 260
+        ? valore.slice(0, 260).trimEnd() + "…" : valore;
+      if (prevFirma) {
+        /* come sulla pagina: iniziali · città. Il tipo di truffa sta nella
+           riga sopra il racconto, non in fondo, quindi qui non si ripete. */
+        prevFirma.textContent = [firma, (citta.value || "").trim()]
+          .filter(Boolean).join(" · ");
+      }
+    }
+
+    /* Il tipo di truffa: le stesse cinque chiavi del database.
+       `altro` qui dice «Altro» e non «Truffa finanziaria» come sulla pagina
+       pubblica: è la voce che il cliente sceglie nel modulo, e «preferisco non
+       dirlo» è già un'opzione — ripetere «truffa finanziaria» su una casella
+       del modulo è dare per scontato quello che chiediamo. */
+    var TIPI = { broker: "Finto broker", crypto: "Criptovalute", unlock: "Prelievo bloccato",
+                 recovery: "Finto recupero", altro: "Altro" };
+
+    function mostra(d) {
+      firma = d.firma || firma;
+      var faseOk = d.puo_scrivere !== false;
+      if (form) form.hidden = !faseOk;
+      if (attesa) {
+        attesa.hidden = faseOk;
+        if (!faseOk) {
+          attesa.textContent = d.fase
+            ? "La storia si può raccontare dalla fase 3 (Denunce) in poi: ora la tua pratica è alla fase " + d.fase + "."
+            : "La storia si può raccontare quando la pratica è aperta.";
+        }
+      }
+      if (testo && d.testo) testo.value = d.testo;
+      if (tipo && d.tipo) tipo.value = d.tipo;
+      if (citta && d.citta) citta.value = d.citta;
+      if (consenso) consenso.checked = !!d.consenso && !d.ritirata;
+
+      if (stato) {
+        var etichetta = !d.testo ? null
+          : d.pubblicata ? "pubblicata"
+          : d.ritirata ? "ritirata"
+          : d.blocco ? "da sistemare"
+          : "non pubblicata";
+        stato.hidden = !etichetta;
+        if (etichetta) stato.textContent = etichetta;
+        /* `pill--active` è verde e vuol dire «va bene»: qui viene usata come
+           vero solo se la storia è online. Senza testo, il database
+           restituisce `pubblicata: false` e la pillola resterebbe verde
+           dicendo «pubblicata» di una storia che non esiste. */
+        stato.className = "pill " + (etichetta === "pubblicata" ? "pill--active"
+          : etichetta === "da sistemare" || etichetta === "ritirata" ? "pill--denied"
+          : "pill--pending");
+      }
+      /* il motivo per cui non è online: è la cosa più utile che questa
+         schermata può dire, e va detta qui, non in un toast che sparisce */
+      if (d.blocco) scriviErrore(d.blocco);
+      if (fatta) {
+        fatta.hidden = !d.pubblicata;
+        fatta.textContent = d.pubblicata
+          ? "La tua storia è online nella pagina delle storie. Puoi cambiarla o ritirarla da qui quando vuoi."
+          : "";
+      }
+      if (ritira) ritira.hidden = !d.consenso && !d.pubblicata;
+      if (salva) {
+        salva.textContent = d.testo ? "Salva le modifiche" : "Pubblica la storia";
+      }
+      aggiornaAnteprima();
+    }
+
+    if (testo) testo.addEventListener("input", aggiornaAnteprima);
+    if (citta) citta.addEventListener("input", aggiornaAnteprima);
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        scriviErrore("");
+        var valore = (testo.value || "").trim();
+        if (valore.length < 80) {
+          return scriviErrore("Servono almeno ottanta caratteri: racconta com'è andata, non solo che è andata bene.");
+        }
+        if (!consenso.checked) {
+          return scriviErrore("Senza il consenso la storia resta privata: spunta la casella per pubblicarla.");
+        }
+        salva.disabled = true;
+        api.salvaStoria({
+          testo: valore,
+          tipo: (tipo.value || "altro"),
+          citta: (citta.value || "").trim(),
+          consenso: true
+        }).then(function (res) {
+          salva.disabled = false;
+          if (res && res.motivo) {
+            scriviErrore(res.motivo);
+          } else if (window.ui) {
+            ui.toast("Storia pubblicata. Grazie.", "ok");
+          }
+          return api.miaStoria().then(mostra);
+        }).catch(function (err) {
+          salva.disabled = false;
+          scriviErrore(err.message || "Non sono riuscito a salvare la storia.");
+        });
+      });
+    }
+
+    if (ritira) {
+      ritira.addEventListener("click", function () {
+        ui.ask({
+          title: "Ritirare il consenso?",
+          message: "La storia sparisce dal sito subito. Il testo resta qui, e puoi ripubblicarla quando vuoi.",
+          confirm: "Ritira"
+        }).then(function (risposta) {
+          if (risposta === null) return;
+          return api.salvaStoria({ ritira: true }).then(function () {
+            if (window.ui) ui.toast("Consenso ritirato: la storia non è più online.", "ok");
+            return api.miaStoria().then(mostra);
+          });
+        }).catch(function (err) {
+          scriviErrore(err.message || "Non sono riuscito a ritirare il consenso.");
+        });
+      });
+    }
+
+    /* esposto per `caricaStoria`: una funzione sola decide cosa si vede */
+    bindStoria.mostra = mostra;
+  }
+
+  function caricaStoria() {
+    if (!document.getElementById("storia")) return;
+    api.miaStoria().then(function (d) {
+      if (bindStoria.mostra) bindStoria.mostra(d);
+    }).catch(function (err) {
+      /* la sezione non deve far fallire l'area: se il database non risponde,
+         il resto della pratica resta leggibile */
+      if (window.ui && ui.toast) ui.toast(err.message, "error");
+    });
+  }
+
   function load() {
     caricaNotifiche();
     caricaConto();
     caricaBanca();
+    caricaStoria();
     api.dashboard()
       .then(renderDashboard)
       .catch(function (err) {
@@ -2257,6 +2434,7 @@
     bindForm();
     bindDocumenti();
     bindConto();
+    bindStoria();
     bindLogoutAll();
 
     var staff = staffView();

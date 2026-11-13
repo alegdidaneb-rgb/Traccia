@@ -2006,6 +2006,19 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   font-size: var(--fs-small);
 }
 
+/* --- avviso in linea -----------------------------------------------------
+   Una nota dentro il flusso della pagina, non un riquadro d'allarme: serve a
+   dire «da qui puoi fare questa cosa», non «è successo un guasto». Stessa
+   famiglia di `.panel--note`, ma senza intestazione e senza bordo: l'occhio
+   deve arrivarci dopo aver letto, non prima. */
+.callout {
+  background: var(--accent-wash);
+  border-radius: var(--r-lg);
+  padding: clamp(1.4rem, 3vw, 2rem);
+}
+.callout p { color: var(--ink-soft); }
+.callout .btn--ghost { background: #fff; }
+
 /* filter chips */
 .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
