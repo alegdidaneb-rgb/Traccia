@@ -394,6 +394,18 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     # sembrerebbero «un po' diverse» invece che rotte. Verificato servendole da
     # un server locale.
     intera = re.sub(r'(src|href)="assets/', r'\1="/assets/', intera)
+    # ...e lo stesso vale per `srcset`, che è un attributo a parte: contiene
+    # **più** indirizzi separati da virgole. La riga qui sopra non lo toccava,
+    # quindi ogni `<img srcset="assets/…">` di una pagina tradotta chiedeva
+    # `/de/assets/…`: 404 su tutte le immagini con più misure. Erano rotte le
+    # fotografie del team, le immagini dei casi e quelle della home — in tre
+    # lingue — mentre in italiano si vedevano benissimo, che è il motivo per
+    # cui nessuno se n'era accorto.
+    def riscrivi_srcset(m: re.Match[str]) -> str:
+        valore = re.sub(r'(^|,\s*)assets/', r'\1/assets/', m.group(2))
+        return m.group(1) + valore + m.group(3)
+
+    intera = re.sub(r'(srcset=")([^"]*)(")', riscrivi_srcset, intera)
 
     prima, corpo, dopo = parti_della_pagina(intera)
     testata = attributi_lingua(prima, lingua, catalogo, pagina_nome)

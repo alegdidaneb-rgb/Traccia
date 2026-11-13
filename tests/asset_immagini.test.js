@@ -130,4 +130,32 @@ test("nessuna pagina cita una cartella di un'altra versione", () => {
     "pagine con due versioni di asset: " + [...versioni.entries()].slice(0, 3).join(" | "));
 });
 
+test("le pagine tradotte chiedono le immagini alla radice, non dentro la lingua", () => {
+  /* Il difetto: in `/en/team.html` gli attributi `srcset="assets/…"` erano
+     rimasti relativi. Da `/en/`, `assets/img/…` è `/en/assets/img/…`, che non
+     esiste: le fotografie del team erano 404 in inglese, tedesco e spagnolo —
+     mentre in italiano si vedevano. Un difetto che si nota solo cambiando
+     lingua, cioè quasi mai: chi lo scrive lo guarda in italiano. */
+  const re = /srcset="([^"]*)"/g;
+  const relativi = [];
+  for (const pagina of pagine()) {
+    const rel = path.relative(RADICE, pagina);
+    if (!/^(en|de|es)[\/\\]/.test(rel)) continue;
+    const testo = fs.readFileSync(pagina, "utf8");
+    for (const m of testo.matchAll(re)) {
+      for (const pezzo of m[1].split(",")) {
+        const url = pezzo.trim().split(/\s+/)[0];
+        if (url && !/^(\/|https?:|data:)/.test(url)) relativi.push(rel + " → " + url);
+      }
+    }
+    /* e lo stesso per `src` */
+    for (const m of testo.matchAll(/src="([^"]+)"/g)) {
+      const url = m[1];
+      if (!/^(\/|https?:|data:)/.test(url)) relativi.push(rel + " → src=" + url);
+    }
+  }
+  assert.deepStrictEqual(relativi.slice(0, 6), [],
+    "indirizzi relativi in una pagina tradotta:\n  " + relativi.slice(0, 6).join("\n  "));
+});
+
 module.exports = casi;
