@@ -163,8 +163,7 @@ test("vercel.json è fatto di regole che Vercel accetta", () => {
      `headers[].source`, e Vercel **rifiuta l'intero deploy** con
      «Header at index 3 has invalid `source` pattern». Non un avviso: il sito
      resta fermo alla versione precedente, senza che nessuno se ne accorga —
-     il merge era passato, il deploy no. È così che i ritratti del team sono
-     rimasti rotti in produzione per due correzioni di fila.
+     il merge era passato, il deploy no.
 
      Le parentesi di raggruppamento `(a|b)` non sono ammesse; i parametri
      nominati `:nome` e le espressioni `(.*)` sì. */

@@ -502,6 +502,11 @@ def main() -> int:
                 f"{lingua}: {len(mancanti)} chiavi mancanti (es. «{mancanti[0][:60]}»)"
             )
         for pagina_nome in pagine:
+            # una pagina che non esiste in questa versione del sito si salta:
+            # l'elenco è condiviso fra rami, e una riga in più non deve far
+            # fallire un giro di traduzione con un FileNotFoundError
+            if not (ROOT / pagina_nome).exists():
+                continue
             nuova, non_tradotti = costruisci(pagina_nome, lingua, catalogo)
             relativo = f"{lingua}/{pagina_nome}"
             destinazione = ROOT / lingua / pagina_nome
