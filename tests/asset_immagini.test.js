@@ -91,4 +91,43 @@ test("il generatore degli asset copia anche le sottocartelle", () => {
     "è tornata la copia a un livello solo");
 });
 
+test("ogni cartella di asset citata esiste **nel repository**, non solo su questo disco", () => {
+  /* Il difetto vero, quello che ha lasciato i ritratti rotti in produzione:
+     la cartella c'era sul mio disco perché `versione_asset.py` l'aveva appena
+     creata, ma i file non erano stati aggiunti a git. In locale le foto si
+     vedevano; online no, e niente lo diceva.
+
+     Qui si chiede a git, non al disco: se un file esiste ma non è tracciato,
+     non arriverà mai su Vercel. */
+  const { spawnSync } = require("child_process");
+  const git = spawnSync("git", ["ls-files", "--", "assets"], { cwd: RADICE, encoding: "utf8" });
+  if (git.status !== 0) return;            /* niente git: non si può dire */
+  const tracciati = new Set(git.stdout.split("\n").filter(Boolean));
+
+  const cartelle = new Set();
+  for (const rif of riferimenti().keys()) {
+    /* cartella = tutto fino all'ultimo `/`, es. assets/abc12345/img/team */
+    cartelle.add(rif.slice(0, rif.lastIndexOf("/")));
+  }
+  const vuote = [...cartelle].filter((c) =>
+    ![...tracciati].some((f) => f.startsWith(c + "/")));
+  assert.deepStrictEqual(vuote, [],
+    "cartelle citate dalle pagine ma senza file in git:\n  " + vuote.join("\n  "));
+});
+
+test("nessuna pagina cita una cartella di un'altra versione", () => {
+  /* Due versioni vive insieme sono lecite (chi ha la pagina vecchia in cache
+     deve poterla ancora caricare), ma una pagina deve citarne una sola.
+     `versione_asset.py` lo controlla; questo test lo rende visibile a chi
+     guarda la suite senza eseguire la build. */
+  const versioni = new Map();
+  for (const pagina of pagine()) {
+    const testo = fs.readFileSync(pagina, "utf8");
+    const viste = new Set((testo.match(/assets\/[0-9a-f]{8}\//g) || []));
+    if (viste.size > 1) versioni.set(path.relative(RADICE, pagina), [...viste]);
+  }
+  assert.deepStrictEqual([...versioni.keys()], [],
+    "pagine con due versioni di asset: " + [...versioni.entries()].slice(0, 3).join(" | "));
+});
+
 module.exports = casi;
