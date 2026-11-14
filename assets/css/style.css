@@ -292,7 +292,7 @@ a { color: inherit; text-decoration: none; }
 .chip:focus-visible,
 .nav-user__exit:focus-visible,
 .nav-user__link:focus-visible,
-.app-side a:focus-visible,
+.app-nav__link:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -1761,76 +1761,123 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 
 /* app layout */
 .app-shell {
-  display: grid;
-  grid-template-columns: 250px 1fr;
+  display: block;
   min-height: calc(100vh - var(--header-h));
   background: var(--bg-soft);
 }
-.app-side {
-  background: #fff;
-  border-right: 1px solid var(--line);
-  padding: 1.5rem 1rem;
+/* ---------------------------------------------------------------- app-nav --
+   Il menu della console: una riga in cima, larga quanto lo schermo.
+
+   La barra laterale costava 250px su ogni schermata — su un portatile da 1366
+   sono il 18% dello spazio utile, occupato da un elenco che si legge una volta
+   e poi si ignora. In cima, la stessa informazione costa 44px di altezza e non
+   toglie niente alle tabelle, che sono il motivo per cui la console esiste.
+
+   A capo, non in orizzontale: `flex-wrap` e niente `overflow-x`. Se le voci
+   non ci stanno (finestra stretta, testo ingrandito) vanno a capo e restano
+   tutte visibili; una striscia che scorre nasconde cose, e chi non trascina
+   non sa che ci sono.
+   -------------------------------------------------------------------------- */
+.app-nav {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.app-side__label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  padding: 0.75rem 0.75rem 0.4rem;
-}
-.app-side a {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.65rem 0.75rem;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 0.45rem clamp(0.75rem, 2vw, 1.5rem);
+  position: sticky;
+  top: var(--header-h);
+  z-index: 20;
+}
+.app-nav__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.app-nav__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.55rem;
   border-radius: var(--r-sm);
-  font-size: var(--fs-small);
+  font-size: 0.86rem;
   font-weight: 500;
   color: var(--ink-soft);
+  white-space: nowrap;
+  transition: background 0.16s var(--ease), color 0.16s var(--ease);
 }
-.app-side a {
-  position: relative;
-  transition: background 0.16s var(--ease), color 0.16s var(--ease),
-    padding-left 0.16s var(--ease);
-}
-.app-side a:hover { background: var(--bg-soft); padding-left: 0.95rem; }
-.app-side a.is-active {
+.app-nav__link:hover { background: var(--bg-soft); color: var(--ink); }
+.app-nav__link.is-active {
   background: var(--ink);
   color: #fff;
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
 }
-.app-side a.is-active::before {
+/* la linguetta: sostituisce la barretta verticale che stava a sinistra,
+   perché in una riga orizzontale «a sinistra» non vuol dire più niente */
+.app-nav__link.is-active::after {
   content: "";
   position: absolute;
-  left: 0.35rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -0.45rem;
+  width: 22px;
+  height: 2px;
   border-radius: 2px;
   background: var(--accent-lime);
 }
-.app-side__foot { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
-.app-side .user-mini {
+/* Il numero accanto alla voce. Prima non aveva una regola sua: era uno `<span>`
+   vuoto con solo un margine, quindi occupava spazio anche quando non c'era
+   niente da contare — undici voci con undici pastiglie vuote. Ora ha la forma
+   di una pastiglia, e quando è vuota non si vede: `.is-numerato` la mette
+   `admin.js` solo per i conteggi maggiori di zero. */
+.app-nav__link .chip__count {
+  display: none;
+  min-width: 1.1rem;
+  padding: 0 0.3rem;
+  border-radius: 99px;
+  background: var(--accent-lime);
+  color: var(--ink);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
+}
+.app-nav__link .chip__count.is-numerato { display: inline-block; }
+.app-nav__link.is-active .chip__count { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+.app-nav__io {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.5rem;
+  gap: 0.85rem;
+  margin-left: auto;
+}
+.app-nav__io .user-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: var(--fs-xs);
 }
-.user-mini__avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--accent-wash); color: var(--accent-ink);
-  display: grid; place-items: center; font-weight: 700; font-size: 0.75rem;
+.app-nav__uscita {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  white-space: nowrap;
 }
-.user-mini strong { display: block; }
+.app-nav__uscita:hover { color: var(--ink); }
+.user-mini__avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-wash); color: var(--accent-ink);
+  display: grid; place-items: center; font-weight: 700; font-size: 0.72rem;
+  flex: none;
+}
+.user-mini strong { display: block; line-height: 1.15; }
 .user-mini span { color: var(--muted); }
 
-.app-main { padding: clamp(1.25rem, 3vw, 2.25rem); max-width: 1180px; }
+.app-main { padding: clamp(1.25rem, 3vw, 2.25rem); max-width: 1280px; }
 .app-head {
   display: flex;
   flex-wrap: wrap;
@@ -2095,24 +2142,12 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 .modal .btn-row { margin-top: 1.25rem; justify-content: flex-end; }
 
 @media (max-width: 860px) {
-  /* minmax(0,1fr): con "1fr" la traccia cresce fino alla larghezza del
-     contenuto e la barra orizzontale dei link sfora la pagina */
-  .app-shell { grid-template-columns: minmax(0, 1fr); }
-  .app-side {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    /* le voci vanno **a capo** invece di scorrere di lato: dieci voci in una
-       striscia da 330px ne mostravano tre, e le altre sette esistevano solo
-       per chi pensava di trascinare. A capo si vedono tutte, e la barra è
-       alta il giusto invece di essere una fila mozzata. */
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 0.6rem;
-    gap: 0.3rem;
-  }
-  .app-side__label, .app-side__foot { display: none; }
-  .app-side a { white-space: nowrap; padding: 0.4rem 0.6rem; font-size: 0.82rem; }
+  /* la barra delle voci va a capo invece di scorrere di lato: undici voci in
+     una striscia da 330px ne mostrano tre, e le altre otto esistono solo per
+     chi pensa di trascinare. A capo si vedono tutte. */
+  .app-nav { position: static; padding: 0.5rem 0.6rem; }
+  .app-nav__link { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+  .app-nav__io .user-mini div { display: none; }
 }
 
 /* inline "summary" rows used in the admin overview */
@@ -2330,16 +2365,9 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   .settings-table { min-width: 620px; }
 }
 
-/* desktop: keep the console navigation in view while scrolling */
-@media (min-width: 861px) {
-  .app-side {
-    position: sticky;
-    top: var(--header-h);
-    height: calc(100vh - var(--header-h));
-    overflow-y: auto;
-    align-self: start;
-  }
-}
+/* desktop: la barra resta in cima mentre si scorrono le tabelle. Non ha
+   altezza fissa né scorrimento proprio: le voci vanno a capo se servono due
+   righe, e la barra cresce di conseguenza invece di tagliarsi. */
 /* wallet addresses wrap instead of widening the table */
 .data-table td.mono,
 .data-table td .mono {
@@ -3063,7 +3091,6 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 /* 5. l'area riservata non deve mai generare scorrimento orizzontale */
 .app-shell { max-width: 100%; }
 .app-main { min-width: 0; }
-.app-side { min-width: 0; }
 
 /* ==========================================================================
    Componenti "enterprise" — stile agency forense

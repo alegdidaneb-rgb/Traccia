@@ -147,13 +147,11 @@
       return;
     }
     L.allAccountsBody.innerHTML = state.allAccounts.map(function (user) {
-      var roleBtn = "";
-      if (!user.is_master && state.me && state.me.is_master) {
-        var nextRole = user.role === "admin" ? "user" : "admin";
-        roleBtn = '<button class="btn btn--ghost btn--sm" data-role="' + user.id +
-          '" data-next="' + nextRole + '" type="button">' +
-          (nextRole === "admin" ? "Rendi admin" : "Revoca admin") + "</button>";
-      }
+      /* Qui non c'è «Rendi admin»: il ruolo non è una decisione sulla pratica,
+         e chi lo cambia lo fa dove la richiesta è nata (pannello Account).
+         Una tabella che offre quattro azioni diverse su ogni riga costringe a
+         rileggere quale bottone serve — ed è così che si clicca quello
+         sbagliato. */
       /* chiusura forzata delle sessioni: serve quando un accesso è compromesso */
       var killBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" data-kill="' + user.id +
@@ -175,9 +173,9 @@
          aperta è il momento in cui si smette di chiamare. */
       return "<tr>" +
         "<td><strong>" + ui.esc(user.name) + "</strong>" +
+        (user.email ? '<div class="xs muted">' + ui.esc(user.email) + "</div>" : "") +
         (user.phone ? '<div class="xs muted">' + ui.esc(user.phone) + "</div>" : "") +
         "</td>" +
-        '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
         /* La fase nella stessa tabella dove si guarda la pratica. Prima stava
            solo nella scheda «Nuove segnalazioni», un'altra schermata: per
            sapere a che punto era una pratica si cambiava pannello, e per
@@ -200,17 +198,12 @@
             (user.contract_status === "accepted"
               ? '<span class="pill pill--active">accettato</span>'
               : '<span class="pill pill--pending">da accettare</span>')) + "</td>" +
-        "<td>" + (user.is_master
-          ? '<span class="pill pill--master">Master</span>'
-          : user.role === "admin"
-            ? '<span class="pill pill--admin">Admin</span>'
-            : '<span class="xs muted">Cliente</span>') + "</td>" +
         "<td>" + ui.pill(user.status) + "</td>" +
         '<td class="num">' + ui.money(user.balance_eur) + "</td>" +
         '<td class="num">' + (user.holdings_value
           ? ui.money(user.holdings_value)
           : '<span class="xs muted">—</span>') + "</td>" +
-        '<td class="data-table__actions">' + editBtn + openBtn + roleBtn + killBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + openBtn + killBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -416,9 +409,7 @@
       state.documents = data.documents || [];
       renderDocuments();
       if (L.countDocuments) {
-        var pending = Number(data.pending_count) || 0;
-        L.countDocuments.textContent = pending ? String(pending) : "";
-        L.countDocuments.classList.toggle("is-hot", pending > 0);
+        conta(L.countDocuments, data.pending_count);
       }
       if (L.kpiDocuments) L.kpiDocuments.textContent = String(data.pending_count || 0);
     });
@@ -609,16 +600,30 @@
   }
 
   /* ------------------------------------------------------------ loading -- */
+  /* Un numero accanto a una voce di menu è un avviso: «qualcuno aspetta te».
+     Zero non si mostra, e nemmeno una pastiglia vuota: prima erano undici
+     `span` vuoti con un margine, che allargavano il menu senza dire niente.
+     Qui c'è un posto solo che decide — scrivere il numero e accendere la
+     pastiglia — perché sparsa su cinque funzioni è la stessa cosa detta in
+     cinque modi, e basta dimenticarne uno. */
+  function conta(nodo, quanti) {
+    if (!nodo) return;
+    var n = Number(quanti) || 0;
+    nodo.textContent = n > 0 ? String(n) : "";
+    nodo.classList.toggle("is-numerato", n > 0);
+    nodo.classList.toggle("is-hot", n > 0);
+  }
+
   function loadOverview() {
     return api.overview().then(function (data) {
       L.kpiAccounts.textContent = String(data.pending_accounts);
       L.kpiOperations.textContent = String(data.pending_operations);
       L.kpiWallets.textContent = String(data.pending_wallets || 0);
-      L.countWallets.textContent = data.pending_wallets ? data.pending_wallets : "";
+      conta(L.countWallets, data.pending_wallets);
       L.kpiActive.textContent = String(data.active_users);
       L.kpiBalance.textContent = ui.money(data.total_balance_eur);
-      L.countAccounts.textContent = data.pending_accounts ? data.pending_accounts : "";
-      L.countOperations.textContent = data.pending_operations ? data.pending_operations : "";
+      conta(L.countAccounts, data.pending_accounts);
+      conta(L.countOperations, data.pending_operations);
       [[L.cardAccounts, data.pending_accounts],
        [L.cardOperations, data.pending_operations],
        [L.cardWallets, data.pending_wallets || 0]].forEach(function (pair) {
@@ -685,11 +690,8 @@
         nodo.classList.toggle("is-alert", kp[sel] > 0);
       }
     });
-    var count = document.querySelector("[data-count-banca]");
-    if (count) {
-      var totale = (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0);
-      count.textContent = totale ? String(totale) : "";
-    }
+    conta(document.querySelector("[data-count-banca]"),
+      (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0));
 
     caricaConferme();
     renderBonifici(dati && dati.bonifici);
@@ -1090,8 +1092,7 @@
           nodo.textContent = String(daFare);
           nodo.classList.toggle("is-alert", daFare > 0);
         }
-        var count = document.querySelector("[data-count-banca]");
-        if (count && daFare) count.textContent = String(daFare);
+        conta(document.querySelector("[data-count-banca]"), daFare);
         return lista;
       });
     }).catch(function () {
@@ -1366,7 +1367,7 @@
       renderRichieste();
       /* il contatore in barra laterale conta solo le nuove: è il numero che
          dice «c'è qualcuno da chiamare» */
-      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      conta(L.countLead, data.new_count);
       if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
       if (L.cardLead) {
         L.cardLead.classList.toggle("is-zero", !data.new_count);
@@ -1427,7 +1428,7 @@
       });
       n.onclick = function () {
         window.focus();
-        var voce = document.querySelector('.app-side a[data-tab="lead"]');
+        var voce = document.querySelector('.app-nav__link[data-tab="lead"]');
         if (voce) voce.click();
         n.close();
       };
@@ -1440,7 +1441,7 @@
     if (!state.me) return;
     api.richieste("new").then(function (data) {
       avvisaSeNuove(data.new_count || 0, data.richieste || []);
-      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      conta(L.countLead, data.new_count);
       if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
     }).catch(function () { /* rete assente: si riprova al giro dopo */ });
   }, 60000);
@@ -1757,7 +1758,7 @@
 
   /* --------------------------------------------------------------- bind -- */
   function bind() {
-        document.querySelector(".app-side__foot [data-logout]").addEventListener("click", function (e) {
+        document.querySelector(".app-nav__io [data-logout]").addEventListener("click", function (e) {
       e.preventDefault();
       if (window.TracciaSession) window.TracciaSession.logout();
       else api.logout().then(function () { location.href = "login.html?uscita=1"; });
@@ -2042,7 +2043,7 @@
     document.querySelectorAll(".panel[id]").forEach(function (pannello) {
       pannello.hidden = pannello.id !== id;
     });
-    document.querySelectorAll(".app-side a[data-tab]").forEach(function (link) {
+    document.querySelectorAll(".app-nav__link[data-tab]").forEach(function (link) {
       var attiva = link.getAttribute("data-tab") === id;
       link.classList.toggle("is-active", attiva);
       if (attiva) link.setAttribute("aria-current", "page");
@@ -2052,7 +2053,7 @@
   }
 
   function bindSezioni() {
-    if (!document.querySelector(".app-side a[data-tab]")) return;
+    if (!document.querySelector(".app-nav__link[data-tab]")) return;
     mostraSezione(sezioneDaIndirizzo(), false);
     window.addEventListener("hashchange", function () {
       mostraSezione(sezioneDaIndirizzo());

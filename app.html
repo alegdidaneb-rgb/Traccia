@@ -3,7 +3,7 @@
 <head>
 <!-- shell:misurazione -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PCHTN7DM');</script>
-  <script src="assets/71b0603a/js/conversione.js" defer></script>
+  <script src="assets/5a503510/js/conversione.js" defer></script>
   <!-- /shell:misurazione -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,18 +20,18 @@
   <meta property="og:title" content="La mia pratica — Traccia">
   <meta property="og:description" content="Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.">
   <meta property="og:url" content="https://traccia.it.com/app.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/71b0603a/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/5a503510/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="assets/71b0603a/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/71b0603a/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/71b0603a/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/71b0603a/css/style.css">
-  <link rel="stylesheet" href="assets/71b0603a/css/premium.css">
+  <link rel="apple-touch-icon" href="assets/5a503510/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/5a503510/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/5a503510/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/5a503510/css/style.css">
+  <link rel="stylesheet" href="assets/5a503510/css/premium.css">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -43,9 +43,9 @@
     })();
   </script>
 
-  <script src="assets/71b0603a/js/config.js" defer></script>
-  <script src="assets/71b0603a/js/api.js" defer></script>
-  <script src="assets/71b0603a/js/session.js" defer></script>
+  <script src="assets/5a503510/js/config.js" defer></script>
+  <script src="assets/5a503510/js/api.js" defer></script>
+  <script src="assets/5a503510/js/session.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -139,135 +139,104 @@
       </div>
     </div>
 
-    <div class="appv2__grid">
+    <div class="appv2__pagina">
+    <!-- ==========================================================================
+         Il menu dell'area, e la pratica intera sotto.
+         ==========================================================================
+         Prima: una barra laterale di otto voci, e una sezione per volta. Aprire
+         «Onorari» voleva dire far sparire tutto il resto, e per sapere se il
+         bonifico era arrivato bisognava andare nel conto e poi tornare indietro.
+         Il cliente ha detto: «per vedere interamente tutte le funzioni bisogna
+         trascinare». Non era solo lo scorrimento: era che **la pagina non si
+         vedeva tutta insieme**.
 
-      <!-- ===================== barra laterale ===================== -->
-    <!-- ============================================================================
-         La barra laterale dell'area cliente.
-         ============================================================================
-         Prima qui c'era una fila di otto schede in orizzontale, dentro una striscia
-         di 62px che scorreva di lato: metà delle cose raggiungibili solo
-         trascinando, e chi non trascinava non sapeva nemmeno che esistessero. La
-         barra era larga 1150px su 1320 disponibili — cioè stava in piedi, ma solo
-         perché il telefono non era un telefono.
+         Adesso è una riga di voci in cima, e sotto la pratica per intero, in
+         sequenza, una sezione dopo l'altra. Nessuna scheda che nasconde, nessun
+         contenuto che esiste solo per chi indovina dove cliccare.
 
-         Adesso è una colonna: otto voci, tutte visibili, nessuno scorrimento. Si
-         vede quante cose ci sono e dove sono, che è la metà del lavoro di un menu.
+         Le voci non nascondono più niente: portano a un punto della pagina
+         (`href="#conto"`), come un indice. Funzionano senza JavaScript, il
+         tasto indietro torna al punto di prima, e si può mandare a qualcuno
+         l'indirizzo esatto di ciò di cui si parla.
 
-         Ogni voce è un collegamento vero (`href="#panoramica"`): funziona anche
-         senza JavaScript, apre una sezione che ha un indirizzo proprio, e il tasto
-         indietro del browser fa quello che ci si aspetta.
-
-         Il numero accanto a una voce dice **quante cose aspettano te**, non quante
-         ce ne sono in tutto: solo dove c'è qualcosa da leggere o da fare compare.
-         --- Il conteggio lo riempie `case.js` (attributi `data-nav-*`), e parte
-         vuoto: un numero inventato accanto a una voce è peggio di nessun numero.
-         ============================================================================ -->
-    <!-- ============================================================================
-         La barra laterale dell'area cliente.
-         ============================================================================
-         Prima qui c'era una fila di otto schede in orizzontale, dentro una striscia
-         di 62px che scorreva di lato: metà delle cose raggiungibili solo
-         trascinando, e chi non trascinava non sapeva nemmeno che esistessero. La
-         barra era larga 1150px su 1320 disponibili — cioè stava in piedi, ma solo
-         perché il telefono non era un telefono.
-
-         Adesso è una colonna: otto voci, tutte visibili, nessuno scorrimento. Si
-         vede quante cose ci sono e dove sono, che è la metà del lavoro di un menu.
-
-         Ogni voce è un collegamento vero (`href="#panoramica"`): funziona anche
-         senza JavaScript, apre una sezione che ha un indirizzo proprio, e il tasto
-         indietro del browser fa quello che ci si aspetta.
-
-         Il numero accanto a una voce dice **quante cose aspettano te**, non quante
-         ce ne sono in tutto: solo dove c'è qualcosa da leggere o da fare compare.
-         --- Il conteggio lo riempie `case.js` (attributi `data-nav-*`), e parte
-         vuoto: un numero inventato accanto a una voce è peggio di nessun numero.
-         ============================================================================ -->
-    <aside class="area-nav" aria-label="Sezioni dell'area">
-      <div class="area-nav__box">
-        <span class="area-nav__label">La tua pratica</span>
-        <nav class="area-nav__links">
-          <a class="area-nav__link is-active" href="#panoramica" data-tab="panoramica">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.8" y="1.8" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1.8" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="1.8" y="9" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5.2" height="5.2" rx="1.3" stroke="currentColor" stroke-width="1.3"/></svg>
-            <span>Panoramica</span>
-          </a>
-          <a class="area-nav__link" href="#pratica" data-tab="pratica">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>Stato della pratica</span>
-          </a>
-          <a class="area-nav__link" href="#documenti" data-tab="documenti">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.8 2v4.2H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            <span>Documenti</span>
-            <span class="area-nav__count" data-nav-documenti hidden>0</span>
-          </a>
-          <a class="area-nav__link" href="#cronologia" data-tab="cronologia">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 8a5.6 5.6 0 105.6-5.6c-1.8 0-3.4.9-4.4 2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.2 2.6v2.4h2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5.6V8l1.8 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>Aggiornamenti</span>
-          </a>
-          <a class="area-nav__link" href="#conto" data-tab="conto">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.9 5.2h12.2M2.6 12.6h10.8a1.4 1.4 0 001.4-1.4V4.6a1.4 1.4 0 00-1.4-1.4H2.6a1.4 1.4 0 00-1.4 1.4v6.6a1.4 1.4 0 001.4 1.4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10.9 9h1.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>Conto</span>
-          </a>
-          <a class="area-nav__link" href="#onorari" data-tab="onorari">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.9v12.2M11 4.6c0-1.1-1.3-1.9-3-1.9s-3 .8-3 1.9c0 2.7 6 1.4 6 4.1 0 1.1-1.3 1.9-3 1.9s-3-.8-3-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>Onorari</span>
-          </a>
-          <a class="area-nav__link" href="#contratto" data-tab="contratto">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.6 8.5l1.2 1.2 2.9-3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Contratto</span>
-          </a>
-          <a class="area-nav__link" href="#sicurezza" data-tab="sicurezza">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.9l5 1.7v4.1c0 3-2.1 5.1-5 6.4-2.9-1.3-5-3.4-5-6.4V3.6l5-1.7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.9 7.9l1.5 1.5 2.9-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Sicurezza</span>
-          </a>
-        </nav>
+         Il numero accanto a una voce dice **quante cose aspettano te**, non
+         quante ce ne sono in tutto: parte vuoto e si riempie da `case.js`.
+         ========================================================================== -->
+    <nav class="area-nav" aria-label="Sezioni della pratica">
+      <div class="area-nav__bar">
+        <a class="area-nav__link" href="#riepilogo"><span>Riepilogo</span></a>
+        <a class="area-nav__link" href="#pratica"><span>Pratica</span></a>
+        <a class="area-nav__link" href="#documenti"><span>Documenti</span>
+          <span class="area-nav__count" data-nav-documenti hidden>0</span></a>
+        <a class="area-nav__link" href="#conto"><span>Conto</span></a>
+        <a class="area-nav__link" href="#onorari"><span>Onorari</span></a>
+        <a class="area-nav__link" href="#cronologia"><span>Aggiornamenti</span></a>
+        <a class="area-nav__link" href="#contratto"><span>Contratto</span></a>
+        <a class="area-nav__link" href="#sicurezza"><span>Sicurezza</span></a>
       </div>
-    </aside>
+    </nav>
 
-      <!-- ===================== colonna principale ===================== -->
-      <div class="appv2__col">
+    <!-- ==========================================================================
+         Il riepilogo: le quattro cose che si vogliono sapere appena si apre.
+         ==========================================================================
+         Fase, importo, documenti, ultimo aggiornamento. Esisteva già, ma stava
+         **dentro** «Stato della pratica», cioè dentro una delle otto schede: chi
+         atterrava su «Documenti» non lo vedeva, e la prima domanda di chi apre
+         questa pagina è «a che punto sono». Ora sta in cima e non si sposta.
+         ========================================================================== -->
+    <section class="pnl pnl--riepilogo" id="riepilogo">
+      <div class="pnl__head">
+        <h2>Riepilogo</h2>
+        <span class="xs muted">Ultimo aggiornamento il <b data-stat-updated>—</b></span>
+      </div>
+      <div class="pnl__body pnl__body--flush">
+            <!-- KPI -->
+            <div class="kpi" aria-label="Riepilogo della pratica">
+              <div class="kpi__cell">
+                <span class="kpi__label">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  Fase attuale
+                </span>
+                <span class="kpi__value" data-stat-phase>—</span>
+                <span class="kpi__hint">di 5 fasi del percorso</span>
+              </div>
 
-        <!-- KPI -->
-        <div class="kpi" aria-label="Riepilogo della pratica">
-          <div class="kpi__cell">
-            <span class="kpi__label">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.6V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              Fase attuale
-            </span>
-            <span class="kpi__value" data-stat-phase>—</span>
-            <span class="kpi__hint">di 5 fasi del percorso</span>
-          </div>
+              <div class="kpi__cell kpi__cell--accent">
+                <span class="kpi__label">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 11.6c1.6-2.6 2.9-4 4.3-4.2 1.4-.2 2.2 1 3.4.8 1.2-.2 1.9-1.4 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.6" cy="6.2" r="1.4" fill="currentColor"/></svg>
+                  Importo segnalato
+                </span>
+                <span class="kpi__value" data-stat-amount>—</span>
+                <span class="kpi__spark" aria-hidden="true">
+                  <svg viewBox="0 0 120 26" preserveAspectRatio="none"><path d="M1 20 L18 16 L34 18 L52 10 L70 13 L88 6 L104 8 L119 3"/></svg>
+                </span>
+              </div>
 
-          <div class="kpi__cell kpi__cell--accent">
-            <span class="kpi__label">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 11.6c1.6-2.6 2.9-4 4.3-4.2 1.4-.2 2.2 1 3.4.8 1.2-.2 1.9-1.4 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12.6" cy="6.2" r="1.4" fill="currentColor"/></svg>
-              Importo segnalato
-            </span>
-            <span class="kpi__value" data-stat-amount>—</span>
-            <span class="kpi__spark" aria-hidden="true">
-              <svg viewBox="0 0 120 26" preserveAspectRatio="none"><path d="M1 20 L18 16 L34 18 L52 10 L70 13 L88 6 L104 8 L119 3"/></svg>
-            </span>
-          </div>
+              <div class="kpi__cell">
+                <span class="kpi__label">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                  Documenti ricevuti
+                </span>
+                <span class="kpi__value"><span data-stat-docs>—</span></span>
+                <span class="kpi__hint" data-docs-missing>&nbsp;</span>
+              </div>
 
-          <div class="kpi__cell">
-            <span class="kpi__label">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 1.8H4.2a1.4 1.4 0 00-1.4 1.4v9.6a1.4 1.4 0 001.4 1.4h7.6a1.4 1.4 0 001.4-1.4V6.2L9 1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Documenti ricevuti
-            </span>
-            <span class="kpi__value"><span data-stat-docs>—</span></span>
-            <span class="kpi__hint" data-docs-missing>&nbsp;</span>
-          </div>
+              <div class="kpi__cell">
+                <span class="kpi__label">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.2" width="12" height="10.4" rx="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.6h12M5.2 9.6h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  Aggiornata il
+                </span>
+                <span class="kpi__value" data-stat-updated>—</span>
+                <span class="kpi__hint">dall'ufficio analisi</span>
+              </div>
+            </div>
+      </div>
+    </section>
 
-          <div class="kpi__cell">
-            <span class="kpi__label">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.2" width="12" height="10.4" rx="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.6h12M5.2 9.6h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              Aggiornata il
-            </span>
-            <span class="kpi__value" data-stat-updated>—</span>
-            <span class="kpi__hint">dall'ufficio analisi</span>
-          </div>
-        </div>
+
+
+
+      <div class="appv2__col appv2__col--unica">
 
         <!-- stato della pratica -->
         <section class="pnl" id="pratica">
@@ -565,7 +534,7 @@
         <!-- cronologia -->
         <section class="pnl" id="cronologia">
           <div class="pnl__head">
-            <h2>Cronologia della pratica</h2>
+            <h2>Aggiornamenti della pratica</h2>
             <button class="btn btn--ghost btn--sm" data-refresh type="button">Aggiorna</button>
           </div>
           <div class="pnl__body">
@@ -897,8 +866,8 @@
     </div>
   </div>
 
-  <!-- ===================== colonna laterale ===================== -->
-      <aside class="appv2__col" aria-label="Riferimenti della pratica">
+  <!-- ===================== riferimenti, in fondo ===================== -->
+      <aside class="appv2__col appv2__col--riferimenti" aria-label="Riferimenti della pratica">
 
         <section class="pnl">
           <div class="pnl__head"><h2>Il tuo referente</h2></div>
@@ -1044,19 +1013,19 @@
 </div>
 
 
-  <script src="assets/71b0603a/js/ui.js" defer></script>
-  <script src="assets/71b0603a/js/contract.js" defer></script>
-  <script src="assets/71b0603a/js/case.js" defer></script>
-  <script src="assets/71b0603a/js/main.js" defer></script>
-  <script src="assets/71b0603a/js/market.js" defer></script>
-  <script src="assets/71b0603a/js/premium.js" defer></script>
-  <!-- WhatsApp: il numero sta in assets/71b0603a/js/config.js; senza numero il
+  <script src="assets/5a503510/js/ui.js" defer></script>
+  <script src="assets/5a503510/js/contract.js" defer></script>
+  <script src="assets/5a503510/js/case.js" defer></script>
+  <script src="assets/5a503510/js/main.js" defer></script>
+  <script src="assets/5a503510/js/market.js" defer></script>
+  <script src="assets/5a503510/js/premium.js" defer></script>
+  <!-- WhatsApp: il numero sta in assets/5a503510/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
      aria-label="Scrivici su WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/71b0603a/js/whatsapp.js" defer></script>
+  <script src="assets/5a503510/js/whatsapp.js" defer></script>
 </body>
 </html>
