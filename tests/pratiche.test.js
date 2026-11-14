@@ -243,6 +243,24 @@ test("la ricerca ha un nome per chi non la vede", () => {
   assert.ok(/type="search"/.test(HTML), "il tipo giusto dà la «x» per cancellare");
 });
 
+test("il titolo della scheda del browser è quello della pagina", () => {
+  /* Trovato guardando la produzione, non dai test: in pagina c'era
+     «Console di ufficio» e nella scheda del browser «Console analisti».
+     Chi tiene la console aperta fra dieci schede la ritrova dal titolo, e un
+     titolo che dice «analisti» mentre la pagina dice «ufficio» è la prima
+     cosa che fa sembrare lo strumento lasciato a metà. */
+  const h1 = /<h1>([^<]+)<\/h1>/.exec(HTML);
+  const titolo = /<title>([^<—]+)—/.exec(HTML);
+  assert.ok(h1 && titolo, "mancano l'intestazione o il titolo della pagina");
+  assert.equal(titolo[1].trim(), h1[1].trim(),
+    `la scheda dice «${titolo[1].trim()}», la pagina dice «${h1[1].trim()}»`);
+
+  /* e la descrizione social dice la stessa cosa */
+  const og = /<meta property="og:title" content="([^"—]+)/.exec(HTML);
+  assert.ok(og, "manca og:title");
+  assert.equal(og[1].trim(), h1[1].trim(), "og:title dice un'altra cosa");
+});
+
 test("la sezione si chiama come la voce del menu", () => {
   assert.ok(/<h2>Pratiche<\/h2>/.test(HTML),
     "la voce del menu dice «Pratiche»: il titolo deve dire la stessa cosa");
