@@ -630,66 +630,42 @@ html.no-anim .reveal-img,
   margin-inline: auto;
   padding: clamp(1.5rem, 3vw, 2.5rem) var(--pad-x) 0;
 }
-.appv2__grid {
-  display: grid;
-  /* `minmax(0, …)` su tutte e due le tracce: con `1fr` una tabella larga
-     dentro il contenuto allarga la traccia fino a sfondare la pagina, e la
-     barra laterale finisce fuori dallo schermo. È il difetto che aveva la
-     vecchia griglia, solo spostato di lato. */
-  grid-template-columns: minmax(0, 236px) minmax(0, 1fr) minmax(0, 300px);
-  gap: clamp(1.25rem, 2.2vw, 1.75rem);
-  align-items: start;
-}
-@media (max-width: 1240px) {
-  .appv2__grid { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); }
-  /* sotto i 1240px la colonna di destra (referente, azioni rapide) scende in
-     fondo: due colonne di contenuto più il menu non ci stanno */
-  .appv2__grid > .appv2__col:last-child { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-}
-@media (max-width: 860px) {
-  .appv2__grid { grid-template-columns: minmax(0, 1fr); }
-  .appv2__grid > .appv2__col:last-child { display: flex; }
-}
+/* --- il menu dell'area: una riga in cima ---------------------------------
+   Un indice, non delle schede. Le voci portano a un punto della pagina — la
+   pratica sotto è tutta lì, in sequenza — quindi non c'è niente da nascondere
+   e niente che possa divergere da ciò che si vede.
 
-/* --- barra laterale dell'area --------------------------------------------
-   Otto voci, tutte visibili, nessuno scorrimento orizzontale. Resta ferma
-   mentre il contenuto scorre: cambiare sezione è sempre a portata di mano,
-   anche a metà di un elenco lungo. */
-.area-nav { position: sticky; top: calc(var(--header-h) + 1.25rem); }
-.area-nav__box {
-  display: flex;
-  flex-direction: column;
-  gap: .2rem;
-  background: #fff;
+   Resta fermo in cima mentre si scorre: a metà di un elenco lungo, «Conto» è
+   ancora a portata di mano. A capo, non in orizzontale: una striscia che
+   scorre nasconde voci, e chi non trascina non sa che ci sono. */
+.area-nav {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 15;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: saturate(140%) blur(8px);
   border: 1px solid var(--line);
   border-radius: var(--r-lg, 16px);
-  padding: .7rem;
+  padding: .3rem .4rem;
+  margin-bottom: clamp(1rem, 2vw, 1.35rem);
 }
-.area-nav__label {
-  font-size: .64rem;
-  text-transform: uppercase;
-  letter-spacing: .11em;
-  color: var(--muted);
-  font-weight: 600;
-  padding: .45rem .6rem .3rem;
-}
-.area-nav__links { display: flex; flex-direction: column; gap: .1rem; }
+.area-nav__bar { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem; }
 .area-nav__link {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: .6rem;
-  padding: .55rem .6rem;
+  gap: .4rem;
+  padding: .5rem .7rem;
   border-radius: 10px;
-  font-size: .86rem;
+  font-size: .85rem;
   font-weight: 500;
   color: var(--muted);
+  white-space: nowrap;
   line-height: 1.2;
+  transition: background .16s var(--ease-out, ease), color .16s var(--ease-out, ease);
 }
-.area-nav__link span:first-of-type { flex: 1 1 auto; min-width: 0; }
-.area-nav__link svg { flex: 0 0 auto; opacity: .65; }
 .area-nav__link:hover { background: var(--bg-soft); color: var(--ink); }
 .area-nav__link.is-active { background: var(--ink); color: #fff; }
-.area-nav__link.is-active svg { opacity: 1; }
 /* il numero: solo dove c'è qualcosa che aspetta te */
 .area-nav__count {
   flex: 0 0 auto;
@@ -704,18 +680,42 @@ html.no-anim .reveal-img,
   line-height: 18px;
 }
 .area-nav__link.is-active .area-nav__count { background: #fff; }
-/* Sul telefono la barra diventa una fila che scorre: lì lo scorrimento
-   orizzontale è il gesto naturale, e una colonna di otto voci occuperebbe
-   tutto lo schermo prima del contenuto. */
 @media (max-width: 860px) {
   .area-nav { position: static; }
-  .area-nav__box { padding: .4rem; gap: 0; }
-  .area-nav__label { display: none; }
-  .area-nav__links { flex-direction: row; gap: .25rem; overflow-x: auto; scrollbar-width: none; }
-  .area-nav__links::-webkit-scrollbar { display: none; }
-  .area-nav__link { white-space: nowrap; padding: .45rem .7rem; font-size: .8rem; }
-  .area-nav__link svg { display: none; }
+  .area-nav__link { padding: .45rem .55rem; font-size: .8rem; }
 }
+
+/* --- la pagina: una colonna, tutto in sequenza ---------------------------
+   Prima era una griglia a tre tracce: menu (236px) e riferimenti (300px)
+   toglievano 536px al contenuto su 1366 — il 39% dello schermo occupato da
+   cose che si leggono una volta. Le tabelle del conto finivano strette e si
+   scorreva di lato per leggere gli importi.
+
+   Adesso una traccia sola: la pratica occupa la larghezza, e i riferimenti
+   (referente, codice pratica, azioni rapide, i miei dati) stanno in fondo,
+   dove si cercano davvero — non accanto, dove rubano spazio a ogni riga. */
+.appv2__pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.1rem, 2vw, 1.6rem);
+  max-width: 1080px;
+}
+.appv2__col--riferimenti {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2vw, 1.35rem);
+  align-items: start;
+}
+
+/* le sezioni sono in sequenza: un filo sopra ciascuna dice dove finisce una e
+   comincia l'altra, che è il lavoro che prima faceva il nascondere */
+.appv2__col--unica > .pnl + .pnl,
+.appv2__col--unica > .pnl + section { margin-top: .25rem; }
+.pnl--riepilogo { border-color: transparent; box-shadow: var(--shadow-xs, none); }
+.pnl--riepilogo .kpi { margin: 0; }
+/* con un menu appiccicoso in cima, un'ancora arriverebbe sotto la barra */
+.pnl[id], .appv2__pagina [id] { scroll-margin-top: calc(var(--header-h) + 72px); }
+
 .appv2__col { display: flex; flex-direction: column; gap: clamp(1rem, 2vw, 1.35rem); min-width: 0; }
 
 /* Una sezione per volta: il resto è `hidden` e non occupa spazio. Senza
@@ -1091,21 +1091,6 @@ html.no-anim .reveal-img,
 /* --------------------------------------------------------------------------
    14. Console analisti — allineamento visivo
    -------------------------------------------------------------------------- */
-.admin-shell .app-side {
-  background: var(--ink-900);
-  border-right: 0;
-  color: rgba(255, 255, 255, 0.7);
-}
-.admin-shell .app-side a { color: rgba(255, 255, 255, 0.66); }
-.admin-shell .app-side a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
-.admin-shell .app-side a.is-active {
-  background: rgba(201, 242, 107, 0.12);
-  color: var(--accent-lime);
-}
-.admin-shell .app-side__label { color: rgba(255, 255, 255, 0.4); }
-.admin-shell .user-mini strong { color: #fff; }
-.admin-shell .user-mini span { color: rgba(255, 255, 255, 0.5); }
-.admin-shell .app-main { background: #f5f5f2; }
 
 /* --------------------------------------------------------------------------
    15. Footer rifinito
@@ -1454,35 +1439,166 @@ html.js-anim .frame[data-reveal].is-visible {
 @media (max-width: 860px) { .appv2__whoami-name { display: none; } }
 
 /* --------------------------------------------------------------------------
+   23-bis. Le pratiche: schede, ricerca, righe che si leggono
+   --------------------------------------------------------------------------
+   Prima: una tabella sola con otto colonne, tre delle quali di codici (IBAN,
+   numero di contratto, ruolo). Su ogni riga tre pulsanti identici. Per trovare
+   una persona si scorreva; per sapere cosa le mancava si leggeva una pillola
+   fra le altre.
+
+   Adesso la barra in alto fa tre domande («quante sono», «quali aspettano una
+   risposta», «a quali manca qualcosa») e la ricerca prende nome, email,
+   telefono e codice. Le righe sono più alte e dicono meno cose: chi è, cosa
+   manca, a che punto è, quanti soldi. Il resto («Modifica», «Esci») sta
+   accanto ad «Apri», non nascosto, ma in secondo piano.
+   -------------------------------------------------------------------------- */
+.pratiche__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.pratiche__cerca {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 0.3rem 0.75rem;
+  color: var(--muted);
+  min-width: 15rem;
+}
+.pratiche__cerca:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+.pratiche__cerca input {
+  border: 0;
+  background: none;
+  outline: none;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--ink);
+  width: 100%;
+  padding: 0.15rem 0;
+}
+.pratiche__cerca input::placeholder { color: var(--muted); }
+@media (max-width: 720px) {
+  .pratiche__cerca { margin-inline-start: 0; width: 100%; min-width: 0; }
+}
+
+/* la tabella: più aria fra le righe, perché ogni riga è una persona */
+.pratiche-table th { padding-block: 0.7rem; }
+.pratiche-table td { padding-block: 0.75rem; vertical-align: middle; }
+.pratiche-table tbody tr + tr { border-top: 1px solid var(--line); }
+
+.pratica__chi strong { font-size: 0.92rem; letter-spacing: -0.01em; }
+.pratica__dettagli {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+  margin-top: 0.15rem;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+/* il codice pratica si incolla al nome quando il cliente lo legge al telefono */
+.pratica__codice {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  background: var(--bg-soft);
+  border-radius: 4px;
+  padding: 0 0.3rem;
+}
+
+/* «cosa manca»: pillole che si leggono come una frase, non come un semaforo */
+.pratica__manca { max-width: 15rem; }
+.pratica__manca .pill + .pill { margin-left: 0.25rem; }
+.pratica__manca .pill {
+  display: inline-block;
+  margin-block: 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+/* `pill--muted` esiste già (tre definizioni più sotto, una di troppo): qui
+   serve solo il colore delle cose che si possono verificare subito */
+.pill--verify { background: var(--warn-wash, #fff4d6); color: var(--warn, #7a5a00); }
+
+.pratica__soldi { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pratica__fase .pill { white-space: nowrap; }
+
+/* le azioni: la principale prima, le altre in secondo piano. Su uno schermo
+   stretto vanno a capo invece di allargare la tabella. */
+.pratiche-table .data-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: flex-end;
+}
+.pratiche-table .data-table__actions .btn--ghost { color: var(--muted); }
+.pratiche-table .data-table__actions .btn--ghost:hover { color: var(--ink); }
+
+/* --- le schede: «quante pratiche» è una informazione, non un ornamento --- */
+[data-pratiche-filtri] .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+[data-pratiche-filtri] .chip .chip__count {
+  min-width: 1.2rem;
+  padding: 0 0.3rem;
+  border-radius: 99px;
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
+  display: none;
+  margin: 0;
+  opacity: 1;
+}
+/* il numero si vede solo quando c'è: uno zero occupa spazio e non dice niente */
+[data-pratiche-filtri] .chip .chip__count.is-numerato { display: inline-block; }
+[data-pratiche-filtri] .chip.is-active .chip__count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
    24. Console analisti: sidebar scura, KPI come celle di un cruscotto
    -------------------------------------------------------------------------- */
 body.is-admin .app-shell { background: #f5f5f2; }
-body.is-admin .app-side {
+/* La barra della console è scura per una ragione pratica, non estetica: stacca
+   la console dal sito pubblico, così chi ha tre schede aperte non confonde
+   «dove sto per cliccare» con «cosa vede il cliente». Il resto della pagina
+   resta chiaro, perché le tabelle si leggono su chiaro. */
+body.is-admin .app-nav {
   background:
-    radial-gradient(120% 80% at 0% 0%, rgba(13, 107, 71, 0.22), transparent 60%),
+    radial-gradient(80% 200% at 0% 0%, rgba(13, 107, 71, 0.3), transparent 62%),
     var(--ink-900);
-  color: rgba(255, 255, 255, 0.7);
-  border-right: 0;
-  position: relative;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
-body.is-admin .app-side__label {
-  color: rgba(255, 255, 255, 0.42);
-  letter-spacing: 0.14em;
-}
-body.is-admin .app-side > a {
-  color: rgba(255, 255, 255, 0.66);
+body.is-admin .app-nav__link {
+  color: rgba(255, 255, 255, 0.68);
   border-radius: var(--r-pill);
   transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
 }
-body.is-admin .app-side > a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-body.is-admin .app-side > a.is-active {
-  background: rgba(201, 242, 107, 0.14);
+body.is-admin .app-nav__link:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+body.is-admin .app-nav__link.is-active {
+  background: rgba(201, 242, 107, 0.15);
   color: var(--accent-lime);
   font-weight: 600;
 }
-body.is-admin .app-side__foot { border-top-color: rgba(255, 255, 255, 0.1); }
-body.is-admin .app-side__foot a { color: rgba(255, 255, 255, 0.5); }
-body.is-admin .app-side__foot a:hover { color: #fff; }
+body.is-admin .app-nav__link.is-active::after { display: none; }
+body.is-admin .app-nav__link.is-active .chip__count {
+  background: rgba(201, 242, 107, 0.2);
+  color: var(--accent-lime);
+}
+body.is-admin .app-nav__uscita { color: rgba(255, 255, 255, 0.5); }
+body.is-admin .app-nav__uscita:hover { color: #fff; }
 body.is-admin .user-mini__avatar {
   background: rgba(201, 242, 107, 0.16);
   color: var(--accent-lime);
@@ -2123,11 +2239,11 @@ body.is-area .appv2 { min-height: calc(100vh - 62px); }
   [data-readonly-note], .staff-bar { display: none !important; }
 
   /* Si stampa solo il contratto. `#contratto` sta dentro
-     `.appv2__grid > .appv2__col`: nascondere i soli figli di `.appv2__wrap`
+     `.appv2__pagina > .appv2__col`: nascondere i soli figli di `.appv2__wrap`
      farebbe sparire anche il contenitore e uscirebbe una pagina bianca.
      `case.js` marca la colonna con `.is-print-host` prima di stampare. */
   body.is-printing .appv2__wrap,
-  body.is-printing .appv2__grid { display: block !important; }
+  body.is-printing .appv2__pagina { display: block !important; }
   body.is-printing .appv2__col { display: none !important; }
   body.is-printing .appv2__col.is-print-host { display: block !important; }
   body.is-printing .appv2__col.is-print-host > *:not(#contratto) { display: none !important; }
@@ -3443,7 +3559,7 @@ body.is-staff-view #sicurezza { display: none !important; }
 
 /* stampa: solo l'estratto, e senza fronzoli */
 @media print {
-  .site-header, .app-side, .appv2__bar, .toast-stack,
+  .site-header, .app-nav, .appv2__bar, .toast-stack,
   .modal .btn-row, [data-statement-range] { display: none !important; }
   .modal-backdrop {
     position: static;

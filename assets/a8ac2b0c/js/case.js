@@ -212,81 +212,86 @@
   }
 
   /* ------------------------------------------------------------ sezioni --
-     Otto sezioni, una visibile per volta. Prima erano tutte una sotto
-     l'altra: per arrivare agli onorari bisognava scorrere conto, bonifici,
-     addebiti, interessi, carta. Chi non lo faceva non li vedeva.
+     La pratica si vede **tutta**, in sequenza, con un menu in cima che è un
+     indice, non una serie di schede.
 
-     Il menu è fatto di collegamenti veri e la sezione è nell'indirizzo
-     (`#onorari`): così si può mandare a qualcuno il punto esatto, il tasto
-     indietro torna dove si era, e senza JavaScript le sezioni restano tutte
-     visibili — degrada, non si rompe.
+     Prima qui c'era il contrario: otto sezioni, una visibile per volta, e il
+     resto nascosto. Sembrava più ordinato e non lo era — per sapere se il
+     bonifico era arrivato bisognava aprire il conto, e per leggere il
+     contratto far sparire il conto. Il cliente l'ha detto così: «per vedere
+     interamente tutte le funzioni bisogna trascinare». Il difetto non era lo
+     scorrimento, era che la pagina non si vedeva insieme.
 
-     La sezione attiva si deduce dall'indirizzo, non dal clic: un solo posto
-     decide cosa si vede (`mostraSezione`), chiamato sia dal clic sia
-     dall'apertura della pagina sia dal tasto indietro. */
-  var SEZIONI = ["panoramica", "pratica", "documenti", "cronologia", "conto",
-                 "onorari", "contratto", "sicurezza"];
+     Adesso le voci sono collegamenti a un punto della pagina (`href="#conto"`):
+     si arriva lì, tutto il resto resta dov'è. Niente `hidden`, niente stato da
+     mantenere, niente che possa divergere da ciò che si vede: la pagina è
+     sempre la stessa per tutti, e senza JavaScript funziona identica.
 
-  function sezioneDaIndirizzo() {
-    var id = (window.location.hash || "").replace("#", "");
-    return SEZIONI.indexOf(id) >= 0 ? id : "panoramica";
-  }
+     Resta una cosa da fare in JavaScript: dire **dove si è** mentre si scorre.
+     Un indice che non si aggiorna costringe a cercare con gli occhi. */
+  var SEZIONI = ["riepilogo", "pratica", "documenti", "conto",
+                 "onorari", "cronologia", "contratto", "sicurezza"];
 
-  function mostraSezione(id, scorri) {
-    SEZIONI.forEach(function (nome) {
-      var sezione = document.getElementById(nome);
-      if (sezione) sezione.hidden = nome !== id;
-    });
-    /* anche i pannelli dentro una sezione (`#carica`, dentro i documenti):
-       senza questa riga restano visibili anche quando la loro sezione è
-       nascosta, e comparivano in cima a ogni altra. Il caricamento dei file
-       appartiene ai documenti, quindi si vede solo lì. */
-    Array.prototype.forEach.call(document.querySelectorAll(".pnl--inner[id]"), function (pannello) {
-      pannello.hidden = id !== (DOVE_STA[pannello.id] || id);
-    });
+  function segnaVoce(id) {
     Array.prototype.forEach.call(document.querySelectorAll(".area-nav__link"), function (link) {
-      var attiva = link.getAttribute("data-tab") === id;
+      var attiva = link.getAttribute("href") === "#" + id;
       link.classList.toggle("is-active", attiva);
-      if (attiva) link.setAttribute("aria-current", "page");
+      if (attiva) link.setAttribute("aria-current", "true");
       else link.removeAttribute("aria-current");
-    });
-    /* cambiando sezione si riparte dall'inizio del contenuto: restare a metà
-       pagina dopo aver scelto «Contratto» fa credere che non sia successo
-       niente */
-    if (scorri !== false) {
-      var testa = document.getElementById("main");
-      if (testa) testa.scrollIntoView({ block: "start", behavior: "auto" });
-    }
-  }
-
-  /* I collegamenti che portano a un pannello dentro una sezione — «Aggiungi un
-     file» → il caricamento, dentro i documenti — devono prima aprire la
-     sezione, altrimenti il pannello è `hidden` e il clic sembra non fare
-     niente. Vale anche per la voce «Versa» dell'intestazione, che porta al
-     conto e apre già il modulo del versamento. */
-  var DOVE_STA = { carica: "documenti" };
-
-  function bindAncoreInterne() {
-    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#"]'), function (link) {
-      var id = link.getAttribute("href").replace("#", "");
-      if (!id || id === "main" || SEZIONI.indexOf(id) >= 0) return;
-      if (!document.getElementById(id)) return;
-      link.addEventListener("click", function () {
-        mostraSezione(DOVE_STA[id] || "panoramica");
-        var bersaglio = document.getElementById(id);
-        if (bersaglio && bersaglio.scrollIntoView) bersaglio.scrollIntoView({ block: "start" });
-      });
     });
   }
 
   function bindTabs() {
-    var link = document.querySelectorAll(".area-nav__link");
-    if (!link.length) return;
-    mostraSezione(sezioneDaIndirizzo(), false);
-    window.addEventListener("hashchange", function () {
-      mostraSezione(sezioneDaIndirizzo());
+    var voci = document.querySelectorAll(".area-nav__link");
+    if (!voci.length) return;
+
+    /* il clic porta al punto: `scrollIntoView` invece del salto secco del
+       browser, perché con la barra in cima un'ancora finisce sotto di essa */
+    function vaiA(id, sposta) {
+      var bersaglio = document.getElementById(id);
+      if (!bersaglio) return;
+      segnaVoce(id);
+      if (sposta) bersaglio.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
+
+    Array.prototype.forEach.call(voci, function (link) {
+      link.addEventListener("click", function (e) {
+        var id = (link.getAttribute("href") || "").replace("#", "");
+        if (!document.getElementById(id)) return;
+        e.preventDefault();
+        if (window.history && window.history.pushState) window.history.pushState(null, "", "#" + id);
+        vaiA(id, true);
+      });
     });
-    bindAncoreInterne();
+
+    /* il tasto indietro e un indirizzo incollato devono portare nello stesso
+       punto: un solo posto decide, `vaiA` */
+    window.addEventListener("hashchange", function () {
+      vaiA((window.location.hash || "").replace("#", ""), true);
+    });
+
+    /* la voce accesa segue lo scorrimento: chi arriva in fondo al conto deve
+       vedere «Conto» acceso senza aver cliccato niente */
+    if (window.IntersectionObserver) {
+      var guardia = new IntersectionObserver(function (vociVisibili) {
+        vociVisibili.forEach(function (v) {
+          if (v.isIntersecting) segnaVoce(v.target.id);
+        });
+      }, { rootMargin: "-96px 0px -60% 0px", threshold: 0 });
+      SEZIONI.forEach(function (id) {
+        var sezione = document.getElementById(id);
+        if (sezione) guardia.observe(sezione);
+      });
+    }
+
+    /* i collegamenti che portano dentro la pagina da altrove — «Carica un
+       documento», «Versa» — devono portare al punto giusto. Non nascondono più
+       niente, quindi basta segnare la voce; lo scorrimento lo fa il browser. */
+    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#"]'), function (link) {
+      var id = (link.getAttribute("href") || "").replace("#", "");
+      if (!id || id === "main" || !document.getElementById(id)) return;
+      link.addEventListener("click", function () { segnaVoce(id); });
+    });
   }
 
   function bindRefresh(reload) {

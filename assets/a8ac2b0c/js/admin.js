@@ -9,6 +9,10 @@
     richiestaFilter: "new",
     operations: [],
     accountFilter: "pending",
+    /* le pratiche: che scheda è aperta e cosa si sta cercando. Stanno qui e
+       non nel DOM perché il ridisegno le deve ritrovare uguali. */
+    schedaPratiche: "tutte",
+    ricercaPratiche: "",
     operationFilter: "pending",
     banca: { bonifici: [], mandati: [], addebiti: [], carte: [], conteggi: {} },
     walletFilter: "pending",
@@ -140,77 +144,172 @@
      file, e aggiungerne una voleva dire trovarli tutti e tre */
   var FASI_CLIENTE = ["Raccolta", "Ricostruzione", "Perizia", "Denunce", "Legale"];
 
+  /* ------------------------------------------------------------ pratiche -- */
+  /* Una pratica non si legge come una riga di database: si legge come una
+     persona, con accanto la cosa che le manca. Prima le tre informazioni che
+     bloccano una pratica (IBAN da verificare, contratto da accettare, fase) e
+     le tre che invece si cercano solo ogni tanto (saldo cripto, ruolo, numero
+     di contratto) occupavano lo stesso spazio, in colonne identiche.
+
+     Adesso: a sinistra chi è (nome, email, telefono — il telefono serve a
+     chiamare, che è ciò che si fa), poi **cosa manca**, poi la fase, poi i
+     soldi. Il codice pratica non è una colonna: è la prima cosa che il cliente
+     dice al telefono, quindi sta nel nome, in piccolo, e si cerca. */
+  function cosaManca(user) {
+    var manca = [];
+    if (String(user.status) === "pending") {
+      manca.push({ testo: "Risposta all'apertura", tipo: "pending" });
+    }
+    if (!user.iban_formatted) {
+      manca.push({ testo: "Coordinate bancarie", tipo: "pending" });
+    } else if (!user.iban_verified) {
+      manca.push({ testo: "Verifica IBAN", tipo: "verify" });
+    }
+    if (!user.contract_number) {
+      manca.push({ testo: "Contratto da generare", tipo: "pending" });
+    } else if (user.contract_status !== "accepted") {
+      manca.push({ testo: "Contratto da accettare", tipo: "pending" });
+    }
+    if (!user.phone) {
+      manca.push({ testo: "Telefono", tipo: "muted" });
+    }
+    return manca;
+  }
+
+  /* le quattro domande che si fanno davvero su un elenco di pratiche */
+  function inScheda(user, scheda) {
+    var manca = cosaManca(user).map(function (m) { return m.testo; });
+    if (scheda === "da-rispondere") return String(user.status) === "pending";
+    if (scheda === "da-completare") {
+      return manca.some(function (m) {
+        return m === "Coordinate bancarie" || m === "Contratto da generare" ||
+               m === "Contratto da accettare" || m === "Telefono";
+      });
+    }
+    if (scheda === "da-verificare") return manca.indexOf("Verifica IBAN") > -1;
+    return true;
+  }
+
+  /* la ricerca: nome, email, telefono e codice pratica. Il codice perché è
+     l'unica cosa che il cliente ha in mano quando chiama. */
+  function corrisponde(user, q) {
+    if (!q) return true;
+    /* Due versioni dello stesso testo: com'è scritto, e senza separatori.
+       Chi cerca un numero di telefono lo scrive «3331112222», non «+39 333
+       111 2222» — ed è il momento in cui ha il cliente in linea. Vale lo
+       stesso per l'IBAN, che si legge a gruppi di quattro. */
+    var grezzo = [
+      user.name, user.email, user.phone, user.case_ref, user.contract_number,
+      user.iban_formatted
+    ].join(" ").toLowerCase();
+    var compatto = grezzo.replace(/[^a-z0-9]/g, "");
+    return q.toLowerCase().split(/\s+/).filter(Boolean).every(function (pezzo) {
+      var p = pezzo.replace(/[^a-z0-9]/g, "");
+      return grezzo.indexOf(pezzo) > -1 || (p.length > 2 && compatto.indexOf(p) > -1);
+    });
+  }
+
+  function praticheVisibili() {
+    var q = state.ricercaPratiche || "";
+    return (state.allAccounts || []).filter(function (user) {
+      return inScheda(user, state.schedaPratiche || "tutte") && corrisponde(user, q);
+    });
+  }
+
   function renderAllAccounts() {
-    if (!state.allAccounts.length) {
+    var tutte = state.allAccounts || [];
+
+    /* i numeri delle schede: si contano sulle pratiche vere, non su un totale
+       scritto a mano — ed è il motivo per cui prima non c'erano */
+    ["tutte", "da-rispondere", "da-completare", "da-verificare"].forEach(function (scheda) {
+      var nodo = document.querySelector('[data-quante="' + scheda + '"]');
+      if (!nodo) return;
+      var n = tutte.filter(function (u) { return inScheda(u, scheda); }).length;
+      nodo.textContent = n ? String(n) : "";
+      conta(nodo, n);
+    });
+    var conteggio = document.querySelector("[data-pratiche-conteggio]");
+    if (conteggio) {
+      var visibili = praticheVisibili().length;
+      conteggio.textContent = visibili === tutte.length
+        ? tutte.length + (tutte.length === 1 ? " pratica" : " pratiche")
+        : visibili + " di " + tutte.length + " pratiche";
+    }
+
+    if (!tutte.length) {
       L.allAccountsBody.innerHTML =
-        '<tr><td colspan="10" class="empty-state">Nessun account.</td></tr>';
+        '<tr><td colspan="5" class="empty-state">' +
+        "Nessuna pratica. Le pratiche nascono da «Nuova pratica» o da una " +
+        "segnalazione dal sito.</td></tr>";
       return;
     }
-    L.allAccountsBody.innerHTML = state.allAccounts.map(function (user) {
-      var roleBtn = "";
-      if (!user.is_master && state.me && state.me.is_master) {
-        var nextRole = user.role === "admin" ? "user" : "admin";
-        roleBtn = '<button class="btn btn--ghost btn--sm" data-role="' + user.id +
-          '" data-next="' + nextRole + '" type="button">' +
-          (nextRole === "admin" ? "Rendi admin" : "Revoca admin") + "</button>";
-      }
-      /* chiusura forzata delle sessioni: serve quando un accesso è compromesso */
-      var killBtn = user.is_master ? "" :
-        '<button class="btn btn--ghost btn--sm" data-kill="' + user.id +
-        '" type="button">Chiudi sessioni</button>';
-      var openBtn = user.is_master ? "" :
-        '<button class="btn btn--ghost btn--sm" data-open="' + user.id +
-        '" data-open-name="' + ui.esc(user.name) +
-        '" type="button">Apri pratica</button>';
-      /* «Modifica» sta sulla riga della pratica, non in un'altra scheda: chi
-         cerca dove correggere un nome lo cerca qui, dove il nome è sbagliato.
-         Senza questo pulsante l'unico modo era il SQL, ed è il motivo per cui
-         i nomi delle pratiche reali sono rimasti vuoti per giorni. */
-      var editBtn = user.is_master ? "" :
-        '<button class="btn btn--ghost btn--sm" data-modifica="' + user.id +
-        '" type="button">Modifica</button>';
+    var visibili = praticheVisibili();
+    if (!visibili.length) {
+      /* «Caricamento…» che resta lì è il difetto da cui nasce questa console:
+         se non c'è niente, va detto **perché** e cosa fare */
+      var perRicerca = (state.ricercaPratiche || "").length > 0;
+      L.allAccountsBody.innerHTML =
+        '<tr><td colspan="5" class="empty-state">' +
+        (perRicerca
+          ? "Nessuna pratica corrisponde a «" + ui.esc(state.ricercaPratiche) +
+            "». Prova con il codice pratica, o cancella la ricerca."
+          : "Nessuna pratica in questa scheda. Le altre schede in alto hanno il " +
+            "numero di pratiche che contengono.") +
+        "</td></tr>";
+      return;
+    }
 
-      /* Il telefono accanto all'email: è l'altro modo con cui si contatta una
-         persona, e cercarlo in un'altra schermata mentre si ha la pratica
-         aperta è il momento in cui si smette di chiamare. */
-      return "<tr>" +
-        "<td><strong>" + ui.esc(user.name) + "</strong>" +
-        (user.phone ? '<div class="xs muted">' + ui.esc(user.phone) + "</div>" : "") +
+    L.allAccountsBody.innerHTML = visibili.map(function (user) {
+      /* Prima si corregge, poi si guarda: «Modifica» è il pulsante che si
+         cerca quando un nome è sbagliato, e deve stare sulla riga dove il nome
+         è sbagliato — non dietro un menu, o si finisce a farlo col SQL.
+
+         Le azioni sono tre, ma non uguali: «Apri» è quella che si preme
+         sempre ed è colorata; le altre due sono in secondo piano. Prima erano
+         tre pulsanti identici e si rileggeva ogni volta quale serviva. */
+      var editBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" type="button" data-modifica="' +
+        user.id + '" title="Correggi nome, contatti, importo e fase">Modifica</button>';
+      var killBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" type="button" data-kill="' +
+        user.id + '" title="Chiudi tutte le sessioni di questo account">Esci</button>';
+      var openBtn = '<button class="btn btn--accent btn--sm" data-open="' + user.id +
+        '" data-open-name="' + ui.esc(user.name) + '" type="button">Apri</button>';
+
+      var manca = cosaManca(user);
+      var statoManca = manca.length
+        ? manca.map(function (m) {
+            return '<span class="pill pill--' + (m.tipo === "muted" ? "muted" : m.tipo) +
+              '">' + ui.esc(m.testo) + "</span>";
+          }).join("")
+        : '<span class="pill pill--active">Completa</span>';
+
+      var contatti = [user.email, user.phone].filter(Boolean).map(function (v) {
+        return '<span class="pratica__contatto">' + ui.esc(v) + "</span>";
+      }).join("");
+
+      return '<tr class="pratica">' +
+        '<td class="pratica__chi">' +
+          '<strong>' + ui.esc(user.name) + "</strong>" +
+          (user.is_master ? ' <span class="pill pill--master">Master</span>' : "") +
+          '<div class="pratica__dettagli">' + contatti +
+          (user.case_ref
+            ? '<span class="pratica__codice mono" title="Codice pratica">' +
+              ui.esc(user.case_ref) + "</span>"
+            : "") +
+          "</div>" +
         "</td>" +
-        '<td class="xs muted">' + ui.esc(user.email) + "</td>" +
-        /* La fase nella stessa tabella dove si guarda la pratica. Prima stava
-           solo nella scheda «Nuove segnalazioni», un'altra schermata: per
-           sapere a che punto era una pratica si cambiava pannello, e per
-           cambiarla si cambiava di nuovo. */
-        '<td class="xs"><span class="pill pill--phase">' +
+        '<td class="pratica__manca">' + statoManca + "</td>" +
+        '<td class="pratica__fase"><span class="pill pill--phase">' +
           String(Number(user.case_phase) || 1).padStart(2, "0") + " · " +
           FASI_CLIENTE[Math.max(0, Math.min(4, Number(user.case_phase || 1) - 1))] +
           "</span></td>" +
-        '<td class="xs mono">' + (user.iban_formatted
-          ? ui.esc(user.iban_formatted) +
-            (user.iban_verified
-              ? ' <span class="pill pill--active">ok</span>'
-              : ' <button class="link-arrow xs" type="button" data-iban-verify="' +
-                user.id + '">verifica</button>')
-          : '<span class="muted">—</span>') + "</td>" +
-        /* il contratto si genera da solo: qui interessa solo se è accettato */
-        "<td>" + (!user.contract_number
-          ? '<span class="pill pill--pending">da generare</span>'
-          : '<span class="xs mono">' + ui.esc(user.contract_number) + "</span> " +
-            (user.contract_status === "accepted"
-              ? '<span class="pill pill--active">accettato</span>'
-              : '<span class="pill pill--pending">da accettare</span>')) + "</td>" +
-        "<td>" + (user.is_master
-          ? '<span class="pill pill--master">Master</span>'
-          : user.role === "admin"
-            ? '<span class="pill pill--admin">Admin</span>'
-            : '<span class="xs muted">Cliente</span>') + "</td>" +
-        "<td>" + ui.pill(user.status) + "</td>" +
-        '<td class="num">' + ui.money(user.balance_eur) + "</td>" +
-        '<td class="num">' + (user.holdings_value
-          ? ui.money(user.holdings_value)
-          : '<span class="xs muted">—</span>') + "</td>" +
-        '<td class="data-table__actions">' + editBtn + openBtn + roleBtn + killBtn + "</td>" +
+        '<td class="num pratica__soldi">' + ui.money(user.balance_eur) +
+          (user.holdings_value
+            ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
+            : "") +
+        "</td>" +
+        '<td class="data-table__actions">' + editBtn + killBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -416,9 +515,7 @@
       state.documents = data.documents || [];
       renderDocuments();
       if (L.countDocuments) {
-        var pending = Number(data.pending_count) || 0;
-        L.countDocuments.textContent = pending ? String(pending) : "";
-        L.countDocuments.classList.toggle("is-hot", pending > 0);
+        conta(L.countDocuments, data.pending_count);
       }
       if (L.kpiDocuments) L.kpiDocuments.textContent = String(data.pending_count || 0);
     });
@@ -609,16 +706,30 @@
   }
 
   /* ------------------------------------------------------------ loading -- */
+  /* Un numero accanto a una voce di menu è un avviso: «qualcuno aspetta te».
+     Zero non si mostra, e nemmeno una pastiglia vuota: prima erano undici
+     `span` vuoti con un margine, che allargavano il menu senza dire niente.
+     Qui c'è un posto solo che decide — scrivere il numero e accendere la
+     pastiglia — perché sparsa su cinque funzioni è la stessa cosa detta in
+     cinque modi, e basta dimenticarne uno. */
+  function conta(nodo, quanti) {
+    if (!nodo) return;
+    var n = Number(quanti) || 0;
+    nodo.textContent = n > 0 ? String(n) : "";
+    nodo.classList.toggle("is-numerato", n > 0);
+    nodo.classList.toggle("is-hot", n > 0);
+  }
+
   function loadOverview() {
     return api.overview().then(function (data) {
       L.kpiAccounts.textContent = String(data.pending_accounts);
       L.kpiOperations.textContent = String(data.pending_operations);
       L.kpiWallets.textContent = String(data.pending_wallets || 0);
-      L.countWallets.textContent = data.pending_wallets ? data.pending_wallets : "";
+      conta(L.countWallets, data.pending_wallets);
       L.kpiActive.textContent = String(data.active_users);
       L.kpiBalance.textContent = ui.money(data.total_balance_eur);
-      L.countAccounts.textContent = data.pending_accounts ? data.pending_accounts : "";
-      L.countOperations.textContent = data.pending_operations ? data.pending_operations : "";
+      conta(L.countAccounts, data.pending_accounts);
+      conta(L.countOperations, data.pending_operations);
       [[L.cardAccounts, data.pending_accounts],
        [L.cardOperations, data.pending_operations],
        [L.cardWallets, data.pending_wallets || 0]].forEach(function (pair) {
@@ -685,11 +796,8 @@
         nodo.classList.toggle("is-alert", kp[sel] > 0);
       }
     });
-    var count = document.querySelector("[data-count-banca]");
-    if (count) {
-      var totale = (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0);
-      count.textContent = totale ? String(totale) : "";
-    }
+    conta(document.querySelector("[data-count-banca]"),
+      (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0));
 
     caricaConferme();
     renderBonifici(dati && dati.bonifici);
@@ -1090,8 +1198,7 @@
           nodo.textContent = String(daFare);
           nodo.classList.toggle("is-alert", daFare > 0);
         }
-        var count = document.querySelector("[data-count-banca]");
-        if (count && daFare) count.textContent = String(daFare);
+        conta(document.querySelector("[data-count-banca]"), daFare);
         return lista;
       });
     }).catch(function () {
@@ -1366,7 +1473,7 @@
       renderRichieste();
       /* il contatore in barra laterale conta solo le nuove: è il numero che
          dice «c'è qualcuno da chiamare» */
-      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      conta(L.countLead, data.new_count);
       if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
       if (L.cardLead) {
         L.cardLead.classList.toggle("is-zero", !data.new_count);
@@ -1427,7 +1534,7 @@
       });
       n.onclick = function () {
         window.focus();
-        var voce = document.querySelector('.app-side a[data-tab="lead"]');
+        var voce = document.querySelector('.app-nav__link[data-tab="lead"]');
         if (voce) voce.click();
         n.close();
       };
@@ -1440,7 +1547,7 @@
     if (!state.me) return;
     api.richieste("new").then(function (data) {
       avvisaSeNuove(data.new_count || 0, data.richieste || []);
-      if (L.countLead) L.countLead.textContent = data.new_count ? data.new_count : "";
+      conta(L.countLead, data.new_count);
       if (L.kpiLead) L.kpiLead.textContent = String(data.new_count || 0);
     }).catch(function () { /* rete assente: si riprova al giro dopo */ });
   }, 60000);
@@ -1757,7 +1864,7 @@
 
   /* --------------------------------------------------------------- bind -- */
   function bind() {
-        document.querySelector(".app-side__foot [data-logout]").addEventListener("click", function (e) {
+        document.querySelector(".app-nav__io [data-logout]").addEventListener("click", function (e) {
       e.preventDefault();
       if (window.TracciaSession) window.TracciaSession.logout();
       else api.logout().then(function () { location.href = "login.html?uscita=1"; });
@@ -1990,6 +2097,43 @@
       });
     }
 
+    /* --- pratiche: schede e ricerca -------------------------------------
+       Le schede filtrano sul client (`state.allAccounts` è già tutto qui): non
+       serve una chiamata al server per nascondere delle righe, e una chiamata
+       per ogni clic renderebbe l'elenco lento proprio mentre lo si guarda.
+
+       La ricerca non aspetta «Invio»: si scrive e l'elenco si stringe. È il
+       gesto che si fa al telefono, con il cliente in linea. */
+    document.querySelectorAll("[data-pratiche-filtri] .chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        document.querySelectorAll("[data-pratiche-filtri] .chip").forEach(function (c) {
+          c.classList.remove("is-active");
+          c.setAttribute("aria-pressed", "false");
+        });
+        chip.classList.add("is-active");
+        chip.setAttribute("aria-pressed", "true");
+        state.schedaPratiche = chip.getAttribute("data-filtro");
+        renderAllAccounts();
+      });
+      chip.setAttribute("aria-pressed", chip.classList.contains("is-active") ? "true" : "false");
+    });
+
+    var campoRicerca = document.querySelector("[data-pratiche-ricerca]");
+    if (campoRicerca) {
+      campoRicerca.addEventListener("input", function () {
+        state.ricercaPratiche = campoRicerca.value.trim();
+        renderAllAccounts();
+      });
+      /* Esc cancella: è il modo in cui si esce da una ricerca sbagliata senza
+         selezionare il testo a mano */
+      campoRicerca.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        campoRicerca.value = "";
+        state.ricercaPratiche = "";
+        renderAllAccounts();
+      });
+    }
+
     document.querySelectorAll("[data-account-filters] .chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
         document.querySelectorAll("[data-account-filters] .chip").forEach(function (c) {
@@ -2042,7 +2186,7 @@
     document.querySelectorAll(".panel[id]").forEach(function (pannello) {
       pannello.hidden = pannello.id !== id;
     });
-    document.querySelectorAll(".app-side a[data-tab]").forEach(function (link) {
+    document.querySelectorAll(".app-nav__link[data-tab]").forEach(function (link) {
       var attiva = link.getAttribute("data-tab") === id;
       link.classList.toggle("is-active", attiva);
       if (attiva) link.setAttribute("aria-current", "page");
@@ -2052,7 +2196,7 @@
   }
 
   function bindSezioni() {
-    if (!document.querySelector(".app-side a[data-tab]")) return;
+    if (!document.querySelector(".app-nav__link[data-tab]")) return;
     mostraSezione(sezioneDaIndirizzo(), false);
     window.addEventListener("hashchange", function () {
       mostraSezione(sezioneDaIndirizzo());

@@ -198,10 +198,15 @@ test("la funzione è raggiungibile dal client", () => {
 
 /* --------------------------------------------------------------- la console -- */
 
-test("«Modifica» sta sulla riga della pratica, accanto ad «Apri pratica»", () => {
-  assert.ok(/data-modifica="' \+ user.id/.test(ADMIN), "manca il pulsante nella riga");
-  assert.ok(/editBtn \+ openBtn/.test(ADMIN),
-    "«Modifica» deve venire prima di «Apri pratica»: prima si corregge, poi si guarda");
+test("«Modifica» sta sulla riga della pratica, accanto ad «Apri»", () => {
+  /* l'id può stare sulla riga dopo: quello che conta è che il pulsante porti
+     `data-modifica` con l'id della pratica */
+  assert.ok(/data-modifica="' \+\s*\n?\s*user\.id/.test(ADMIN),
+    "manca il pulsante nella riga");
+  /* `editBtn … openBtn` nell'ordine scritto, anche con i pulsanti in mezzo:
+     l'ordine sullo schermo è quello del codice, e il test lo blocca */
+  assert.ok(/editBtn[^+]*\+[^+]*\+\s*openBtn/.test(ADMIN),
+    "«Modifica» deve venire prima di «Apri»: prima si corregge, poi si guarda");
   assert.ok(/modificaPratica\(modifica\.getAttribute\("data-modifica"\)\)/.test(ADMIN),
     "il pulsante deve essere collegato alla funzione");
 });

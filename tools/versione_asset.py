@@ -46,13 +46,24 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ASSET = ROOT / "assets"
 
-# Le pagine servite: le italiane, più l'area riservata e la console. Le pagine
-# tradotte non si toccano qui — le rigenera `build_i18n.py` partendo da queste.
+# Le pagine servite: le italiane, l'area riservata e la console, **e le
+# traduzioni**. Le tradotte non si rigenerano qui — lo fa `build_i18n.py` — ma
+# vanno comunque rilette: quello script ricopia dalla sorgente italiana, e se
+# gira dopo questo la sua copia riporta dentro la versione vecchia. Il risultato
+# era una pagina tedesca che chiedeva il CSS nuovo e l'immagine social vecchia,
+# cioè due versioni di asset nella stessa pagina: un errore che si vede solo
+# guardando il sorgente di una pagina tradotta.
+LINGUE = ("en", "de", "es")
 PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html",
     "login.html", "privacy.html", "termini.html", "cookie.html",
     "note-legali.html", "404.html", "app.html", "admin.html",
+]
+PAGINE += [
+    f"{lingua}/{nome}"
+    for lingua in LINGUE
+    for nome in PAGINE[:14]
 ]
 
 # La versione è un'impronta del **contenuto**, non una data: due giorni in cui
