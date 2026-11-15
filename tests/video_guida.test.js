@@ -232,4 +232,39 @@ test("una prova non sovrascrive il video buono", () => {
     "il render di prova deve scrivere su un file con un nome diverso");
 });
 
+test("il video parte anche senza JavaScript", () => {
+  /* Il difetto vero: la pagina dichiarava una `<source>`, e poi lo script la
+     scartava per impostare un `src` suo. Con gli script spenti — o bloccati,
+     come fa un'estensione — restava un riquadro nero. Ora la pagina da sola
+     basta: il browser sceglie fra le due sorgenti, verticale e orizzontale. */
+  const blocco = PAGINA.slice(PAGINA.indexOf('id="video-guida"'), PAGINA.indexOf("</video>"));
+  const sorgenti = [...blocco.matchAll(/<source\s+src="([^"]+\.mp4)"/g)].map((m) => m[1]);
+  assert.ok(sorgenti.length >= 2, "servono due sorgenti: il verticale e l'orizzontale");
+  /* almeno una sorgente senza `media`: è quella che vale quando nessuna
+     condizione è vera, e senza di lei il ripiego non esiste */
+  const libere = blocco.match(/<source[^>]+>/g).filter((t) => !/\smedia=/.test(t));
+  assert.ok(libere.length >= 1, "nessuna sorgente senza `media`: niente ripiego");
+  for (const f of sorgenti) assert.ok(esiste(f), `la pagina cita ${f}, che non esiste`);
+});
+
+test("le pagine tradotte chiedono il video e la copertina alla radice", () => {
+  /* Da `/de/`, `src="assets/..."` viene chiesto come `/de/assets/...`: 404, e
+     il riquadro resta nero. È esattamente quello che succedeva alla copertina,
+     perché `poster` non era nella lista degli attributi riscritti. */
+  for (const l of ["en", "de", "es"]) {
+    const pagina = R(`${l}/come-segnalare-un-caso.html`);
+    const relativi = [...pagina.matchAll(/(?:src|poster)="(assets\/[^"]+)"/g)].map((m) => m[1]);
+    assert.deepStrictEqual(relativi, [],
+      `${l}: percorsi relativi, che da /${l}/ non esistono: ${relativi.join(", ")}`);
+  }
+});
+
+test("il percorso del video è assoluto anche da una pagina tradotta", () => {
+  /* `sessione-video.js` ricostruisce l'indirizzo dalla `<source>`: se lo
+     ricostruisse relativo, da `/de/` chiederebbe `/de/assets/video/...`. */
+  const js = R("assets/js/sessione-video.js");
+  assert.ok(/CARTELLA = "\/" \+/.test(js),
+    "il percorso del video deve partire dalla radice del sito, non dalla pagina");
+});
+
 module.exports = casi;
