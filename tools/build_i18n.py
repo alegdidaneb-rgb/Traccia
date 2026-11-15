@@ -48,6 +48,9 @@ LINGUE = ["en", "de", "es"]
 SORGENTE = "it"
 # la sigla nel pulsante: due lettere, maiuscole, come le legge il visitatore
 SIGLE = {"it": "IT", "en": "EN", "de": "DE", "es": "ES"}
+# il nome che ogni lingua dà a sé stessa: è quello che il lettore di
+# schermo legge nel selettore dei sottotitoli
+NOMI_LINGUA = {"it": "Italiano", "en": "English", "de": "Deutsch", "es": "Español"}
 
 # Le pagine che hanno una versione in ogni lingua. Sono tutte quelle che
 # `build_shell.py` tratta come pubbliche, più `404.html` — che è il posto in
@@ -62,7 +65,7 @@ PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
     "privacy.html", "termini.html", "cookie.html", "note-legali.html",
-    "404.html",
+    "come-segnalare-un-caso.html", "404.html",
 ]
 
 # Dati che non sono testo: non vanno toccati nemmeno dentro il corpo.
@@ -413,6 +416,19 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
         return m.group(1) + valore + m.group(3)
 
     intera = re.sub(r'(srcset=")([^"]*)(")', riscrivi_srcset, intera)
+
+    # **I file che esistono in ogni lingua.** Il video della guida e i suoi
+    # sottotitoli sono quattro versioni dello stesso contenuto: la pagina
+    # inglese deve suonare e sottotitolare in inglese, non in italiano. La
+    # traduzione del testo non lo tocca — sono nomi di file, non nodi di testo
+    # — quindi senza questa riga ogni pagina tradotta restava col video
+    # italiano. Il difetto si vede solo cambiando lingua, cioè quasi mai.
+    intera = re.sub(r'come-segnalare-un-caso-it(-|\.)', rf'come-segnalare-un-caso-{lingua}\1', intera)
+    # ...e la traccia dei sottotitoli deve dichiarare la lingua che parla:
+    # un `<track srclang="it">` su una pagina tedesca è un testo tedesco
+    # etichettato «Italiano», e il lettore del browser lo propone così.
+    intera = re.sub(r'(<track kind="captions" srclang=")it(" label=")Italiano(")',
+                    rf"\g<1>{lingua}\g<2>{NOMI_LINGUA[lingua]}\g<3>", intera)
 
     # E il **numero di versione** va allineato a quello vero. La pagina tradotta
     # nasce da una copia della sorgente italiana fatta *prima* che

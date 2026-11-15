@@ -58,13 +58,16 @@ PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html",
     "login.html", "privacy.html", "termini.html", "cookie.html",
-    "note-legali.html", "404.html", "app.html", "admin.html",
+    "note-legali.html", "come-segnalare-un-caso.html", "404.html",
+    "app.html", "admin.html",
 ]
-PAGINE += [
-    f"{lingua}/{nome}"
-    for lingua in LINGUE
-    for nome in PAGINE[:14]
-]
+# Le tradotte sono le quindici pagine pubbliche, senza `app.html` e
+# `admin.html`: l'area riservata esiste solo in italiano (vedi `build_i18n.py`).
+# Prima si diceva `PAGINE[:14]`, cioè «le prime quattordici»: aggiungere una
+# pagina sopra `404.html` spostava il taglio e cambiava in silenzio quali
+# pagine tradotte venivano riscritte. Adesso l'elenco è esplicito.
+PUBBLICHE = [p for p in PAGINE if p not in ("app.html", "admin.html")]
+PAGINE += [f"{lingua}/{nome}" for lingua in LINGUE for nome in PUBBLICHE]
 
 # La versione è un'impronta del **contenuto**, non una data: due giorni in cui
 # nessuno tocca CSS e JS non producono due versioni diverse, e quindi nessun

@@ -43,7 +43,7 @@ PAGINE_PUBBLICHE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html", "login.html",
     "privacy.html", "termini.html", "cookie.html", "note-legali.html",
-    "404.html", "admin.html",
+    "come-segnalare-un-caso.html", "404.html", "admin.html",
 ]
 
 # Le pagine tradotte (`en/`, `de/`, `es/`) non passano da qui: le scrive
