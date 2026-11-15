@@ -106,7 +106,17 @@ test("la traduzione non è vuota e non è l'italiano lasciato lì", () => {
      diventa un elenco di cose tollerate. Si cerca invece una parola che in
      inglese, tedesco e spagnolo non esiste: se compare, quella frase non è
      stata tradotta. */
-  const SPIA = /\b(della|dello|degli|delle|dei|nella|negli|perché|quindi|nostro|nostra|vostro|siamo|potrebbe|anche|senza|dopo|ogni|sono|questo|questa|dove|più|già|sempre|denaro|truffa|truffe|pratica|documenti)\b/i;
+  /* Le parole cortissime contano quanto le frasi: «Il recupero» e «Sul
+     merito» sono rimaste in italiano in tutte e tre le traduzioni per un
+     giorno intero, e questo controllo non le vedeva perché cercava solo
+     parole lunghe.
+     `al`, `alle`, `dal` non si possono aggiungere: sono parole vere in
+     tedesco e in spagnolo («alle Fälle», «al número»), e la spia segnalerebbe
+     traduzioni corrette. Restano solo le parole che in quelle lingue non
+     esistono — `il`, `sul`, `gli` — che sono però rarissime in una frase
+     italiana (di solito c'è un articolo o una preposizione più lunga):
+     per questo il controllo che conta è quello sulle pagine, qui sotto. */
+  const SPIA = /\b(della|dello|degli|delle|dei|nella|negli|perché|quindi|nostro|nostra|vostro|siamo|potrebbe|anche|senza|dopo|ogni|sono|questo|questa|dove|più|già|sempre|denaro|truffa|truffe|pratica|documenti|il|gli|sul|nel|col)\b/i;
   const it = CAT("it");
   TRADOTTE.forEach((l) => {
     const cat = CAT(l);
@@ -502,6 +512,42 @@ test("nessuna pagina tradotta contiene frasi italiane rimaste indietro", () => {
   assert.deepEqual(sporche, [],
     "pagine tradotte con testo italiano: " + sporche.slice(0, 8).join(", ") +
     (sporche.length > 8 ? " e altre " + (sporche.length - 8) : ""));
+});
+
+test("nessuna etichetta di una pagina tradotta resta in italiano", () => {
+  /* Il difetto che questo test esiste per impedire: gli occhielli di sezione
+     («Il recupero», «Sul merito», «Il limite») sono rimasti in italiano nelle
+     tre traduzioni, e in pagina si vedeva una sezione italiana in mezzo a una
+     tedesca. Il controllo a monte non li vedeva perché cercava parole lunghe,
+     e quello sulle pagine perché tollerava fino a tre parole italiane per
+     pagina — un'etichetta è corta e da sola non arrivava alla soglia.
+
+     Qui si guardano tutte le etichette: `<span class="eyebrow">`, le voci di
+     menu e i titoli. Se una è identica alla versione italiana, e contiene una
+     parola che in quella lingua non esiste, è rimasta indietro. */
+  const ITALIANE = /\b(il|lo|la|gli|sul|nel|col|dei|della|delle|degli|perché|anche|senza|dopo|ogni|sono|questo|questa|dove|sempre|mai|nostro|nostra)\b/i;
+  const prendi = (html) => {
+    const fuori = [];
+    for (const m of html.matchAll(/>([^<>]{2,80})</g)) {
+      const t = m[1].trim();
+      if (/[a-zA-ZÀ-ÿ]/.test(t)) fuori.push(t);
+    }
+    return fuori;
+  };
+  const it = new Set(prendi(R("come-segnalare-un-caso.html")));
+  const sporche = [];
+  for (const l of TRADOTTE) {
+    for (const f of fs.readdirSync(path.join(__dirname, "..", l)).filter((x) => /\.html$/.test(x))) {
+      const html = R(l + "/" + f);
+      for (const t of prendi(html)) {
+        /* un testo identico all'italiano è sospetto solo se contiene una
+           parola italiana: «Traccia», «Email», «€» sono uguali in ogni lingua */
+        if (it.has(t) && ITALIANE.test(t)) sporche.push(`${l}/${f}: «${t.slice(0, 50)}»`);
+      }
+    }
+  }
+  assert.deepStrictEqual(sporche.slice(0, 10), [],
+    "etichette non tradotte: " + sporche.slice(0, 10).join("; "));
 });
 
 module.exports = casi;
