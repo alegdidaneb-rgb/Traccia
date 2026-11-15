@@ -120,6 +120,26 @@ test("il tipo «messaggio» è ammesso dalla tabella", () => {
     "il vincolo vecchio va tolto, non solo affiancato");
 });
 
+test("il file di allineamento rifiuta di passare senza la 0031", () => {
+  /* Un file di allineamento che si applica sempre senza controllare niente non
+     è un allineamento, è un timbro.
+     Contesto: il 2026-11-15 la 0031 è stata applicata on-line con il nome
+     `scrivere_al_cliente` — prima del codice, di proposito, perché il client
+     che chiama `admin_invia_avviso` non deve mai girare contro un database che
+     non ce l'ha. Il registro delle migrazioni applicate vive in Supabase, fuori
+     da Git: il file 0031b esiste perché quel registro e il repository restino
+     confrontabili a mano, e questo test perché non diventi un file che passa
+     sempre, anche applicato per sbaglio su uno schema vecchio. */
+  const allineamento = fs.readFileSync(
+    path.join(RADICE, "supabase/migrations/0031b_allineamento_20261115.sql"), "utf8");
+  assert.ok(/raise exception/.test(allineamento),
+    "l'allineamento deve fermarsi se la 0031 non è applicata");
+  assert.ok(/messaggio/.test(allineamento),
+    "il controllo deve guardare proprio il valore che la 0031 aggiunge");
+  assert.ok(!/alter table|create (or replace )?function/i.test(allineamento),
+    "l'allineamento non deve cambiare lo schema: se cambia qualcosa, non è un allineamento");
+});
+
 test("si può scrivere a una pratica e a tutte, con due funzioni", () => {
   assert.ok(/function traccia\.admin_invia_avviso\(/.test(MIGRAZIONE));
   assert.ok(/function traccia\.admin_invia_avviso_a_tutti\(/.test(MIGRAZIONE));
