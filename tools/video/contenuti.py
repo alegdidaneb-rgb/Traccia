@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Il testo dei video: quattro lingue, dieci scene ciascuna.
+Il testo dei video: quattro lingue, dodici scene ciascuna.
 
 Le parole del modulo sono copiate da `login.html` / `en|de|es/login.html`:
 il video e la pagina devono dire la stessa cosa, altrimenti chi guarda il video
@@ -27,6 +27,42 @@ CAMPI = {
     "en": ["First name", "Last name", "Email", "Phone", "Amount lost", "What happened"],
     "de": ["Vorname", "Nachname", "E-Mail", "Telefon", "Betrag", "Was passiert ist"],
     "es": ["Nombre", "Apellidos", "Correo", "Teléfono", "Importe", "Qué pasó"],
+}
+
+# Il percorso del denaro, che è il cuore della parte «recupero»: quattro
+# tappe, ognuna con la prova che la sostiene. Non sono promesse, sono i
+# documenti che chiediamo davvero.
+PROVE = {
+    "it": [("Bonifico o pagamento", "la ricevuta, la data, il beneficiario"),
+           ("Dove è arrivato", "la banca o l'exchange che lo ha ricevuto"),
+           ("Dove è finito", "gli indirizzi dei wallet, le transazioni"),
+           ("Che cosa resta", "chat, email, schermate dell'area riservata")],
+    "en": [("Transfer or payment", "the receipt, the date, the beneficiary"),
+           ("Where it arrived", "the bank or exchange that received it"),
+           ("Where it went", "wallet addresses, the transactions"),
+           ("What is left", "chats, emails, screenshots of the account area")],
+    "de": [("Überweisung oder Zahlung", "der Beleg, das Datum, der Empfänger"),
+           ("Wo sie ankam", "die Bank oder Börse, die sie erhalten hat"),
+           ("Wohin sie ging", "die Wallet-Adressen, die Transaktionen"),
+           ("Was bleibt", "Chats, E-Mails, Screenshots des Kundenbereichs")],
+    "es": [("Transferencia o pago", "el recibo, la fecha, el beneficiario"),
+           ("Dónde llegó", "el banco o el exchange que lo recibió"),
+           ("Dónde acabó", "las direcciones de wallet, las transacciones"),
+           ("Qué queda", "chats, correos, capturas del área privada")],
+}
+
+# Le due risposte possibili, con lo stesso spazio: il «a volte no» non è una
+# nota a piè di pagina, è metà della risposta. È questo che rende il video
+# credibile invece di uno dei tanti che promettono tutto.
+ESITI = {
+    "it": [("A volte si può", ["Il denaro è ancora tracciabile, oppure c'è un intermediario identificabile."]),
+           ("A volte no", ["E in quel caso te lo diciamo subito, senza farti aspettare."])],
+    "en": [("Sometimes it can", ["The money is still traceable, or there is an intermediary we can identify."]),
+           ("Sometimes it cannot", ["And in that case we say so at once, instead of letting you wait."])],
+    "de": [("Manchmal geht es", ["Das Geld ist noch nachvollziehbar, oder es gibt einen identifizierbaren Vermittler."]),
+           ("Manchmal nicht", ["Und dann sagen wir es sofort, statt Sie warten zu lassen."])],
+    "es": [("A veces se puede", ["El dinero todavía se puede rastrear, o hay un intermediario identificable."]),
+           ("A veces no", ["Y en ese caso te lo decimos enseguida, sin hacerte esperar."])],
 }
 
 SCELTE = {
@@ -62,8 +98,8 @@ TITOLI = {"it": "Come segnalare un caso", "en": "How to report a case",
 SOTTOTITOLI = {"it": "Passo per passo", "en": "Step by step",
                "de": "Schritt für Schritt", "es": "Paso a paso"}
 
-# Le scene. Le dieci `voce` si concatenano nel testo registrato: il test
-# `tests/video_guida.test.js` confronta la giunzione con `NARRAZIONE`.
+# Le scene. Le dodici `voce` si concatenano nel testo registrato: la giunzione
+# deve dare `NARRAZIONE`, che si costruisce dalle scene.
 SCENE = {
     "it": [
         dict(tipo="titolo", titolo=TITOLI["it"], corpo=SOTTOTITOLI["it"],
@@ -92,6 +128,14 @@ SCENE = {
              corpo="In euro, anche approssimativo:\ndice subito di che ordine di grandezza si parla.",
              scheda=dict(tipo="campi", attivo=[4]),
              voce="L'importo approssimativo perso, in euro. Anche approssimativo: serve a capire di che ordine di grandezza si parla."),
+        dict(tipo="metodo", titolo="Come lavoriamo sul recupero",
+             corpo="Ricostruiamo il percorso del denaro con prove tecniche:\nbonifici, wallet, transazioni, chat.",
+             scheda=dict(tipo="prove"),
+             voce="Sul recupero: ricostruiamo il percorso del denaro con prove tecniche. Da lì diciamo dove è finito e se esiste una strada."),
+        dict(tipo="metodo", titolo="Quando si può, e quando no",
+             corpo="A volte sì: il denaro è ancora tracciabile, o c'è un intermediario identificabile.\nA volte no, e te lo diciamo subito.",
+             scheda=dict(tipo="esito"),
+             voce="A volte si può: il denaro è ancora tracciabile. A volte no, e te lo diciamo subito. Nessuno può prometterti il risultato: possiamo prometterti il metodo."),
         dict(tipo="passo", titolo="Che cosa ti è successo",
              corpo="Scegli quello che ti somiglia di più.\nSe non lo sai, c'è «Non lo so ancora».",
              scheda=dict(tipo="scelte"),
@@ -133,6 +177,14 @@ SCENE = {
              corpo="In euro, even roughly:\nit tells us the size of the case.",
              scheda=dict(tipo="campi", attivo=[4]),
              voce="The approximate amount lost, in euro. Rough is fine: it tells us what kind of case this is."),
+        dict(tipo="metodo", titolo="How we work on recovery",
+             corpo="We trace where the money went, with technical proof:\nbank transfers, wallets, transactions, chats.",
+             scheda=dict(tipo="prove"),
+             voce="On recovery: we trace where the money went, with technical proof. From there we say where it ended up and whether a route exists."),
+        dict(tipo="metodo", titolo="When it can be done, and when it cannot",
+             corpo="Sometimes yes: the money is still traceable, or there is an intermediary we can identify.\nSometimes no, and we say so at once.",
+             scheda=dict(tipo="esito"),
+             voce="Sometimes it can be done: the money is still traceable. Sometimes it cannot, and we say so at once. Nobody can promise the result: we can promise the method."),
         dict(tipo="passo", titolo="What happened",
              corpo="Choose what fits closest.\nIf you don't know, there's «I don't know yet».",
              scheda=dict(tipo="scelte"),
@@ -174,6 +226,14 @@ SCENE = {
              corpo="In Euro, auch grob geschätzt:\ner zeigt die Größenordnung.",
              scheda=dict(tipo="campi", attivo=[4]),
              voce="Der ungefähr verlorene Betrag in Euro. Auch grob geschätzt: er zeigt, um welche Größenordnung es geht."),
+        dict(tipo="metodo", titolo="Wie wir an der Rückholung arbeiten",
+             corpo="Wir verfolgen den Weg des Geldes mit technischen Belegen:\nÜberweisungen, Wallets, Transaktionen, Chats.",
+             scheda=dict(tipo="prove"),
+             voce="Zur Rückholung: wir verfolgen den Weg des Geldes mit technischen Belegen. Dann sagen wir, wo es hingegangen ist und ob ein Weg besteht."),
+        dict(tipo="metodo", titolo="Wann es geht, und wann nicht",
+             corpo="Manchmal ja: das Geld ist noch nachvollziehbar, oder es gibt einen identifizierbaren Vermittler.\nManchmal nicht, und das sagen wir sofort.",
+             scheda=dict(tipo="esito"),
+             voce="Manchmal geht es: das Geld ist noch nachvollziehbar. Manchmal nicht, und dann sagen wir es sofort. Niemand kann Ihnen das Ergebnis versprechen, nur die Methode."),
         dict(tipo="passo", titolo="Was ist passiert",
              corpo="Wählen Sie, was am ehesten zutrifft.\nWenn Sie es nicht wissen: «Ich weiß es noch nicht».",
              scheda=dict(tipo="scelte"),
@@ -215,6 +275,14 @@ SCENE = {
              corpo="En euros, aunque sea aproximado:\ndice de qué tamaño es el caso.",
              scheda=dict(tipo="campi", attivo=[4]),
              voce="El importe aproximado perdido, en euros. Aunque sea aproximado: sirve para saber de qué orden de magnitud hablamos."),
+        dict(tipo="metodo", titolo="Cómo trabajamos la recuperación",
+             corpo="Seguimos el rastro del dinero con pruebas técnicas:\ntransferencias, wallets, transacciones, chats.",
+             scheda=dict(tipo="prove"),
+             voce="Sobre la recuperación: seguimos el rastro del dinero con pruebas técnicas. Después decimos dónde acabó y si existe un camino."),
+        dict(tipo="metodo", titolo="Cuándo se puede, y cuándo no",
+             corpo="A veces sí: el dinero todavía se puede rastrear, o hay un intermediario identificable.\nA veces no, y te lo decimos enseguida.",
+             scheda=dict(tipo="esito"),
+             voce="A veces se puede: el dinero todavía se puede rastrear. A veces no, y te lo decimos enseguida. Nadie puede prometerte el resultado: podemos prometerte el método."),
         dict(tipo="passo", titolo="Qué te ha pasado",
              corpo="Elige lo que más se parezca.\nSi no lo sabes, está «Todavía no lo sé».",
              scheda=dict(tipo="scelte"),
@@ -233,11 +301,11 @@ SCENE = {
 # Il testo esatto registrato in `audio/voce-<lingua>.mp3`. Non è un doppione
 # delle scene: è la prova che le scene coprono la narrazione intera, senza
 # saltare una frase e senza inventarne una che nessuno dice.
+# La narrazione è la giunzione delle `voce`, non un testo ricopiato a mano:
+# dopo l'aggiunta delle due scene sul recupero, tenerne una copia a mano
+# significava riscriverla a ogni modifica e sbagliarla una volta su due.
 NARRAZIONE = {
-    "it": "Come segnalare un caso, passo per passo. Apri traccia punto i t punto com, e scegli «Segnala un caso». Non serve creare un account. Il modulo chiede sei informazioni. Le prime due sono il tuo nome e il tuo cognome: servono per il contratto di incarico, e per questo sono separati. Poi l'email: è l'indirizzo su cui riceverai le risposte. Controlla di averla scritta bene. Il telefono, con il prefisso internazionale: chi ha appena perso dei soldi non aspetta un'email, e così possiamo chiamarti anche dall'estero. L'importo approssimativo perso, in euro. Anche approssimativo: serve a capire di che ordine di grandezza si parla. Poi scegli che cosa ti è successo: finto broker, truffa con criptovalute, soldi chiesti per sbloccare il prelievo, un finto recupero fondi, oppure «non lo so ancora». Nessuna password. Mandi una richiesta, non apri un conto: non c'è niente da ricordare. Un analista legge quello che hai scritto e ti ricontatta entro quarantotto ore lavorative, al numero che ci hai indicato. E se ti chiedono altri soldi per recuperare i tuoi, fermati: è la seconda truffa. Traccia non chiede mai un anticipo.",
-    "en": "How to report a case, step by step. Open traccia dot it dot com, and choose «Report a case». You don't need to create an account. The form asks for six things. The first two are your first name and your last name: the engagement contract needs them separately. Then your email: it's the address we'll reply to. Check you've written it correctly. Your phone, with the country code: someone who has just lost money shouldn't wait for an email, and this way we can call you from abroad too. The approximate amount lost, in euro. Rough is fine: it tells us what kind of case this is. Then choose what happened to you: a fake broker, cryptocurrency fraud, money asked to unlock a withdrawal, a fake fund recovery service, or «I don't know yet». No password. You are sending a request, not opening an account: nothing to remember. An analyst reads what you wrote and calls you back within forty-eight working hours, on the number you gave us. And if someone asks for more money to recover yours, stop: that's the second scam. Traccia never asks for an advance.",
-    "de": "Einen Fall melden, Schritt für Schritt. Öffnen Sie traccia punkt it punkt com und wählen Sie «Fall melden». Ein Konto brauchen Sie dafür nicht. Das Formular fragt nach sechs Angaben. Die ersten beiden sind Vor- und Nachname: der Mandatsvertrag braucht sie getrennt. Dann Ihre E-Mail-Adresse: dorthin senden wir die Antwort. Prüfen Sie, ob sie richtig geschrieben ist. Ihre Telefonnummer mit Ländervorwahl: wer gerade Geld verloren hat, soll nicht auf eine E-Mail warten, und so können wir Sie auch aus dem Ausland anrufen. Der ungefähr verlorene Betrag in Euro. Auch grob geschätzt: er zeigt, um welche Größenordnung es geht. Dann wählen Sie, was Ihnen passiert ist: falscher Broker, Betrug mit Kryptowährungen, Geld für die Freigabe der Auszahlung, eine falsche Rückholfirma, oder «Ich weiß es noch nicht». Kein Passwort. Sie senden eine Anfrage, Sie eröffnen kein Konto: nichts zu merken. Eine Analystin oder ein Analyst liest Ihre Angaben und ruft Sie innerhalb von achtundvierzig Arbeitsstunden unter der angegebenen Nummer zurück. Und wenn jemand Geld verlangt, um Ihr Geld zurückzuholen, hören Sie auf: das ist der zweite Betrug. Traccia verlangt nie einen Vorschuss.",
-    "es": "Cómo denunciar un caso, paso a paso. Abre traccia punto i t punto com y elige «Denunciar un caso». No hace falta crear una cuenta. El formulario pide seis datos. Los dos primeros son tu nombre y tus apellidos: el contrato de encargo los necesita separados. Después tu correo electrónico: es la dirección en la que recibirás las respuestas. Comprueba que está bien escrito. Tu teléfono, con el prefijo internacional: quien acaba de perder dinero no debería esperar un correo, y así podemos llamarte también desde el extranjero. El importe aproximado perdido, en euros. Aunque sea aproximado: sirve para saber de qué orden de magnitud hablamos. Luego elige qué te ha pasado: falso bróker, fraude con criptomonedas, dinero pedido para desbloquear el retiro, un falso servicio de recuperación, o «todavía no lo sé». Ninguna contraseña. Envías una solicitud, no abres una cuenta: no hay nada que recordar. Un analista lee lo que has escrito y te llama en un plazo de cuarenta y ocho horas laborables, al número que nos has dado. Y si alguien te pide más dinero para recuperar el tuyo, para: es la segunda estafa. Traccia nunca pide un anticipo.",
+    lang: " ".join(scena["voce"] for scena in SCENE[lang]) for lang in LINGUE
 }
 
 # Come si scrive il dominio quando lo si legge, non quando lo si pronuncia.

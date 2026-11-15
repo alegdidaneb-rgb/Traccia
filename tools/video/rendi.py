@@ -163,6 +163,15 @@ def altezza_scheda(draw, lang, scheda, box):
         n = len(C.CAMPI[lang])
         passo = passo_campi(lang, box)
         return n * passo + (n - 1) * 20
+    if tipo == "prove":
+        return len(C.PROVE[lang]) * min(150, (y1 - y0 - 80) / len(C.PROVE[lang]))
+    if tipo == "esito":
+        f = ImageFont.truetype(FONT_B, 26)
+        f2 = ImageFont.truetype(FONT, 23)
+        larga = (utile - 20) / 2
+        massimo = max(len(a_capo(r, f2, larga - 40, draw)) for _, rs in C.ESITI[lang] for r in rs)
+        massimo = max(massimo, max(len(a_capo(t, f, larga - 84, draw)) for t, _ in C.ESITI[lang]))
+        return 74 + massimo * 32 + 28
     if tipo == "scelte":
         f = ImageFont.truetype(FONT, 27)
         return sum(len(a_capo(t, f, utile - 70, draw)) * 36 + 34 for t in C.SCELTE[lang])
@@ -220,6 +229,54 @@ def disegna_scheda(draw, lang, scheda, box):
                 draw.ellipse([cx + 6, cy + alta / 2 - 5, cx + 16, cy + alta / 2 + 5], fill=VERDE)
             disegna_righe(draw, righe, cx + 40, cy + 8, f, INK if ultima else "#5c5c58", 36)
             cy += alta + 8
+
+    elif tipo == "prove":
+        # il percorso del denaro: quattro tappe, ognuna con la sua prova
+        f = ImageFont.truetype(FONT_B, 27)
+        f2 = ImageFont.truetype(FONT, 24)
+        tappe = C.PROVE[lang]
+        passo = min(150, (y1 - y0 - 80) / len(tappe))
+        cy = top + 6
+        for i, (cosa, prova) in enumerate(tappe):
+            r = 15
+            centro = cy + passo / 2
+            if i < len(tappe) - 1:
+                draw.line([(x0 + dentro + r, centro + r), (x0 + dentro + r, centro + passo - r)],
+                          fill="#d9d9d2", width=3)
+            draw.ellipse([x0 + dentro, centro - r, x0 + dentro + 2 * r, centro + r],
+                         fill="#eef7e3", outline=VERDE, width=3)
+            draw.text((x0 + dentro + 2 * r + 22, centro - 30), cosa, font=f, fill=INK)
+            draw.text((x0 + dentro + 2 * r + 22, centro + 4), prova, font=f2, fill="#6b6b66")
+            cy += passo
+
+    elif tipo == "esito":
+        # due esiti, uno accanto all'altro, con lo stesso peso: il «no» non è
+        # una nota a piè di pagina, è metà della risposta
+        f = ImageFont.truetype(FONT_B, 26)
+        f2 = ImageFont.truetype(FONT, 23)
+        larga = (utile - 20) / 2
+        # l'altezza la decidono le righe di testo: con il fondo a y1 restava
+        # mezzo riquadro vuoto, e due schede semivuote sembrano un errore
+        interno = larga - 40
+        righe_titolo = max(len(a_capo(t, f, interno, draw)) for t, _ in C.ESITI[lang])
+        righe_corpo = max(len(a_capo(r, f2, interno, draw)) for _, rs in C.ESITI[lang] for r in rs)
+        alta = 72 + righe_titolo * 32 + 6 + righe_corpo * 30 + 20
+        for i, (titolo, righe) in enumerate(C.ESITI[lang]):
+            cx = x0 + dentro + i * (larga + 18)
+            si = i == 0
+            draw.rounded_rectangle([cx, top, cx + larga, top + alta], radius=16,
+                                   fill="#eef7e3" if si else "#f4f4f0",
+                                   outline=VERDE if si else "#dcdcd6", width=3)
+            fsegno = ImageFont.truetype(FONT_B, 40)
+            draw.text((cx + 20, top + 16), "✓" if si else "–", font=fsegno,
+                      fill=VERDE if si else "#8a8a82")
+            # il corpo parte da dove finisce davvero il titolo: con un salto
+            # fisso, un titolo andato a capo ci finiva sopra
+            y = disegna_righe(draw, a_capo(titolo, f, interno, draw), cx + 20, top + 72,
+                              f, INK if si else "#4a4a46", 32) + 6
+            for riga in righe:
+                y = disegna_righe(draw, a_capo(riga, f2, larga - 40, draw), cx + 20, y,
+                                  f2, "#5c5c58", 30) + 8
 
     elif tipo == "invia":
         nota = {"it": "Nessuna password da scegliere", "en": "No password to choose",
@@ -286,6 +343,14 @@ def disegna_scena(lang, idx, W, H, orizzontale):
         # 150 come prima voleva dire una fascia che nei casi lunghi sfondava
         # nella scheda: misurato, non indovinato.
         alto = max(520, H - 360 - (fondo + 80))
+        # con poche righe di contenuto (le due schede del recupero) una scheda
+        # da 520 px resta mezza vuota, e ancorata in fondo lascia un buco fra
+        # il testo e il riquadro. Qui la scheda si appoggia sotto il testo:
+        # alto quanto serve, e non oltre la fascia dei sottotitoli.
+        if scena["scheda"]["tipo"] == "esito":
+            alto = int(altezza_scheda(d, lang, scena["scheda"], (margine, 0, W - margine, alto))) + 56
+            alto = max(300, min(alto, H - 360 - fondo - 120))
+            tessera_box = (margine, fondo + 90, W - margine, fondo + 90 + alto)
         tessera_box = (margine, H - 360 - alto, W - margine, H - 360)
     tessera(d, tessera_box)
     disegna_scheda(d, lang, scena["scheda"], tessera_box)
@@ -316,10 +381,11 @@ def sottotitolo(img, testo, orizzontale):
     sottotitoli, e quasi nessuno li apre. Il testo è quello della voce, parola
     per parola, quindi le due versioni non possono dire cose diverse.
 
-    Sul verticale la colonna è stretta e una frase intera diventerebbe una
-    parete di cinque righe: lì si mostra un pezzo per volta (una o due frasi),
-    che è la stessa cosa che fanno i sottotitoli veri. Sul orizzontale c'è
-    spazio per la frase intera.
+    Sotto la scheda ci stanno 200 px, cioè quattro righe: si usano tutte
+    invece di tagliare la frase a metà. Tagliare è peggio di una riga in più —
+    chi legge «...bonifici, indirizzi dei wallet, transazioni e chat…» non sa
+    se il pensiero finiva lì. Si taglia solo quando nemmeno quattro righe
+    bastano, e allora si rimpicciolisce prima il carattere.
     """
     if not testo:
         return img
@@ -327,21 +393,41 @@ def sottotitolo(img, testo, orizzontale):
     W, H = img.size
     margine = 96 if not orizzontale else 110
     larg = W - 2 * margine - 40
-    f = ImageFont.truetype(FONT_B, 28 if not orizzontale else 30)
-    inter = 37 if not orizzontale else 40
+    MASSIME = 4 if not orizzontale else 3
 
-    if orizzontale:
-        righe = a_capo(testo, f, larg, d)
-    else:
-        migliore = testo
-        for pezzo in _pezzi(testo, f, larg, d):
-            if len(a_capo(pezzo, f, larg, d)) <= 3:
-                migliore = pezzo
+    for corpo, righe_max in ((28, MASSIME), (26, MASSIME), (24, MASSIME)):
+        f = ImageFont.truetype(FONT_B, corpo)
+        inter = int(corpo * 1.32)
+        if orizzontale:
+            righe = a_capo(testo, f, larg, d)
+            if len(righe) <= righe_max:
                 break
         else:
-            migliore = _pezzi(testo, f, larg, d)[0]
-        righe = a_capo(migliore, f, larg, d)
-        if migliore != testo:
+            # la frase intera se ci sta, altrimenti il maggior numero di frasi
+            # intere che ci sta: mai una frase spezzata a metà
+            intera = a_capo(testo, f, larg, d)
+            if len(intera) <= righe_max:
+                righe = intera
+                break
+            scelta = None
+            for pezzo in _pezzi(testo, f, larg, d):
+                prova = a_capo(pezzo, f, larg, d)
+                if len(prova) <= righe_max:
+                    scelta = pezzo if scelta is None else scelta
+                    # si prova ad aggiungere la frase successiva, se ci sta
+                    continue
+                break
+            if scelta:
+                righe = a_capo(scelta, f, larg, d)
+                if scelta != testo:
+                    righe[-1] = righe[-1].rstrip(" .,;:") + "…"
+                break
+    else:
+        f = ImageFont.truetype(FONT_B, 24)
+        inter = 32
+        righe = a_capo(testo, f, larg, d)
+        if len(righe) > MASSIME:
+            righe = righe[:MASSIME]
             righe[-1] = righe[-1].rstrip(" .,;:") + "…"
 
     alto = len(righe) * inter + 22

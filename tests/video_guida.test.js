@@ -66,7 +66,7 @@ test("ogni lingua ha i suoi sottotitoli, con i tempi in ordine", () => {
     assert.ok(vtt.startsWith("WEBVTT"), `${nome} non è un file VTT`);
     const tempi = [...vtt.matchAll(/(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)/g)]
       .map((m) => [m[1], m[2]]);
-    assert.ok(tempi.length >= 8, `${nome}: solo ${tempi.length} righe di sottotitoli`);
+    assert.ok(tempi.length >= 12, `${nome}: solo ${tempi.length} righe di sottotitoli`);
     const secondi = (t) => {
       const [h, m, r] = t.split(":");
       return (+h) * 3600 + (+m) * 60 + parseFloat(r.replace(",", "."));
@@ -81,9 +81,10 @@ test("ogni lingua ha i suoi sottotitoli, con i tempi in ordine", () => {
   }
 });
 
-test("i sottotitoli dicono le stesse cose in ogni lingua: dieci righe ciascuno", () => {
+test("i sottotitoli dicono le stesse cose in ogni lingua: dodici righe ciascuno", () => {
   /* se una lingua avesse una riga in meno, la scena finale (l'avviso sulla
-     seconda truffa) resterebbe senza testo in quella lingua soltanto */
+     seconda truffa) resterebbe senza testo in quella lingua soltanto.
+     Le scene sono dodici: dieci della guida più le due sul recupero. */
   const conteggi = {};
   for (const l of LINGUE) {
     const vtt = R(`assets/video/come-segnalare-un-caso-${l}.vtt`);
@@ -92,7 +93,7 @@ test("i sottotitoli dicono le stesse cose in ogni lingua: dieci righe ciascuno",
   const valori = Object.values(conteggi);
   assert.deepStrictEqual([...new Set(valori)].length, 1,
     "le lingue non hanno lo stesso numero di sottotitoli: " + JSON.stringify(conteggi));
-  assert.strictEqual(valori[0], 10, "le scene sono dieci, i sottotitoli devono essere dieci");
+  assert.strictEqual(valori[0], 12, "le scene sono dodici, i sottotitoli devono essere dodici");
 });
 
 test("il JavaScript non scrive a mano la versione degli asset", () => {
@@ -265,6 +266,61 @@ test("il percorso del video è assoluto anche da una pagina tradotta", () => {
   const js = R("assets/js/sessione-video.js");
   assert.ok(/CARTELLA = "\/" \+/.test(js),
     "il percorso del video deve partire dalla radice del sito, non dalla pagina");
+});
+
+test("la parte sul recupero dice il metodo, non il risultato", () => {
+  /* La richiesta: «aggiungi il fatto che recuperate i soldi persi». La
+     risposta non può essere «recuperiamo i tuoi soldi», perché non è vero per
+     tutti e la pagina dice il contrario due sezioni più in là. Il compromesso
+     è questo, ed è verificato qui: le scene del recupero devono dire che cosa
+     si fa (prove, tracciamento) e che a volte non si può. Se un giorno
+     qualcuno «migliora» il testo togliendo il «a volte no», il test lo ferma. */
+  const sorgente = R("tools/video/contenuti.py");
+  const blocco = sorgente.slice(sorgente.indexOf("ESITI = {"), sorgente.indexOf("SCELTE = {"));
+  assert.ok(/A volte no|Sometimes it cannot|Manchmal nicht|A veces no/.test(blocco),
+    "le due risposte del recupero devono dire anche «a volte no»");
+  assert.ok(/A volte si può|Sometimes it can|Manchmal geht es|A veces se puede/.test(blocco),
+    "…e anche che a volte si può");
+
+  /* e la pagina, non solo il video */
+  const testo = PAGINA.replace(/<[^>]+>/g, " ").toLowerCase();
+  assert.ok(testo.includes("a volte si può, a volte no"),
+    "la pagina deve avere la sezione sul recupero con i due esiti");
+  assert.ok(testo.includes("nessuno può promettere il risultato"),
+    "la pagina deve dire che il risultato non si può promettere");
+  /* le formule che un venditore userebbe, e che qui non devono comparire */
+  const vietate = [/recuper(i|iamo) (sempre )?i tuoi soldi/i, /garantiamo il recupero/i,
+                   /recupero garantito/i, /\b100 ?%\b/, /soldi indietro/i];
+  for (const v of vietate) {
+    assert.ok(!v.test(testo), "la pagina promette: " + v);
+  }
+});
+
+test("le due scene nuove stanno fra il modulo e l'invio", () => {
+  /* L'ordine non è estetica: la domanda «e i miei soldi?» arriva dopo aver
+     raccontato che cosa è successo, non prima di aver spiegato come si
+     segnala. Metterle in fondo le renderebbe un allegato. */
+  const sorgente = R("tools/video/contenuti.py");
+  /* il blocco delle scene comincia dopo `SCENE = {`: le stesse chiavi
+     compaiono prima in `CAMPI`, `PROVE` e `ESITI`, e cercarle dalla cima
+     trovava la lista sbagliata */
+  const scene = sorgente.slice(sorgente.indexOf("SCENE = {"));
+  const INVIO = { it: "Nessuna password", en: "No password",
+                  de: "Kein Passwort", es: "Ninguna contraseña" };
+  for (const l of ["it", "en", "de", "es"]) {
+    const da = scene.indexOf(`    "${l}": [`);
+    const a = scene.indexOf("\n    ],", da);
+    assert.ok(da > 0 && a > da, `${l}: non riesco a isolare la lingua`);
+    const lingua = scene.slice(da, a);
+    const metodo = lingua.indexOf('tipo="metodo"');
+    const invio = lingua.indexOf(`titolo="${INVIO[l]}"`);
+    assert.ok(metodo > 0, `${l}: manca la scena sul recupero`);
+    assert.ok(invio > 0, `${l}: manca la scena dell'invio`);
+    assert.ok(metodo < invio, `${l}: la scena sul recupero non sta prima dell'invio`);
+    /* e sono due, non una: il metodo e i due esiti */
+    assert.strictEqual((lingua.match(/tipo="metodo"/g) || []).length, 2,
+      `${l}: le scene sul recupero devono essere due`);
+  }
 });
 
 module.exports = casi;
