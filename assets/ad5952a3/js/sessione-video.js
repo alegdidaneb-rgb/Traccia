@@ -37,14 +37,23 @@
   var CARTELLA = null;
 
   function cartella() {
-    /* La cartella degli asset (con l'impronta della versione) si legge da una
-       `<source>` della pagina, non si scrive qui: un percorso copiato in
-       questo file diventa vecchio in silenzio al primo giro di
-       `versione_asset.py`, e il video smette di partire senza un errore. */
+    /* La cartella del video si legge dalla `<source>` della pagina, non si
+       scrive qui: un percorso copiato in questo file diventa vecchio in
+       silenzio al primo giro di `versione_asset.py`, e il video smette di
+       partire senza un errore. */
     if (CARTELLA) return CARTELLA;
     var fonte = document.querySelector("[data-video-tela] source");
-    var m = fonte && /^(assets\/[0-9a-f]{8}\/video\/)/.exec(fonte.getAttribute("src") || "");
-    CARTELLA = m ? m[1] : "assets/video/";
+    var grezzo = (fonte && fonte.getAttribute("src")) || "";
+    /* la `<source>` è relativa in italiano e assoluta nelle traduzioni:
+       `/assets/video/…` contro `assets/video/…`. Si tiene solo la parte che
+       conta, e si ricostruisce il percorso sempre dalla radice: dentro `/de/`
+       un indirizzo relativo punterebbe a `/de/assets/…`, che non esiste. */
+    /* La cartella conta solo per la forma del percorso, e il video non sta
+       mai in una cartella versionata: si tiene la coda da `video/` in poi. */
+    var m = /((?:[\w.-]+\/)*video\/)[^/]*$/.exec(grezzo);
+    /* il percorso si compone sempre dalla radice del sito: dentro `/de/`
+       un indirizzo relativo chiederebbe `/de/assets/…`, che non esiste */
+    CARTELLA = "/" + (m ? m[1] : "assets/video/");
     return CARTELLA;
   }
 
@@ -52,9 +61,12 @@
     /* Il verticale non è una scelta della pagina: è un file più alto che serve
        quando lo schermo è stretto. Qui si sceglie il formato in base alla
        finestra, non alla lingua. */
-    var verticale = window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
-    return cartella() + "come-segnalare-un-caso-" + l +
-      (verticale ? "-verticale" : "-orizzontale") + ".mp4";
+    return cartella() + "come-segnalare-un-caso-" + l + "-" + forma() + ".mp4";
+  }
+
+  function forma() {
+    return (window.matchMedia && window.matchMedia("(max-width: 700px)").matches)
+      ? "verticale" : "orizzontale";
   }
 
   function mostra(l) {

@@ -115,7 +115,11 @@ test("le soglie del foglio di stile sono quelle che il misuratore conosce", () =
      ed entrambi sbagliati — perché il conto partiva dalla finestra invece che
      dalla barra. */
   const soglia = Number((uscitaMisura().match(/hamburger, ricavata dal contenuto: (\d+)px/) || [])[1]);
-  assert.ok(soglia > 1200 && soglia < 1400, "la soglia calcolata deve essere plausibile: " + soglia);
+  /* Il limite superiore era 1400 e adesso la soglia è 1402: con la pillola
+     della guida in barra la riga chiede 1298px, quindi il menu in riga non ci
+     sta sotto i 1402 di finestra. Il controllo serve a scoprire un conto
+     sballato — una soglia da 900 o da 2600 — non a fissare il numero. */
+  assert.ok(soglia > 1200 && soglia < 1500, "la soglia calcolata deve essere plausibile: " + soglia);
   assert.ok(
     new RegExp(`@media \\(max-width: ${soglia}px\\) \\{\\s*\\.nav__toggle \\{ display: inline-flex`).test(CSS_BASE),
     "l'hamburger deve comparire a " + soglia + "px, come dice il misuratore"
@@ -359,7 +363,7 @@ test("a larghezza da telefono la lista non è più una tendina: ci pensa il pann
      figlie del pannello. Se quella regola sparisse, o arrivasse un
      `display: flex` dopo, la lista tornerebbe una tendina *dentro* la tendina:
      due scatole sovrapposte, e i pulsanti sotto quella sbagliata. */
-  const blocco = bloccoMedia(CSS, 1395);
+  const blocco = bloccoMedia(CSS, 1402);
   assert.ok(/\.nav__links \{\s*display: contents;/.test(blocco),
     "premium.css non riporta la lista a `display: contents` sotto la soglia");
   assert.ok(/\.nav__panel \.nav__actions \{/.test(CSS_BASE),
@@ -374,45 +378,39 @@ test("su desktop il pannello non esiste come scatola", () => {
     "senza, su desktop il pannello sarebbe una scatola che va a capo");
 });
 
-test("la testata non ha altri link oltre alle voci, ai pulsanti e all'account", () => {
-  /* Il difetto vero, quello che l'utente ha visto come «il menu si divide in
-     due righe»: accanto ai pulsanti c'era una terza cosa — il link «Come
-     segnalare un caso» — che nessun conto prevedeva. La barra ha 1320px e ne
-     usa 1292 per menu, lingue e pulsanti: quei 172px in più non ci stavano, e
-     il browser comprimeva le voci finché una andava sotto. Da connesso la
-     pillola restava accanto a quella dell'account: 478px fuori.
+test("la testata ha un solo link extra: la guida, con l'etichetta breve", () => {
+  /* Prima di questo test il difetto era una pillola **non dichiarata**: 172px
+     su una barra da 1320, che nessuno contava e che mandava le voci a capo.
+     Il rimedio non è vietare l'extra — la guida serve, l'utente l'ha chiesta —
+     ma dichiararlo: un link, con l'etichetta **breve** che il misuratore
+     conosce. Così l'extra è nel conto, e non può più sbordare in silenzio.
 
-     Il numero non si ricontrolla qui (lo fa `misura_header.py`): si controlla
-     la **struttura**, perché è cambiando struttura che il conto era diventato
-     falso. Dentro `.nav__actions` ci possono stare solo i pulsanti di accesso
-     e la pillola dell'account, con il loro stato `data-auth-*`: un link senza
-     stato è un link che nessuno ha misurato. */
+     La lunghezza è la parte che conta: «Come segnalare un caso» sono 172px,
+     «La guida» 74. Con la prima la riga non ci sta a nessuna larghezza. */
   const dentro = HEADER.slice(HEADER.indexOf('<div class="nav__actions"'));
   const fine = dentro.indexOf("</div><!-- /nav__panel -->") || dentro.length;
   const blocco = dentro.slice(0, fine);
-  const link = [...blocco.matchAll(/<a\s[^>]*>/g)].map((m) => m[0]);
-  const intrusi = link.filter((a) => /href="(?!login\.html|app\.html|admin\.html)/.test(a));
-  assert.deepStrictEqual(intrusi, [],
-    "la testata deve contenere solo le voci (nella lista), i pulsanti di accesso " +
-    "e la pillola dell'account: " + intrusi.join(" , "));
-
-  /* e ogni link della barra deve essere legato a uno stato, altrimenti resta
-     visibile sia da visitatore sia da connesso — è così che la pillola
-     conviveva con il pulsante «Accedi». Lo stato può stare addosso al link
-     (`data-auth-guest`) o sul contenitore (`.nav-user[data-auth-member]`, che
-     nasconde sé stesso e con sé «La mia pratica»). */
+  const link = [...blocco.matchAll(/<a\s[^>]*>[^<]*<\/a>/g)].map((m) => m[0]);
+  /* gli unici ammessi: i due pulsanti di accesso, la pillola della guida e
+     quelle dell'account. Queste ultime stanno dentro `.nav-user[data-auth-member]`,
+     che si nasconde da solo: lo stato è sul contenitore, non sul link. */
   const inizioUtente = blocco.indexOf('<div class="nav-user"');
-  const senzaStato = [];
-  for (const m of blocco.matchAll(/<a\s[^>]*>/g)) {
+  const fuori = [];
+  for (const m of blocco.matchAll(/<a\s[^>]*>[^<]*<\/a>/g)) {
     const a = m[0];
-    if (!/nav-user__link/.test(a)) continue;
-    if (/data-auth-/.test(a)) continue;
-    const dentroAccount = inizioUtente !== -1 && m.index > inizioUtente;
-    if (dentroAccount) continue;
-    senzaStato.push(a);
+    if (/data-auth-guest/.test(a) || /nav-user__link--guida/.test(a) || /data-auth-/.test(a)) continue;
+    if (inizioUtente !== -1 && m.index > inizioUtente) continue;
+    fuori.push(a);
   }
-  assert.deepStrictEqual(senzaStato, [],
-    "un link `nav-user__link` senza stato resta visibile a tutti: " + senzaStato.join(" , "));
+  assert.deepStrictEqual(fuori, [],
+    "link non previsti nella testata: " + fuori.join(" , "));
+
+  const guida = link.filter((a) => /nav-user__link--guida/.test(a));
+  assert.strictEqual(guida.length, 1, "la pillola della guida deve stare in testata, una volta");
+  const testo = (guida[0].match(/>([^<]+)</) || [])[1].trim();
+  assert.ok(testo.length <= 12,
+    `l'etichetta della guida deve restare breve («La guida»): «${testo}» è troppo ` +
+    "lunga per la barra, e a 1320px non ci sta a nessuna spaziatura");
 });
 
 test("la guida resta raggiungibile: tolta dalla barra, non tolta dal sito", () => {

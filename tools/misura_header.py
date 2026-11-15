@@ -144,13 +144,33 @@ SOGLIA_MENU = 1300
 # Padding e spaziature presi dal foglio di stile, in px.
 PAD_PAGINA = 40          # --pad-x, clamp(1.25rem, 4vw, 2.5rem) al massimo
 PAD_PAGINA_MIN = 20      # --pad-x, clamp(1.25rem, 4vw, 2.5rem) al minimo
-GAP_NAV = 40             # gap fra brand e menu, .nav clamp(1rem, 3vw, 2.5rem)
-NAV_LINK_GAP = 0.25 * 16       # .nav__links gap
+GAP_NAV = 28             # gap fra brand e menu, .nav clamp(0.9rem, 2.5vw, 1.75rem)
+def _gap_voci() -> float:
+    """Il `gap` di `.nav__links`, letto dal foglio di stile.
+
+    Ricopiato qui (era `0.25 * 16`) il conto restava fermo quando il CSS
+    cambiava: è successo in questo stesso cambio — ho stretto il gap nel
+    foglio di stile e la prova che rimetteva le spaziature larghe **non**
+    faceva fallire il test, perché il misuratore usava ancora il suo numero.
+    """
+    return dal_css(".nav__links", "gap", 0.25)
+
+
+NAV_LINK_GAP_REM = 0.1         # ripiego della funzione sopra
 BTN_FONT = 0.82 * 16           # .btn--sm font-size
 BTN_PAD = 1.05 * 2 * 16        # .btn--sm padding-inline
 BTN_GAP = 0.5 * 16             # .nav__actions gap
-BTN_MARGIN = 0.9 * 16          # .nav__actions margin-inline-start
-LANG_OPT = 34 + 6              # .lang__opt min-width + padding
+BTN_MARGIN_REM = 0.5           # ripiego: il valore vero si legge da `.nav__actions`
+
+# La pillola della guida accanto ai pulsanti: `.nav-user__link` con l'etichetta
+# breve, una per lingua. Si misura **la più larga**, non quella italiana:
+# «Der Ratgeber» sta 28px sopra «La guida», e un conto fatto sull'italiano
+# coprirebbe la pagina tedesca solo per fortuna. Sono le quattro che
+# `tools/i18n/*.json` danno per la chiave «La guida»: se una traduzione si
+# allunga, va aggiunta qui — o meglio, letta dai cataloghi.
+GUIDE = ["La guida", "The guide", "Der Ratgeber", "La guía"]
+GAP_GUIDA = 0.5 * 16           # .nav__actions gap, fra i pulsanti e la pillola
+LANG_OPT = 30 + 6              # .lang__opt min-width + padding
 LANG_GAP = 2
 LANG_PAD = 3 * 2
 BRAND = 30 + 0.6 * 16 + 90     # marchio, spazio, «Traccia» a 1.2rem
@@ -168,8 +188,19 @@ def pad_x(w: int) -> float:
 
 
 def gap_nav(w: int) -> float:
-    """`gap: clamp(1rem, 3vw, 2.5rem)` su `.nav`."""
-    return max(16, min(0.03 * w, 40))
+    """Il `gap` di `.nav`, letto dal `clamp()` del foglio di stile.
+
+    `clamp(min, preferito, max)` con il preferito in `vw`: si prende il valore
+    vero alla larghezza `w`. Prima erano tre numeri ricopiati qui, e cambiare
+    il clamp nel CSS non cambiava il conto.
+    """
+    testo = CSS_BASE.read_text(encoding="utf-8")
+    for blocco in re.findall(r"^\.nav \{([^}]*)\}", testo, re.M):
+        m = re.search(r"gap:\s*clamp\(\s*([\d.]+)rem\s*,\s*([\d.]+)vw\s*,\s*([\d.]+)rem\s*\)", blocco)
+        if m:
+            minimo, vw, massimo = float(m.group(1)) * 16, float(m.group(2)), float(m.group(3)) * 16
+            return max(minimo, min(vw / 100 * w, massimo))
+    return max(0.9 * 16, min(0.025 * w, 1.75 * 16))
 
 
 def misuratore(font_path: pathlib.Path):
@@ -215,6 +246,11 @@ NOME_ACCOUNT = "Alessandro Baldini"   # il caso più largo: nome e cognome veri
 # Restano le iniziali, e il nome va nel `title` (vedi `assets/js/session.js`).
 # Il misuratore lo conta per quello che è: il caso con nome, se un giorno
 # qualcuno lo rimette, è quello che questo numero impedisce.
+
+
+def padding_guida() -> float:
+    """Il padding laterale di `.nav-user__link`, letto dal foglio di stile."""
+    return padding_orizzontale(".nav-user__link", 0.7) * 2
 
 
 def pillola_utente(larghezza: "callable", admin: bool = False, nome: str | None = None) -> float:
@@ -267,7 +303,7 @@ def ingombro(larghezza: "callable", w: int) -> dict[str, float]:
     voce = 0.875 * 16  # --fs-small = .875rem = 14px esatti
     # `.nav-link { padding: 0.55rem 0.75rem }`: si legge la parte orizzontale
     # (la seconda del shorthand), non la prima che è quella verticale
-    pad_link = padding_orizzontale(".nav-link", 0.75) * 2
+    pad_link = padding_orizzontale(".nav-link", 0.55) * 2
     pad_btn = BTN_PAD
     # Le misure delle pastiglie si **leggono dal foglio di stile**: scritte qui
     # a mano, allargare il selettore nel CSS non cambiava la misura e il test
@@ -284,12 +320,19 @@ def ingombro(larghezza: "callable", w: int) -> dict[str, float]:
     # sotto i 480 il nome «Traccia» sparisce dal marchio (resta la «T»)
     brand = 26 if w <= 480 else BRAND
 
-    menu = sum(larghezza(v, voce) + pad_link for v in VOCI) + NAV_LINK_GAP * len(VOCI)
-    pulsanti = sum(larghezza(p, BTN_FONT) + pad_btn for p in PULSANTI) + BTN_GAP + BTN_MARGIN
+    # letti dal foglio di stile, non ricopiati: vedi `_gap_voci`
+    gap_voci = dal_css(".nav__links", "gap", NAV_LINK_GAP_REM)
+    margine_azioni = dal_css(".nav__actions", "margin-inline-start", BTN_MARGIN_REM)
+    menu = sum(larghezza(v, voce) + pad_link for v in VOCI) + gap_voci * len(VOCI)
+    pulsanti = sum(larghezza(p, BTN_FONT) + pad_btn for p in PULSANTI) + BTN_GAP + margine_azioni
+    # e la pillola della guida, che il misuratore prima non vedeva e che è il
+    # motivo per cui la barra sembrava stare quando non ci stava
+    larg_guida = max(larghezza(t, 0.8 * 16, "600") for t in GUIDE) + GAP_GUIDA + padding_guida()
     selettore = len(SIGLE) * larg_opt + LANG_GAP * (len(SIGLE) - 1) + LANG_PAD
     if w <= 480:
         selettore = len(SIGLE) * (26 + 8) + LANG_PAD
-    return {"marchio": brand, "menu": menu, "selettore": selettore, "pulsanti": pulsanti}
+    return {"marchio": brand, "menu": menu, "selettore": selettore, "pulsanti": pulsanti,
+            "guida": larg_guida}
 
 
 def main() -> int:
@@ -312,7 +355,8 @@ def main() -> int:
         # sbordava senza che nessuno lo dicesse.
         if w > soglia:
             pezzi_utente = dict(pezzi)
-            pezzi_utente["pulsanti"] = pillola_utente(larghezza, nome=False) + BTN_MARGIN
+            pezzi_utente["pulsanti"] = (pillola_utente(larghezza, nome=False)
+                                        + dal_css(".nav__actions", "margin-inline-start", BTN_MARGIN_REM))
             serve_utente = sum(pezzi_utente.values()) + gap_nav(w) * 2
             if serve_utente > disponibile:
                 problemi += 1

@@ -3,7 +3,7 @@
 <head>
 <!-- shell:misurazione -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PCHTN7DM');</script>
-  <script src="/assets/09fcd3c9/js/conversione.js" defer></script>
+  <script src="/assets/a5e9c078/js/conversione.js" defer></script>
   <!-- /shell:misurazione -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,18 +19,18 @@
   <meta property="og:title" content="Einen Fall melden, Schritt für Schritt — Traccia">
   <meta property="og:description" content="Die sechs Angaben, die wir brauchen, was im Formular zu wählen ist, und was wir nie verlangen.">
   <meta property="og:url" content="https://traccia.it.com/de/come-segnalare-un-caso.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/09fcd3c9/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/a5e9c078/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — forensische Untersuchungen zu Finanz- und Kryptobetrug">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="/assets/09fcd3c9/img/apple-touch-icon.png">
-  <link rel="preload" href="/assets/09fcd3c9/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/assets/09fcd3c9/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/09fcd3c9/css/style.css">
-  <link rel="stylesheet" href="/assets/09fcd3c9/css/premium.css">
+  <link rel="apple-touch-icon" href="/assets/a5e9c078/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/a5e9c078/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/a5e9c078/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/a5e9c078/css/style.css">
+  <link rel="stylesheet" href="/assets/a5e9c078/css/premium.css">
   <script>
     (function(){
       var d = document.documentElement;
@@ -40,9 +40,9 @@
     })();
   </script>
 
-  <script src="/assets/09fcd3c9/js/config.js" defer></script>
-  <script src="/assets/09fcd3c9/js/api.js" defer></script>
-  <script src="/assets/09fcd3c9/js/session.js" defer></script>
+  <script src="/assets/a5e9c078/js/config.js" defer></script>
+  <script src="/assets/a5e9c078/js/api.js" defer></script>
+  <script src="/assets/a5e9c078/js/session.js" defer></script>
   <link rel="alternate" hreflang="it" href="https://traccia.it.com/come-segnalare-un-caso.html">
   <link rel="alternate" hreflang="en" href="https://traccia.it.com/en/come-segnalare-un-caso.html">
   <link rel="alternate" hreflang="de" href="https://traccia.it.com/de/come-segnalare-un-caso.html">
@@ -126,11 +126,15 @@
         <!-- visitatore -->
         <a class="btn btn--ghost btn--sm" href="/de/login.html" data-auth-guest>Anmelden</a>
         <a class="btn btn--sm" href="/de/login.html#registrati" data-auth-guest>Fall melden</a>
-        <!-- La guida, accanto al pulsante: chi sta per compilare il modulo è
-             esattamente la persona che si chiede «cosa mi chiederanno».
-             Non è una voce del menu — il menu ha sette voci e deve restare
-             una riga — ma una seconda porta d'ingresso dove serve. -->
-        <a class="nav-user__link" href="/de/come-segnalare-un-caso.html">Einen Fall melden</a>
+        <!-- La guida torna qui, accanto al pulsante: chi sta per compilare il
+             modulo è esattamente la persona che si chiede «cosa mi chiederanno».
+             L'etichetta è breve di proposito. Con «Come segnalare un caso» la
+             riga chiedeva 1472px su una barra da 1320, e le voci andavano a
+             capo; con «La guida» ne chiede 1374, che le spaziature strette
+             riportano dentro. Lunghezza e misure sono legate: chi allunga
+             questa parola deve rifare il conto con `tools/misura_header.py`,
+             e il test lo dice. -->
+        <a class="nav-user__link nav-user__link--guida" href="/de/come-segnalare-un-caso.html">Der Ratgeber</a>
 
         <!-- sessione attiva -->
         <div class="nav-user" data-auth-member hidden>
@@ -194,7 +198,7 @@
 
     <div class="video-tela mt-3" data-video-tela>
       <video id="video-guida" controls playsinline preload="metadata"
-             poster="/assets/09fcd3c9/img/guida-video-poster.jpg"
+             poster="/assets/a5e9c078/img/guida-video-poster.jpg"
              aria-label="Video: einen Fall melden, Schritt für Schritt">
         <!-- Sceglie il browser: il formato dipende da quanto è largo lo
              schermo, e così il video parte da solo anche con gli script
@@ -487,7 +491,7 @@
 </footer>
   <!-- /shell:footer -->
 
-  <script src="/assets/09fcd3c9/js/ui.js" defer></script>
-  <script src="/assets/09fcd3c9/js/sessione-video.js" defer></script>
+  <script src="/assets/a5e9c078/js/ui.js" defer></script>
+  <script src="/assets/a5e9c078/js/sessione-video.js" defer></script>
 </body>
 </html>
