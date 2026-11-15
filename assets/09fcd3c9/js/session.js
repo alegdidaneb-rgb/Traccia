@@ -54,6 +54,15 @@
     });
     slot.querySelectorAll("[data-auth-initials]").forEach(function (node) {
       node.textContent = initials(label);
+      /* il nome per esteso non sta nella barra — non ci sta, vedi
+         `assets/css/style.css` — ma non deve sparire: le iniziali sono un
+         disegno, la riga ha un titolo che si legge col mouse e con il
+         lettore di schermo */
+      node.setAttribute("title", label);
+    });
+    slot.querySelectorAll(".nav-user__id").forEach(function (node) {
+      node.setAttribute("title", label);
+      node.setAttribute("aria-label", "Account di " + label);
     });
     slot.querySelectorAll("[data-logout]").forEach(function (node) {
       node.setAttribute("title", user ? "Esci dall'account di " + label : "Esci");

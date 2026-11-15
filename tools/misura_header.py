@@ -203,6 +203,42 @@ def misuratore(font_path: pathlib.Path):
     return larghezza
 
 
+# La pillola dell'account (`.nav-user`), che prende il posto dei due pulsanti
+# quando si è connessi. È più larga di loro: «La mia pratica» + avatar + nome +
+# «Esci» con il nome vero misurato qui sotto. Il misuratore non la contava
+# affatto — contava sempre il visitatore — ed è il motivo per cui il caso
+# connesso non era mai stato misurato da nessuno.
+NOME_ACCOUNT = "Alessandro Baldini"   # il caso più largo: nome e cognome veri
+
+# Il nome per esteso **non** sta nella pillola, a nessuna larghezza: la barra
+# si ferma a 1320 anche su uno schermo da 2560, e con il nome servono 1383.
+# Restano le iniziali, e il nome va nel `title` (vedi `assets/js/session.js`).
+# Il misuratore lo conta per quello che è: il caso con nome, se un giorno
+# qualcuno lo rimette, è quello che questo numero impedisce.
+
+
+def pillola_utente(larghezza: "callable", admin: bool = False, nome: str | None = None) -> float:
+    """Ingombro di `.nav-user` a sessione attiva, in px.
+
+    Le misure vengono dal foglio di stile: `0.8rem` di corpo (12.8px), peso
+    600, `padding: 0.42rem 0.7rem` sui link, `gap: 0.15rem` fra i pezzi,
+    `padding` della pillola `0.28rem 0.3rem 0.28rem 0.45rem`, avatar 24px.
+    """
+    corpo = 0.8 * 16
+    pad_link = 0.7 * 16 * 2
+    gap = 0.15 * 16
+    voce = {"pratica": "La mia pratica", "admin": "Console admin", "esci": "Esci"}
+    pezzi = larghezza(voce["pratica"], corpo, "600") + pad_link
+    if admin:
+        pezzi += larghezza(voce["admin"], corpo, "600") + pad_link + gap
+    pezzi += 0.45 * 16 + 24          # avatar + spazio
+    if nome is not False:
+        pezzi += gap + larghezza(nome or NOME_ACCOUNT, corpo, "600")
+    pezzi += gap + larghezza(voce["esci"], corpo, "600") + pad_link
+    pezzi += 0.3 * 16 * 2            # padding della pillola
+    return pezzi
+
+
 def soglia_menu(larghezza: "callable") -> int:
     """La larghezza di finestra sotto la quale il menu in riga non ci sta.
 
@@ -271,6 +307,19 @@ def main() -> int:
         # 2560. Ed è largo `w` quando la finestra è più stretta.
         barra = min(w, CONTENITORE_HEADER)
         disponibile = barra - pad_x(w) * 2
+        # il caso connesso: la pillola dell'account al posto dei due pulsanti.
+        # Prima di questa riga il misuratore non lo guardava, e la barra
+        # sbordava senza che nessuno lo dicesse.
+        if w > soglia:
+            pezzi_utente = dict(pezzi)
+            pezzi_utente["pulsanti"] = pillola_utente(larghezza, nome=False) + BTN_MARGIN
+            serve_utente = sum(pezzi_utente.values()) + gap_nav(w) * 2
+            if serve_utente > disponibile:
+                problemi += 1
+                stato = f"SBORDA di {serve_utente - disponibile:.0f}px"
+            else:
+                stato = "sta"
+            print(f"{w:5}px  connesso: {stato} — servono {serve_utente:.0f} su {disponibile:.0f}")
         if w > soglia:
             # menu in riga: deve starci tutto
             # Tre gruppi in barra (marchio, lista, pulsanti) = due spazi, non
