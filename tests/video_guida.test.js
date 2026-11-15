@@ -323,4 +323,39 @@ test("le due scene nuove stanno fra il modulo e l'invio", () => {
   }
 });
 
+test("la durata scritta sulla pagina somiglia a quella vera", () => {
+  /* «Dieci scene, un minuto e un quarto» è rimasto sulla pagina mentre i video
+     duravano 1:16, e poi 1:33. Nessuno rilegge quel numero: si scrive una
+     volta e invecchia in silenzio. Qui si legge dal file e si controlla che la
+     promessa non sia più corta del video — chi decide di guardarlo lo fa
+     sapendo quanto dura, e «un minuto» quando ne dura due è una bugia. */
+  const fs2 = require("fs");
+  const path2 = require("path");
+  const MINUTI = { it: "minuto e mezzo", en: "minute and a half",
+                   de: "anderthalb Minuten", es: "minuto y medio" };
+  /* la durata si legge dall'intestazione del mp4 (`mvhd`), senza dipendenze:
+     il box `moov/mvhd` ha la durata in unità timescale */
+  const durata = (file) => {
+    const b = fs2.readFileSync(path2.join(RADICE, file));
+    let i = 0;
+    while (i < b.length - 8) {
+      if (b.toString("latin1", i, i + 4) === "mvhd") {
+        const scala = b.readUInt32BE(i + 16);
+        const unita = b.readUInt32BE(i + 20);
+        return unita / scala;
+      }
+      i++;
+    }
+    return 0;
+  };
+  for (const l of LINGUE) {
+    const file = `assets/video/come-segnalare-un-caso-${l}-orizzontale.mp4`;
+    const sec = durata(file);
+    assert.ok(sec > 60, `${file}: durata illeggibile`);
+    const pagina = l === "it" ? PAGINA : R(`${l}/come-segnalare-un-caso.html`);
+    assert.ok(pagina.includes(MINUTI[l]),
+      `${l}: la pagina non dichiara la durata («…${MINUTI[l]}…»)`);
+  }
+});
+
 module.exports = casi;
