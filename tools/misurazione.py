@@ -56,7 +56,8 @@ PAGINE = [
     "index.html", "come-funziona.html", "casi.html", "crypto.html",
     "chi-siamo.html", "team.html", "onorari.html", "supporto.html",
     "login.html", "privacy.html", "termini.html", "cookie.html",
-    "note-legali.html", "404.html", "app.html", "admin.html",
+    "note-legali.html", "come-segnalare-un-caso.html", "404.html",
+    "app.html", "admin.html",
 ]
 # Le pagine tradotte non hanno l'area riservata: `app.html` e `admin.html`
 # esistono solo in italiano. Chiederne una copia in tedesco e segnalarla come

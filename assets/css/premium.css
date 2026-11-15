@@ -4230,3 +4230,79 @@ body.is-staff-view #sicurezza { display: none !important; }
 .data-table td { font-size: 0.84rem; }
 .data-table tbody tr { transition: background 0.18s var(--ease-out); }
 .data-table tbody tr:hover { background: #fcfcfa; }
+
+/* --------------------------------------------------------------------------
+ §37 · il video della guida
+ La pagina `come-segnalare-un-caso.html` ha un video in quattro lingue e due
+ formati. Il verticale è più adatto al telefono, l'orizzontale al resto: la
+ scelta la fa lo script, qui si stabilisce solo che il riquadro non esca
+ mai dalla colonna e che non balli mentre carica.
+ --------------------------------------------------------------------------
+   Il `16 / 9` è un rapporto, non un'altezza fissa: un video con `height`
+   fissa su un telefono stretto sborda o lascia due bande nere, e su una
+   pagina che promette «niente da trascinare di lato» una banda nera è
+   meno grave di un video tagliato. */
+.video-tela {
+  position: relative;
+  border-radius: var(--r-lg, 16px);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+}
+.video-tela video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: #0b0b0f;
+}
+/* sul telefono il file è il verticale: il riquadro lo segue, altrimenti si
+   vedrebbero due bande nere enormi per un video che è tutto in piedi */
+@media (max-width: 700px) {
+  .video-tela video { aspect-ratio: 9 / 16; max-height: 78vh; }
+}
+
+.video-tela__nota {
+  margin: 0;
+  padding: .75rem 1rem;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* --- la scelta della lingua ------------------------------------------------ */
+.video-lingue {
+  display: flex;
+  flex-wrap: wrap;          /* a capo, non in orizzontale: vale per tutto il sito */
+  justify-content: center;
+  gap: .4rem;
+}
+.video-lingue__btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  padding: .45rem .95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .18s var(--ease-out, ease), color .18s, border-color .18s;
+}
+.video-lingue__btn:hover { background: var(--bg-soft); border-color: #d8d8e0; }
+.video-lingue__btn.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.video-lingue__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* il video è dentro una scheda: su schermo piccolo i margini si stringono,
+   ma la scheda non si stringe oltre il bordo della colonna */
+@media (max-width: 700px) {
+  .video-tela { border-radius: 12px; }
+}
