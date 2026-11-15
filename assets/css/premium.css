@@ -2478,9 +2478,26 @@ body.is-app .wa-fab { display: none; }
 }
 .notif__item.is-unread .notif__dot { background: var(--accent); }
 .notif__item.is-unread b { font-weight: 650; }
-.notif__item p { margin: 0.15rem 0 0; color: var(--muted); }
+.notif__item p { margin: 0.15rem 0 0; color: var(--ink-soft); }
+/* un messaggio scritto a mano è più lungo di «la pratica è passata di fase»:
+   va a capo come un testo, non come un'etichetta */
+.notif__item p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .notif__when { display: block; margin-top: 0.2rem; font-size: var(--fs-xs); color: var(--muted); }
 .notif__item--empty { grid-template-columns: 1fr; color: var(--muted); }
+/* il tipo: si vede a colpo d'occhio se ha scritto una persona o il sistema */
+.notif__kind {
+  display: inline-block;
+  margin-top: 0.3rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.notif__kind--messaggio { background: var(--accent-wash); color: var(--accent-ink); }
 
 /* --- console: selettore di fase ------------------------------------------ */
 .phase-select {

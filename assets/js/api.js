@@ -537,6 +537,22 @@
     salvaPratica: function (id, dati) {
       return call("admin_salva_pratica", { p_id: id, p_dati: dati });
     },
+    /* --- scrivere al cliente -------------------------------------------
+       Due funzioni e non una: «a uno» e «a tutti» sono due gesti diversi, con
+       due conferme diverse. Una sola funzione con l'id opzionale invita a
+       chiamarla senza id per sbaglio e a mandare a tutti un messaggio scritto
+       per uno. */
+    inviaAvviso: function (id, titolo, testo, kind) {
+      return call("admin_invia_avviso", {
+        p_id: id, p_titolo: titolo, p_testo: testo, p_kind: kind || "messaggio"
+      });
+    },
+    inviaAvvisoATutti: function (titolo, testo, kind, max) {
+      return call("admin_invia_avviso_a_tutti", {
+        p_titolo: titolo, p_testo: testo,
+        p_kind: kind || "messaggio", p_max: max || 500
+      });
+    },
     walletAction: function (id, action, note) {
       return call("admin_wallet_action", { p_id: id, p_action: action, p_note: note || null });
     },
