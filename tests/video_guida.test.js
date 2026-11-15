@@ -194,6 +194,20 @@ test("i sottotitoli scrivono il dominio, non come si pronuncia", () => {
   }
 });
 
+test("i sottotitoli non si vedono due volte", () => {
+  /* Il testo è dentro i fotogrammi. Se il JavaScript accendesse anche la
+     traccia, la stessa frase comparirebbe due volte sopra il video: una
+     disegnata da noi, una dal browser, a pochi pixel di distanza. */
+  const js = R("assets/js/sessione-video.js");
+  assert.ok(!/mode\s*=\s*"showing"/.test(js),
+    "il JS accende la traccia mentre i sottotitoli sono già nell'immagine");
+  assert.ok(/mode\s*=\s*"disabled"/.test(js),
+    "il JS deve spegnere le tracce: i sottotitoli sono dentro il video");
+  /* la traccia resta nella pagina: serve al menu del browser e alla ricerca */
+  assert.ok(/<track\s+kind="captions"/.test(PAGINA),
+    "la traccia dei sottotitoli serve lo stesso: non va tolta dalla pagina");
+});
+
 test("la scheda dei sei campi sta dentro il riquadro bianco", () => {
   /* Il difetto: nel formato orizzontale l'altezza della scheda veniva
      misurata con il passo dei campi del verticale (104 px), mentre il disegno

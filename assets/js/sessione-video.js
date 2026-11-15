@@ -6,9 +6,13 @@
    che il browser mostra i sottotitoli della lingua precedente.
 
    Qui si tiene una sola cosa vera: il `<video>` c'è, con tutti i `<track>`
-   già dentro (uno per lingua), e si cambia `src` e `track.mode`. La lingua
-   scelta si ricorda in `localStorage` perché chi guarda il video in tedesco
+   già dentro (uno per lingua), e si cambia `src`. La lingua scelta si
+   ricorda in `localStorage` perché chi guarda il video in tedesco
    probabilmente legge il sito in tedesco.
+
+   I sottotitoli sono dentro i fotogrammi, quindi le tracce restano spente:
+   accese, la stessa frase comparirebbe due volte. Ci sono lo stesso, e il
+   browser le offre nel suo menu, per chi preferisce il testo del sistema.
 
    Niente `fetch`, niente dipendenze: il file è servito dal sito come gli altri. */
 (function (global) {
@@ -60,11 +64,13 @@
     video.src = sorgente(l);
     video.load();
     /* i sottotitoli seguono la lingua, non il file: se restassero quelli
-       italiani sotto una voce inglese, la pagina direbbe due cose diverse */
+       italiani sotto una voce inglese, la pagina direbbe due cose diverse.
+       Il testo però è già dentro i fotogrammi, quindi la traccia resta
+       pronta — il browser la offre nel menu del lettore — ma spenta: accesa,
+       le stesse parole comparirebbero due volte, una sopra l'altra. */
     var tracce = video.textTracks || [];
     for (var i = 0; i < tracce.length; i++) {
-      var t = tracce[i];
-      t.mode = (t.language === l) ? "showing" : "disabled";
+      tracce[i].mode = "disabled";
     }
     if (eraInRiproduzione) {
       var p = video.play();
