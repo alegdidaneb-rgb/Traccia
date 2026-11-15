@@ -270,6 +270,13 @@
       var editBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-modifica="' +
         user.id + '" title="Correggi nome, contatti, importo e fase">Modifica</button>';
+      /* «Scrivi» sta sulla riga come «Modifica»: è il gesto che si fa mentre si
+         guarda una pratica, e cercarlo in un'altra schermata vuol dire non
+         farlo. Non c'è per l'account master, che non ha una campanella. */
+      var scriviBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" type="button" data-scrivi="' +
+        user.id + '" data-scrivi-nome="' + ui.esc(user.name) +
+        '" title="Manda un messaggio nella campanella del cliente">Scrivi</button>';
       var killBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-kill="' +
         user.id + '" title="Chiudi tutte le sessioni di questo account">Esci</button>';
@@ -309,7 +316,7 @@
             ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
             : "") +
         "</td>" +
-        '<td class="data-table__actions">' + editBtn + killBtn + openBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -549,6 +556,102 @@
      il database marca quella sessione come sola lettura e `need_write_user`
      rifiuta ogni scrittura. Nessuna azione viene registrata a nome del
      cliente, quindi non c'è impersonificazione. */
+  /* ------------------------------------------------- scrivere al cliente -- */
+  /* Il cliente lo ha chiesto così: «dal master si deve poter mandare ogni tipo
+     di messaggio nell'account del cliente, e lì deve esserci una campanella».
+
+     Fino a ieri non si poteva: gli avvisi nascevano solo da eventi (cambio di
+     fase, documento valutato). Un operatore che voleva dire «manca il
+     documento di residenza, ricaricalo» non aveva nessun posto dove scriverlo.
+
+     Due cose che il modulo fa apposta:
+       - **mostra a chi sta scrivendo**. Mandare un messaggio alla persona
+         sbagliata è l'unico errore di questa funzione che non si può
+         annullare: il nome e il codice pratica stanno nel titolo, non in una
+         riga della tabella che si può aver letto male;
+       - **distingue il testo libero dall'avviso di sistema**. Il tipo
+         predefinito è «messaggio», e il cliente lo legge come una persona che
+         gli parla. Gli altri tipi si usano per le comunicazioni d'ufficio. */
+  function scriviAlCliente(id) {
+    var pratica = (state.allAccounts || []).filter(function (u) {
+      return String(u.id) === String(id);
+    })[0];
+    if (!pratica) {
+      ui.toast("Pratica non trovata: ricarica la pagina.", "error");
+      return;
+    }
+
+    return ui.form({
+      title: "Scrivi a " + (pratica.name || "cliente") +
+             (pratica.case_ref ? " · " + pratica.case_ref : ""),
+      message: "Arriva nella campanella dell'area del cliente. Resta nel registro " +
+               "attività con il tuo nome: è una comunicazione, non una nota interna.",
+      confirm: "Invia",
+      campi: [
+        { nome: "titolo", etichetta: "Oggetto",
+          valore: "",
+          suggerimento: "La riga che il cliente legge nella campanella. Massimo 120 caratteri." },
+        { nome: "testo", etichetta: "Messaggio", tipo: "textarea",
+          valore: "",
+          suggerimento: "In italiano. Va dritto al cliente: niente gergo interno." },
+        { nome: "kind", etichetta: "Tipo", tipo: "select", valore: "messaggio",
+          opzioni: [
+            { valore: "messaggio", testo: "Messaggio dell'ufficio" },
+            { valore: "document", testo: "Documenti: serve qualcosa" },
+            { valore: "operation", testo: "Operazione sul conto" },
+            { valore: "contract", testo: "Contratto" },
+            { valore: "system", testo: "Comunicazione di servizio" }
+          ],
+          suggerimento: "Il cliente li vede nello stesso posto; il tipo dice di cosa si tratta." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;
+      var titolo = (dati.titolo || "").trim();
+      var testo = (dati.testo || "").trim();
+      /* i controlli sono anche nel database: qui servono a non far partire una
+         chiamata che si sa già che verrà rifiutata */
+      if (!titolo) { ui.toast("Serve un oggetto: è la riga che si legge nella campanella.", "error"); return; }
+      if (titolo.length > 120) { ui.toast("Oggetto troppo lungo: massimo 120 caratteri.", "error"); return; }
+      if (!testo) { ui.toast("Il messaggio è vuoto: non mandare una campanella per niente.", "error"); return; }
+
+      return api.inviaAvviso(pratica.id, titolo, testo, dati.kind).then(function () {
+        ui.toast("Messaggio inviato a " + (pratica.name || "cliente") + ".", "ok");
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  /* «A tutti» è un gesto che non si annulla: una volta partito, ogni cliente
+     attivo ha una campanella accesa. Per questo la conferma dice **quante**
+     persone riceveranno il messaggio, e non solo «sicuro?». */
+  function scriviATutti() {
+    var attive = (state.allAccounts || []).filter(function (u) {
+      return !u.is_master && String(u.status) === "active";
+    });
+    return ui.form({
+      title: "Messaggio a tutte le pratiche attive",
+      message: "Lo riceveranno " + attive.length +
+               (attive.length === 1 ? " pratica attiva" : " pratiche attive") +
+               ". Non si può annullare: una volta inviato, resta nella campanella di ciascuno. " +
+               "Le pratiche in attesa, sospese o rifiutate non lo ricevono.",
+      confirm: "Invia a " + attive.length,
+      campi: [
+        { nome: "titolo", etichetta: "Oggetto", valore: "" },
+        { nome: "testo", etichetta: "Messaggio", tipo: "textarea", valore: "",
+          suggerimento: "Scrivilo come se lo leggesse chiunque abbia una pratica aperta." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;
+      var titolo = (dati.titolo || "").trim();
+      var testo = (dati.testo || "").trim();
+      if (!titolo) { ui.toast("Serve un oggetto.", "error"); return; }
+      if (!testo) { ui.toast("Il messaggio è vuoto.", "error"); return; }
+
+      return api.inviaAvvisoATutti(titolo, testo, "messaggio").then(function (res) {
+        ui.toast("Messaggio inviato a " + ((res && res.inviate) || 0) + " pratiche.", "ok");
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
   function openClient(id, nome) {
     api.viewClient(id).then(function (data) {
       var chiave = "traccia.staff_view";
@@ -1909,6 +2012,12 @@
         return;
       }
 
+      var scrivi = e.target.closest("[data-scrivi]");
+      if (scrivi) {
+        scriviAlCliente(scrivi.getAttribute("data-scrivi"));
+        return;
+      }
+
       var apri = e.target.closest("[data-open]");
       if (apri) {
         openClient(apri.getAttribute("data-open"), apri.getAttribute("data-open-name"));
@@ -2117,6 +2226,9 @@
       });
       chip.setAttribute("aria-pressed", chip.classList.contains("is-active") ? "true" : "false");
     });
+
+    var tutti = document.querySelector("[data-scrivi-tutti]");
+    if (tutti) tutti.addEventListener("click", scriviATutti);
 
     var campoRicerca = document.querySelector("[data-pratiche-ricerca]");
     if (campoRicerca) {

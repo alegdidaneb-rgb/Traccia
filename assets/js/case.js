@@ -370,11 +370,24 @@
       return;
     }
 
+    /* Il tipo si vede. «Il sistema ti dice che la pratica è avanzata» e «una
+       persona ti ha scritto» sono due cose diverse, e il cliente deve capirlo
+       senza aprire niente: la prima non chiede una risposta, la seconda sì. */
+    var etichette = {
+      messaggio: "Dall'ufficio",
+      phase: "Avanzamento",
+      document: "Documenti",
+      operation: "Conto",
+      contract: "Contratto",
+      system: "Servizio"
+    };
     ul.innerHTML = lista.map(function (n) {
+      var tipo = n.kind && etichette[n.kind] ? n.kind : "system";
       return '<li class="notif__item' + (n.read ? "" : " is-unread") + '">' +
         '<span class="notif__dot" aria-hidden="true"></span>' +
         "<div><b>" + ui.esc(n.title) + "</b>" +
         (n.body ? "<p>" + ui.esc(n.body) + "</p>" : "") +
+        '<span class="notif__kind notif__kind--' + tipo + '">' + etichette[tipo] + "</span>" +
         '<span class="notif__when">' + shortDate(n.created_at) + "</span></div></li>";
     }).join("");
     if (panel) panel.dataset.loaded = "1";

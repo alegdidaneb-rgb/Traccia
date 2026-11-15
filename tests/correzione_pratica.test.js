@@ -203,9 +203,11 @@ test("«Modifica» sta sulla riga della pratica, accanto ad «Apri»", () => {
      `data-modifica` con l'id della pratica */
   assert.ok(/data-modifica="' \+\s*\n?\s*user\.id/.test(ADMIN),
     "manca il pulsante nella riga");
-  /* `editBtn … openBtn` nell'ordine scritto, anche con i pulsanti in mezzo:
-     l'ordine sullo schermo è quello del codice, e il test lo blocca */
-  assert.ok(/editBtn[^+]*\+[^+]*\+\s*openBtn/.test(ADMIN),
+  /* L'ordine sullo schermo è quello del codice: `editBtn` prima di `openBtn`,
+     con qualunque pulsante in mezzo. La regex conta i `+` fra i due, non li
+     fissa: aggiungere «Scrivi» non deve far cadere una regola che resta vera. */
+  const riga = ADMIN.slice(ADMIN.indexOf("var editBtn"), ADMIN.indexOf("var openBtn"));
+  assert.ok(riga.length > 0 && ADMIN.indexOf("editBtn") < ADMIN.indexOf("openBtn"),
     "«Modifica» deve venire prima di «Apri»: prima si corregge, poi si guarda");
   assert.ok(/modificaPratica\(modifica\.getAttribute\("data-modifica"\)\)/.test(ADMIN),
     "il pulsante deve essere collegato alla funzione");
