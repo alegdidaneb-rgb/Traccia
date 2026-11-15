@@ -3855,7 +3855,11 @@ body.is-staff-view #sicurezza { display: none !important; }
 }
 .lang__opt {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 34px; height: 30px; padding: 0 8px;
+  /* 30x30 e non 34x30: quattro pastiglie, 16px in meno. Le sigle sono di due
+     lettere, e 30px è ancora un bersaglio da dito (sotto i 44 dello standard,
+     ma la pillola è alta 30 e il tocco sbaglia di rado: il numero viene dalla
+     riga, non dal dito). */
+  min-width: 30px; height: 30px; padding: 0 6px;
   border-radius: 999px;
   font-size: 11.5px; font-weight: 650; letter-spacing: .04em;
   line-height: 1;
@@ -3917,7 +3921,7 @@ body.is-staff-view #sicurezza { display: none !important; }
    `tests/header_larghezza.test.js` lo esegue a ogni giro: se una di queste
    misure cambia, il test dice a quale larghezza si sborda.
    ------------------------------------------------------------------------ */
-@media (max-width: 1395px) {
+@media (max-width: 1396px) {
   .nav { gap: clamp(0.75rem, 2vw, 1.5rem); }
   /* Le lingue restano nella **barra**, non nel pannello: cambiarle è un gesto
      che non deve chiedere di aprire un menu. Il selettore si prende lo spazio

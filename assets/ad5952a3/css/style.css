@@ -340,7 +340,10 @@ textarea:focus-visible {
   height: var(--header-h);
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 3vw, 2.5rem);
+  /* 1.75rem, non 2.5: con la pillola della guida in barra i due spazi fra i tre
+     gruppi costavano 80px. A 1.75rem sono 56, e i gruppi restano distinti —
+     sotto 1.25rem il marchio e le voci si leggono come una riga sola. */
+  gap: clamp(0.9rem, 2.5vw, 1.75rem);
 }
 
 .brand {
@@ -374,15 +377,20 @@ textarea:focus-visible {
 .nav__links {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  /* 0.1rem: le voci hanno già il loro padding orizzontale (0.65rem), e lo
+     spazio fra due pillole non serve a separarle — il padding lo fa. Erano
+     4px per sette intervalli: 17px restituiti alla riga. */
+  gap: 0.1rem;
   margin-inline-start: auto;
 }
 .nav-link {
-  /* 0.75rem e non 0.85: con sette voci sono 22px in meno sulla riga, e sopra
-     la soglia dell'hamburger il margine passa da 6 a 28px. Con 6px, una voce
-     in grassetto (il peso del link attivo è 600) bastava a far spezzare di
-     nuovo le parole. Il numero vero lo misura `tools/misura_header.py`. */
-  padding: 0.55rem 0.75rem;
+  /* 0.6rem e non 0.75: la pillola «La guida» accanto ai pulsanti costa 74px, e
+     sette voci da 0.75rem la spingevano fuori. È **il contenuto** a decidere
+     il padding, non il contrario: se una voce si allunga, il conto lo dice
+     (`tools/misura_header.py`) e non si stringe oltre — si cambiano le parole.
+     0.65rem: con 0.6 il margine scendeva a 12px, e una voce in grassetto (il
+     link attivo è peso 600) se lo mangia. 0.65 lascia 33px. */
+  padding: 0.55rem 0.65rem;
   border-radius: var(--r-pill);
   font-size: var(--fs-small);
   font-weight: 500;
@@ -400,7 +408,9 @@ textarea:focus-visible {
 }
 
 /* --- comandi utente: pillola compatta, una sola riga ------------------- */
-.nav__actions { margin-inline-start: 0.9rem; }
+/* 0.5rem: 0.9 era il doppio di quanto serve a staccare i pulsanti dalle voci,
+   e con la pillola della guida in barra quei 6px contano. */
+.nav__actions { margin-inline-start: 0.5rem; }
 
 .nav-user {
   display: flex;
@@ -421,6 +431,17 @@ textarea:focus-visible {
   font-weight: 600;
   color: var(--ink-soft);
   transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+/* La pillola della guida: è un link, non un pulsante, e sta accanto a due
+   pulsanti veri. Il filo la stacca da loro senza darle il peso di una terza
+   call to action — «Segnala un caso» resta l'unico pulsante pieno della riga. */
+.nav-user__link--guida {
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.nav-user__link--guida:hover {
+  border-color: #d4d4dc;
+  background: var(--bg-soft);
 }
 .nav-user__link:hover { background: var(--bg-soft); color: var(--ink); }
 .nav-user__link--admin {
@@ -453,7 +474,8 @@ textarea:focus-visible {
 }
 
 .nav-user__name {
-  max-width: 9.5rem;
+  /* la larghezza massima sta nella regola più sotto, dove si decide anche se
+     mostrarlo: due `max-width` in due punti sono due cose da tenere allineate */
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.8rem;
@@ -480,11 +502,31 @@ textarea:focus-visible {
 
 [data-auth-slot] [hidden] { display: none !important; }
 
-/* su tablet stretto il nome lascia spazio al resto */
-@media (max-width: 1180px) {
-  .nav-user__name { display: none; }
-  .nav-user__id { border-left: 0; margin-left: 0; padding-right: 0.2rem; }
+/* Il nome lascia spazio al resto **sempre**, ma il motivo non è la larghezza
+   dello schermo: è la riga. Con il nome nella pillola, la testata da connesso
+   chiede 1383px su 1320 — sessantatré in più, e le voci del menu andavano a
+   capo. Il numero viene da `tools/misura_header.py`, che ora misura anche
+   questo caso: prima contava sempre il visitatore, e il difetto non lo vedeva
+   nessuno. Senza il nome la riga chiede 1264 su 1320: cinquantasei di
+   margine. Le iniziali restano, e il nome per esteso sta nel `title`, quindi
+   non si perde niente — si sposta. */
+.nav-user__name {
+  display: none;
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+.nav-user__id { border-left: 0; margin-left: 0; padding-right: 0.2rem; }
+
+/* Il nome non torna sopra i 1700, e non è una dimenticanza: oltre i 1395 la
+   finestra si allarga ma **la barra no** — si ferma a 1320 (`.site-header
+   .container`). Con il nome servono 1383, sempre. Quindi il nome starebbe
+   fuori su ogni schermo, anche su un 27 pollici. Al suo posto: le iniziali
+   visibili, e il nome per esteso nell'`aria-label` e nel `title` della riga
+   (lo scrive `assets/js/session.js`), così chi passa il mouse o usa un lettore
+   di schermo lo legge comunque. */
+.nav-user__id { cursor: default; }
 
 
 .nav__toggle {
@@ -541,7 +583,7 @@ textarea:focus-visible {
    Sotto, il menu va nel pannello. Il numero viene da
    `tools/misura_header.py` (che lo stampa) e il test verifica che i due
    coincidano: scritto a mano in due posti, era già sbagliato in entrambi. */
-@media (max-width: 1395px) {
+@media (max-width: 1396px) {
   .nav__toggle { display: inline-flex; }
 
   /* La tendina è il **pannello**, non la lista: così «Accedi» e «Segnala un

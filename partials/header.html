@@ -61,14 +61,15 @@
         <!-- visitatore -->
         <a class="btn btn--ghost btn--sm" href="login.html" data-auth-guest>Accedi</a>
         <a class="btn btn--sm" href="login.html#registrati" data-auth-guest>Segnala un caso</a>
-        <!-- La guida **non** sta qui. Ci è stata, come secondo link accanto ai
-             pulsanti, ed era il difetto: 172px su una barra che ne ha 1320 e
-             ne usa già 1292. Il browser comprimeva le voci finché una non ci
-             stava più, e quella finiva sotto — la «seconda riga» nel menu.
-             Da connesso era peggio: la pillola restava accanto a quella
-             dell'account, e la barra sbordava di 478px.
-             La guida ha già due porte: il footer, in ogni pagina, e la
-             sezione «Prima di iniziare» della home. Non serve una terza. -->
+        <!-- La guida torna qui, accanto al pulsante: chi sta per compilare il
+             modulo è esattamente la persona che si chiede «cosa mi chiederanno».
+             L'etichetta è breve di proposito. Con «Come segnalare un caso» la
+             riga chiedeva 1472px su una barra da 1320, e le voci andavano a
+             capo; con «La guida» ne chiede 1374, che le spaziature strette
+             riportano dentro. Lunghezza e misure sono legate: chi allunga
+             questa parola deve rifare il conto con `tools/misura_header.py`,
+             e il test lo dice. -->
+        <a class="nav-user__link nav-user__link--guida" href="come-segnalare-un-caso.html">La guida</a>
 
         <!-- sessione attiva -->
         <div class="nav-user" data-auth-member hidden>
