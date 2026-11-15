@@ -374,4 +374,85 @@ test("su desktop il pannello non esiste come scatola", () => {
     "senza, su desktop il pannello sarebbe una scatola che va a capo");
 });
 
+test("la testata non ha altri link oltre alle voci, ai pulsanti e all'account", () => {
+  /* Il difetto vero, quello che l'utente ha visto come «il menu si divide in
+     due righe»: accanto ai pulsanti c'era una terza cosa — il link «Come
+     segnalare un caso» — che nessun conto prevedeva. La barra ha 1320px e ne
+     usa 1292 per menu, lingue e pulsanti: quei 172px in più non ci stavano, e
+     il browser comprimeva le voci finché una andava sotto. Da connesso la
+     pillola restava accanto a quella dell'account: 478px fuori.
+
+     Il numero non si ricontrolla qui (lo fa `misura_header.py`): si controlla
+     la **struttura**, perché è cambiando struttura che il conto era diventato
+     falso. Dentro `.nav__actions` ci possono stare solo i pulsanti di accesso
+     e la pillola dell'account, con il loro stato `data-auth-*`: un link senza
+     stato è un link che nessuno ha misurato. */
+  const dentro = HEADER.slice(HEADER.indexOf('<div class="nav__actions"'));
+  const fine = dentro.indexOf("</div><!-- /nav__panel -->") || dentro.length;
+  const blocco = dentro.slice(0, fine);
+  const link = [...blocco.matchAll(/<a\s[^>]*>/g)].map((m) => m[0]);
+  const intrusi = link.filter((a) => /href="(?!login\.html|app\.html|admin\.html)/.test(a));
+  assert.deepStrictEqual(intrusi, [],
+    "la testata deve contenere solo le voci (nella lista), i pulsanti di accesso " +
+    "e la pillola dell'account: " + intrusi.join(" , "));
+
+  /* e ogni link della barra deve essere legato a uno stato, altrimenti resta
+     visibile sia da visitatore sia da connesso — è così che la pillola
+     conviveva con il pulsante «Accedi». Lo stato può stare addosso al link
+     (`data-auth-guest`) o sul contenitore (`.nav-user[data-auth-member]`, che
+     nasconde sé stesso e con sé «La mia pratica»). */
+  const inizioUtente = blocco.indexOf('<div class="nav-user"');
+  const senzaStato = [];
+  for (const m of blocco.matchAll(/<a\s[^>]*>/g)) {
+    const a = m[0];
+    if (!/nav-user__link/.test(a)) continue;
+    if (/data-auth-/.test(a)) continue;
+    const dentroAccount = inizioUtente !== -1 && m.index > inizioUtente;
+    if (dentroAccount) continue;
+    senzaStato.push(a);
+  }
+  assert.deepStrictEqual(senzaStato, [],
+    "un link `nav-user__link` senza stato resta visibile a tutti: " + senzaStato.join(" , "));
+});
+
+test("la guida resta raggiungibile: tolta dalla barra, non tolta dal sito", () => {
+  /* Toglierla dalla testata è una scelta di spazio, non di contenuto: se un
+     giorno qualcuno la rimuove anche dal footer, la pagina più importante per
+     chi ha appena subito una truffa sparisce dalla navigazione. */
+  const footer = require("fs").readFileSync(path.join(RADICE, "partials/footer.html"), "utf8");
+  assert.match(footer, /href="come-segnalare-un-caso\.html"/,
+    "il footer deve linkare la guida: è l'unica porta rimasta in ogni pagina");
+});
+
+test("il nome dell'account non sta nella barra, e non ci torna", () => {
+  /* La barra si ferma a 1320px anche su uno schermo da 2560: con il nome per
+     esteso nella pillola servono 1383, cioè 63 di troppo a ogni larghezza. Non
+     era visibile perché il misuratore contava sempre il visitatore. La
+     correzione non è «sotto 1700 lo nascondo»: sopra i 1700 la finestra è più
+     larga ma la barra no, quindi il nome non può tornare da nessuna parte. */
+  assert.ok(/\.nav-user__name\s*\{[^}]*display:\s*none/.test(CSS_BASE),
+    "il nome per esteso non deve stare nella barra: servono 1383px su 1320");
+  assert.ok(!/@media[^{]*min-width[^{]*1700[\s\S]{0,400}display:\s*inline-block/.test(CSS_BASE),
+    "sopra i 1700 il nome non può tornare: la barra resta 1320 anche su 2560");
+
+  /* e il nome non sparisce: va nel titolo della riga e dell'avatar */
+  const JS = require("fs").readFileSync(path.join(RADICE, "assets/js/session.js"), "utf8");
+  assert.ok(/nav-user__id[\s\S]{0,200}setAttribute\("title"/.test(JS),
+    "il nome per esteso deve finire nel `title` della riga: le iniziali da sole non lo dicono");
+});
+
+test("il caso connesso è misurato, non solo quello da visitatore", () => {
+  /* Il difetto che ha lasciato passare tutto il resto: `misura_header.py`
+     misurava la barra come la vede un visitatore. Da connesso al posto dei due
+     pulsanti c'è la pillola dell'account, che è più larga — e nessuno la
+     contava. Qui si esegue lo strumento e si pretende che quel caso compaia
+     nell'output: se qualcuno toglie il controllo, il test dice che il caso non
+     è più misurato, invece di dire «sta». */
+  const out = execFileSync("python3", [path.join(RADICE, "tools/misura_header.py"), "1920"],
+    { encoding: "utf8" });
+  assert.match(out, /connesso: sta/u,
+    "il misuratore deve dire anche come sta la barra da connesso:\n" + out);
+  assert.ok(!/connesso: SBORDA/u.test(out), "da connesso la barra sborda:\n" + out);
+});
+
 module.exports = caso;

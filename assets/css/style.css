@@ -453,7 +453,8 @@ textarea:focus-visible {
 }
 
 .nav-user__name {
-  max-width: 9.5rem;
+  /* la larghezza massima sta nella regola più sotto, dove si decide anche se
+     mostrarlo: due `max-width` in due punti sono due cose da tenere allineate */
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.8rem;
@@ -480,11 +481,31 @@ textarea:focus-visible {
 
 [data-auth-slot] [hidden] { display: none !important; }
 
-/* su tablet stretto il nome lascia spazio al resto */
-@media (max-width: 1180px) {
-  .nav-user__name { display: none; }
-  .nav-user__id { border-left: 0; margin-left: 0; padding-right: 0.2rem; }
+/* Il nome lascia spazio al resto **sempre**, ma il motivo non è la larghezza
+   dello schermo: è la riga. Con il nome nella pillola, la testata da connesso
+   chiede 1383px su 1320 — sessantatré in più, e le voci del menu andavano a
+   capo. Il numero viene da `tools/misura_header.py`, che ora misura anche
+   questo caso: prima contava sempre il visitatore, e il difetto non lo vedeva
+   nessuno. Senza il nome la riga chiede 1264 su 1320: cinquantasei di
+   margine. Le iniziali restano, e il nome per esteso sta nel `title`, quindi
+   non si perde niente — si sposta. */
+.nav-user__name {
+  display: none;
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+.nav-user__id { border-left: 0; margin-left: 0; padding-right: 0.2rem; }
+
+/* Il nome non torna sopra i 1700, e non è una dimenticanza: oltre i 1395 la
+   finestra si allarga ma **la barra no** — si ferma a 1320 (`.site-header
+   .container`). Con il nome servono 1383, sempre. Quindi il nome starebbe
+   fuori su ogni schermo, anche su un 27 pollici. Al suo posto: le iniziali
+   visibili, e il nome per esteso nell'`aria-label` e nel `title` della riga
+   (lo scrive `assets/js/session.js`), così chi passa il mouse o usa un lettore
+   di schermo lo legge comunque. */
+.nav-user__id { cursor: default; }
 
 
 .nav__toggle {

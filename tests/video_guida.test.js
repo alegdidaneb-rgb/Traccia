@@ -151,12 +151,17 @@ test("ogni pagina ha la sua copertina e non quella di un'altra", () => {
 });
 
 test("la guida si raggiunge da dove serve, senza cercarla", () => {
-  /* Una pagina che nessuno trova non serve a niente: la guida sta nel piè di
-     pagina (tutte le pagine) e accanto al pulsante «Segnala un caso». */
-  for (const f of ["partials/footer.html", "partials/header.html"]) {
-    assert.ok(/come-segnalare-un-caso\.html/.test(R(f)),
-      `${f} non porta alla guida`);
-  }
+  /* Una pagina che nessuno trova non serve a niente. La guida sta nel piè di
+     pagina, in tutte le pagine, e in home sotto «Prima di iniziare».
+
+     In testata **non** sta più: era il link che faceva sbordare la barra di
+     172px, e le voci del menu andavano a capo. Toglierlo dalla testata è una
+     decisione di spazio, non di contenuto — se un giorno sparisce anche dal
+     footer, questa pagina torna invisibile, e questo test lo dice. */
+  assert.ok(/come-segnalare-un-caso\.html/.test(R("partials/footer.html")),
+    "partials/footer.html non porta alla guida: è l'unica porta in ogni pagina");
+  assert.ok(/come-segnalare-un-caso\.html/.test(R("index.html")),
+    "la home non porta alla guida: chi arriva da una truffa la cerca lì");
   /* e nel sitemap, altrimenti i motori di ricerca non la vedono */
   assert.ok(/come-segnalare-un-caso/.test(R("sitemap.xml")), "la guida manca dal sitemap");
 });
