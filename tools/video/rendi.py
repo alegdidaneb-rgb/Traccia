@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Rende i video della guida: quattro lingue, due formati, con la voce.
+Rende i video della guida: quattro lingue, due formati, con la voce e i
+sottotitoli dentro l'immagine.
 
 Perché è scritto così:
   - le scene sono statiche. Il movimento è una dissolvenza e una barra di
@@ -10,10 +11,14 @@ Perché è scritto così:
     una stima: la barra si sposta dove finisce la frase. Se non c'è una pausa
     vicina resta la stima per caratteri, che qui ha sbagliato di poco;
   - i due formati condividono scene e audio, quindi non possono divergere;
+  - i sottotitoli sono dentro l'immagine, non solo nella traccia `.vtt`: chi
+    guarda un video muto deve poterlo seguire lo stesso. Per questo ogni scena
+    lascia libera una fascia in fondo, e il testo è quello della voce, parola
+    per parola;
   - genera anche i sottotitoli `.vtt` dai confini veri.
 
 Uso:
-  python tools/video/rendi.py                  # tutti e otto + sottotitoli
+  python tools/video/rendi.py                  # otto video, i sottotitoli, la copertina
   python tools/video/rendi.py it               # una lingua
   python tools/video/rendi.py it --prova       # 12 secondi, per controllare
 """
@@ -131,6 +136,19 @@ def pulsante_finto(draw, box, testo):
     draw.text((x0 + (x1 - x0 - tw) / 2, y0 + (y1 - y0) / 2 - 20), testo, font=f, fill=BIANCO)
 
 
+def passo_campi(lang, box):
+    """Quanto è alto un campo, quando la scheda è alta `box`.
+
+    Le scene dei sei campi stanno in due formati di altezza molto diversa: nel
+    verticale c'è spazio per 104 px a campo, nell'orizzontale no. Prima il
+    disegno si adattava e la misura no, così la scheda si centrava su
+    un'altezza sbagliata e il primo campo finiva sopra il bordo bianco.
+    """
+    y0, y1 = box[1], box[3]
+    n = len(C.CAMPI[lang])
+    return min(104.0, (y1 - y0 - 88 - 20 * (n - 1)) / n)
+
+
 def altezza_scheda(draw, lang, scheda, box):
     x0, y0, x1, y1 = box
     dentro, utile = 44, x1 - x0 - 88
@@ -143,7 +161,8 @@ def altezza_scheda(draw, lang, scheda, box):
         return 3 * (104 + 18) - 18
     if tipo == "campi":
         n = len(C.CAMPI[lang])
-        return 6 * 104 + 5 * 20
+        passo = passo_campi(lang, box)
+        return n * passo + (n - 1) * 20
     if tipo == "scelte":
         f = ImageFont.truetype(FONT, 27)
         return sum(len(a_capo(t, f, utile - 70, draw)) * 36 + 34 for t in C.SCELTE[lang])
@@ -178,7 +197,7 @@ def disegna_scheda(draw, lang, scheda, box):
 
     elif tipo == "campi":
         campi = C.CAMPI[lang]
-        passo = min(104, (y1 - y0 - 88 - 20 * (len(campi) - 1)) / len(campi))
+        passo = passo_campi(lang, box)
         for i, nome in enumerate(campi):
             cy = top + i * (passo + 20)
             campo_finto(draw, (x0 + dentro, cy, x1 - dentro, cy + passo), nome,
@@ -226,7 +245,10 @@ def disegna_scena(lang, idx, W, H, orizzontale):
 
     if orizzontale:
         col, larg = margine, int(W * 0.44)
-        tessera_box = (int(W * 0.52), 170, W - margine, H - 160)
+        # il fondo a H-260, non H-160: sotto ci sta la fascia dei sottotitoli
+        # (fino a 142 px) e la barra. Con il fondo a 160 la fascia le finiva
+        # sopra, e la scheda sembrava tagliata a metà
+        tessera_box = (int(W * 0.52), 170, W - margine, H - 260)
         y_tit, dim_t, dim_c, inter_c = 300, 74, 38, 56
     else:
         col, larg = margine, W - 2 * margine
@@ -251,7 +273,7 @@ def disegna_scena(lang, idx, W, H, orizzontale):
                           y + (26 if not orizzontale else 20), f_c, SOFT, inter_c)
 
     if scena["tipo"] == "avviso":
-        cx, cy = (W // 2, 1330) if not orizzontale else (int(W * 0.75), H // 2 + 40)
+        cx, cy = (W // 2, 1180) if not orizzontale else (int(W * 0.75), H // 2 + 10)
         r = 130 if not orizzontale else 110
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill="#2a2010", outline=AMBRA, width=6)
         f = ImageFont.truetype(FONT_B, int(r * 1.25))
@@ -259,10 +281,74 @@ def disegna_scena(lang, idx, W, H, orizzontale):
         return img
 
     if tessera_box is None:
-        alto = max(620, H - 190 - (fondo + 80))
-        tessera_box = (margine, H - 190 - alto, W - margine, H - 190)
+        # 200 px in fondo: la fascia dei sottotitoli (fino a quattro righe,
+        # 170 px, misurato su tutte e quattro le lingue) e la barra. Lasciarne
+        # 150 come prima voleva dire una fascia che nei casi lunghi sfondava
+        # nella scheda: misurato, non indovinato.
+        alto = max(520, H - 360 - (fondo + 80))
+        tessera_box = (margine, H - 360 - alto, W - margine, H - 360)
     tessera(d, tessera_box)
     disegna_scheda(d, lang, scena["scheda"], tessera_box)
+    return img
+
+
+def _pezzi(testo, f, larg, d):
+    """La frase spezzata alle frasi, non a metà parola: un sottotitolo che
+    finisce con «Sie» invece di «Sie senden eine Anfrage» è peggio di nessun
+    sottotitolo — chi legge resta in mezzo al pensiero."""
+    pezzi, corrente = [], ""
+    for frase in re.split(r"(?<=[.!?])\s+", testo):
+        prova = (corrente + " " + frase).strip()
+        if not corrente or d.textlength(prova, font=f) <= larg * 2.2:
+            corrente = prova
+        else:
+            pezzi.append(corrente)
+            corrente = frase
+    if corrente:
+        pezzi.append(corrente)
+    return pezzi
+
+
+def sottotitolo(img, testo, orizzontale):
+    """La frase della scena, in basso, sopra la barra di avanzamento.
+
+    Bruciata nel video e non solo come traccia: la traccia la vede chi apre i
+    sottotitoli, e quasi nessuno li apre. Il testo è quello della voce, parola
+    per parola, quindi le due versioni non possono dire cose diverse.
+
+    Sul verticale la colonna è stretta e una frase intera diventerebbe una
+    parete di cinque righe: lì si mostra un pezzo per volta (una o due frasi),
+    che è la stessa cosa che fanno i sottotitoli veri. Sul orizzontale c'è
+    spazio per la frase intera.
+    """
+    if not testo:
+        return img
+    d = ImageDraw.Draw(img)
+    W, H = img.size
+    margine = 96 if not orizzontale else 110
+    larg = W - 2 * margine - 40
+    f = ImageFont.truetype(FONT_B, 28 if not orizzontale else 30)
+    inter = 37 if not orizzontale else 40
+
+    if orizzontale:
+        righe = a_capo(testo, f, larg, d)
+    else:
+        migliore = testo
+        for pezzo in _pezzi(testo, f, larg, d):
+            if len(a_capo(pezzo, f, larg, d)) <= 3:
+                migliore = pezzo
+                break
+        else:
+            migliore = _pezzi(testo, f, larg, d)[0]
+        righe = a_capo(migliore, f, larg, d)
+        if migliore != testo:
+            righe[-1] = righe[-1].rstrip(" .,;:") + "…"
+
+    alto = len(righe) * inter + 22
+    y = H - (60 if not orizzontale else 52) - alto
+    d.rounded_rectangle([margine, y, W - margine, y + alto], radius=12,
+                        fill=(11, 11, 15, 200))
+    disegna_righe(d, righe, margine + 20, y + 11, f, BIANCO, inter)
     return img
 
 
@@ -329,7 +415,7 @@ def vtt(lang, tagli, percorso):
     return fuori
 
 
-def rendi(lang, formato, prova=False):
+def rendi(lang, formato, prova=False, cartella=None):
     ff = ffmpeg_bin()
     cfg = FORMATI[formato]
     W, H, FPS = cfg["w"], cfg["h"], cfg["fps"]
@@ -342,8 +428,12 @@ def rendi(lang, formato, prova=False):
         durata = tagli[-1] + 0.6
 
     basi = [disegna_scena(lang, i, W, H, orizzontale) for i in range(len(C.SCENE[lang]))]
-    os.makedirs(USCITA, exist_ok=True)
-    uscita = os.path.join(USCITA, "come-segnalare-un-caso-%s-%s.mp4" % (lang, formato))
+    uscita_dir = cartella or USCITA
+    os.makedirs(uscita_dir, exist_ok=True)
+    # la prova non scrive mai sul file buono: una volta, lanciata per guardare
+    # tre scene, ha sovrascritto i video veri con tredici secondi
+    nome = "come-segnalare-un-caso-%s-%s%s.mp4" % (lang, formato, "-prova" if prova else "")
+    uscita = os.path.join(uscita_dir, nome)
 
     proc = subprocess.Popen(
         [ff, "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "%dx%d" % (W, H),
@@ -360,9 +450,14 @@ def rendi(lang, formato, prova=False):
         i = 0
         while i < len(tagli) - 2 and t >= tagli[i + 1]:
             i += 1
-        img = basi[i].copy()
+        # la dissolvenza viene prima dei sottotitoli: fusa dopo, riportava in
+        # scena i fotogrammi senza fascia e il testo spariva per mezzo secondo
+        # a ogni cambio di scena (visto nell'es, al minuto 1:02)
         if i > 0 and t - tagli[i] < DISSOLVENZA:
             img = Image.blend(basi[i - 1], basi[i], (t - tagli[i]) / DISSOLVENZA)
+        else:
+            img = basi[i].copy()
+        img = sottotitolo(img, C.SOTTOTITOLI_VTT[lang][i], orizzontale)
         barra(img, min(t / durata, 1.0), orizzontale)
         proc.stdin.write(img.convert("RGB").tobytes())
     proc.stdin.close()
