@@ -16,6 +16,8 @@ Ogni scena ha:
              registrato in `audio/voce-xx.mp3` (il test lo verifica).
 """
 
+import re
+
 LINGUE = ["it", "en", "de", "es"]
 
 SITO = "traccia.it.com"
@@ -238,7 +240,29 @@ NARRAZIONE = {
     "es": "Cómo denunciar un caso, paso a paso. Abre traccia punto i t punto com y elige «Denunciar un caso». No hace falta crear una cuenta. El formulario pide seis datos. Los dos primeros son tu nombre y tus apellidos: el contrato de encargo los necesita separados. Después tu correo electrónico: es la dirección en la que recibirás las respuestas. Comprueba que está bien escrito. Tu teléfono, con el prefijo internacional: quien acaba de perder dinero no debería esperar un correo, y así podemos llamarte también desde el extranjero. El importe aproximado perdido, en euros. Aunque sea aproximado: sirve para saber de qué orden de magnitud hablamos. Luego elige qué te ha pasado: falso bróker, fraude con criptomonedas, dinero pedido para desbloquear el retiro, un falso servicio de recuperación, o «todavía no lo sé». Ninguna contraseña. Envías una solicitud, no abres una cuenta: no hay nada que recordar. Un analista lee lo que has escrito y te llama en un plazo de cuarenta y ocho horas laborables, al número que nos has dado. Y si alguien te pide más dinero para recuperar el tuyo, para: es la segunda estafa. Traccia nunca pide un anticipo.",
 }
 
+# Come si scrive il dominio quando lo si legge, non quando lo si pronuncia.
+# La voce dice «traccia punto it punto com», che è la forma giusta per essere
+# capita ad alta voce; scritta in un sottotitolo diventa «traccia punkt it
+# punkt com», cioè una parola tedesca in mezzo a una frase tedesca. Chi legge
+# deve vedere l'indirizzo da digitare.
+SITO_SCRITTO = "traccia.it.com"
+
+
+def per_iscritto(testo):
+    """Il testo della voce nella forma in cui va letto: il dominio scritto.
+
+    Tocca solo il nome del sito. Il resto della frase è quello registrato,
+    parola per parola, perché il sottotitolo deve dire ciò che si sente.
+    """
+    return re.sub(r"traccia\s+(?:punto|punkt|dot)\s+i\s*t?\s*"
+                  r"(?:punto|punkt|dot)\s*com", SITO_SCRITTO, testo, flags=re.I)
+
+
 # I sottotitoli: una riga per scena, con il tempo calcolato dai confini veri.
 SOTTOTITOLI_VTT = {
-    lang: [s["voce"] for s in SCENE[lang]] for lang in LINGUE
+    lang: [per_iscritto(s["voce"]) for s in SCENE[lang]] for lang in LINGUE
 }
+
+# La narrazione intera nella stessa forma, per i test: quello che si legge sotto
+# il video e quello che si sente devono essere la stessa cosa.
+NARRAZIONE_SCRITTA = {lang: per_iscritto(t) for lang, t in NARRAZIONE.items()}

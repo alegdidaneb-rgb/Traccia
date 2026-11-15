@@ -403,7 +403,10 @@ def costruisci(pagina_nome: str, lingua: str, catalogo: dict[str, str]) -> tuple
     # non esiste: le pagine tradotte resterebbero senza CSS e senza script, e
     # sembrerebbero «un po' diverse» invece che rotte. Verificato servendole da
     # un server locale.
-    intera = re.sub(r'(src|href)="assets/', r'\1="/assets/', intera)
+    # `poster` è il terzo attributo che nomina un file, e non è né `src` né
+    # `href` né `srcset`: la copertina del video restava relativa e da `/de/`
+    # chiedeva `/de/assets/…`, cioè 404. Il riquadro del video si apriva nero.
+    intera = re.sub(r'(src|href|poster)="(assets/)', r'\1="/\2', intera)
     # ...e lo stesso vale per `srcset`, che è un attributo a parte: contiene
     # **più** indirizzi separati da virgole. La riga qui sopra non lo toccava,
     # quindi ogni `<img srcset="assets/…">` di una pagina tradotta chiedeva

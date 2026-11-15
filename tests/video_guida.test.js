@@ -178,4 +178,93 @@ test("la pagina nuova è nella lista di chi scrive il sito", () => {
     "questi strumenti non conoscono la pagina: " + mancano.join("; "));
 });
 
+test("i sottotitoli scrivono il dominio, non come si pronuncia", () => {
+  /* La voce dice «traccia punto it punto com», che è la forma giusta per
+     essere capita ad alta voce. Copiata in un sottotitolo diventa «traccia
+     punkt it punkt com»: una parola tedesca in mezzo a una frase tedesca, e
+     nessuno che possa digitare l'indirizzo. È successo davvero, in tutte e
+     quattro le lingue. */
+  const pronunce = /traccia\s+(?:punto|punkt|dot)\s/i;
+  for (const l of LINGUE) {
+    const vtt = R(`assets/video/come-segnalare-un-caso-${l}.vtt`);
+    assert.ok(!pronunce.test(vtt),
+      `i sottotitoli in ${l} contengono il dominio come si pronuncia, non come si scrive`);
+    assert.ok(vtt.includes("traccia.it.com"),
+      `i sottotitoli in ${l} non scrivono l'indirizzo da digitare`);
+  }
+});
+
+test("i sottotitoli non si vedono due volte", () => {
+  /* Il testo è dentro i fotogrammi. Se il JavaScript accendesse anche la
+     traccia, la stessa frase comparirebbe due volte sopra il video: una
+     disegnata da noi, una dal browser, a pochi pixel di distanza. */
+  const js = R("assets/js/sessione-video.js");
+  assert.ok(!/mode\s*=\s*"showing"/.test(js),
+    "il JS accende la traccia mentre i sottotitoli sono già nell'immagine");
+  assert.ok(/mode\s*=\s*"disabled"/.test(js),
+    "il JS deve spegnere le tracce: i sottotitoli sono dentro il video");
+  /* la traccia resta nella pagina: serve al menu del browser e alla ricerca */
+  assert.ok(/<track\s+kind="captions"/.test(PAGINA),
+    "la traccia dei sottotitoli serve lo stesso: non va tolta dalla pagina");
+});
+
+test("la scheda dei sei campi sta dentro il riquadro bianco", () => {
+  /* Il difetto: nel formato orizzontale l'altezza della scheda veniva
+     misurata con il passo dei campi del verticale (104 px), mentre il disegno
+     li stringeva per farli entrare. La scheda si centrava sull'altezza
+     sbagliata e il primo campo usciva sopra il bordo: invisibile a chi guarda
+     il video, perché sembra un ritaglio voluto. Le due misure ora vengono
+     dalla stessa funzione; questo test impedisce di separarle di nuovo. */
+  const sorgente = R("tools/video/rendi.py");
+  const passo = [...sorgente.matchAll(/passo_campi\(lang, box\)/g)].length;
+  assert.ok(passo >= 2,
+    "il passo dei campi va calcolato in un posto solo, e usato sia dalla misura sia dal disegno");
+  assert.ok(!/6 \* 104 \+ 5 \* 20/.test(sorgente),
+    "l'altezza della scheda è tornata a essere un numero fisso: i due formati hanno altezze diverse");
+});
+
+test("una prova non sovrascrive il video buono", () => {
+  /* `--prova` rende dodici secondi per controllare una scena. Lanciato senza
+     guardare, ha riscritto i video veri: novantacinque secondi diventati
+     tredici, e la pagina avrebbe servito un trailer al posto della guida. */
+  const sorgente = R("tools/video/rendi.py");
+  assert.ok(/"-prova" if prova else ""/.test(sorgente),
+    "il render di prova deve scrivere su un file con un nome diverso");
+});
+
+test("il video parte anche senza JavaScript", () => {
+  /* Il difetto vero: la pagina dichiarava una `<source>`, e poi lo script la
+     scartava per impostare un `src` suo. Con gli script spenti — o bloccati,
+     come fa un'estensione — restava un riquadro nero. Ora la pagina da sola
+     basta: il browser sceglie fra le due sorgenti, verticale e orizzontale. */
+  const blocco = PAGINA.slice(PAGINA.indexOf('id="video-guida"'), PAGINA.indexOf("</video>"));
+  const sorgenti = [...blocco.matchAll(/<source\s+src="([^"]+\.mp4)"/g)].map((m) => m[1]);
+  assert.ok(sorgenti.length >= 2, "servono due sorgenti: il verticale e l'orizzontale");
+  /* almeno una sorgente senza `media`: è quella che vale quando nessuna
+     condizione è vera, e senza di lei il ripiego non esiste */
+  const libere = blocco.match(/<source[^>]+>/g).filter((t) => !/\smedia=/.test(t));
+  assert.ok(libere.length >= 1, "nessuna sorgente senza `media`: niente ripiego");
+  for (const f of sorgenti) assert.ok(esiste(f), `la pagina cita ${f}, che non esiste`);
+});
+
+test("le pagine tradotte chiedono il video e la copertina alla radice", () => {
+  /* Da `/de/`, `src="assets/..."` viene chiesto come `/de/assets/...`: 404, e
+     il riquadro resta nero. È esattamente quello che succedeva alla copertina,
+     perché `poster` non era nella lista degli attributi riscritti. */
+  for (const l of ["en", "de", "es"]) {
+    const pagina = R(`${l}/come-segnalare-un-caso.html`);
+    const relativi = [...pagina.matchAll(/(?:src|poster)="(assets\/[^"]+)"/g)].map((m) => m[1]);
+    assert.deepStrictEqual(relativi, [],
+      `${l}: percorsi relativi, che da /${l}/ non esistono: ${relativi.join(", ")}`);
+  }
+});
+
+test("il percorso del video è assoluto anche da una pagina tradotta", () => {
+  /* `sessione-video.js` ricostruisce l'indirizzo dalla `<source>`: se lo
+     ricostruisse relativo, da `/de/` chiederebbe `/de/assets/video/...`. */
+  const js = R("assets/js/sessione-video.js");
+  assert.ok(/CARTELLA = "\/" \+/.test(js),
+    "il percorso del video deve partire dalla radice del sito, non dalla pagina");
+});
+
 module.exports = casi;
