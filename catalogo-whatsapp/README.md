@@ -93,7 +93,7 @@ fallisce finché non lo allinei.
 Due strade, e la scelta cambia tutto il resto.
 
 **App WhatsApp Business (gratis, verificabile in mezz'ora).** Si scarica sul
-telefono, si registra il numero dell'assistenza (`+1 539 215 1268`, quello già
+telefono, si registra il numero dell'assistenza (`+1 201 621 1241`, quello già
 nel sito), si compila il profilo e si apre **Strumenti → Catalogo**. Nessuna
 verifica dell'azienda, nessun documento, nessuna attesa di Meta. Sette articoli
 si possono caricare anche a mano in una serata, o importare dal feed se

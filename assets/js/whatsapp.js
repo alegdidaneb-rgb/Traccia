@@ -21,7 +21,7 @@
 
   var TEXT = testoBase();
 
-  /* Il numero si scrive come lo si legge (+1 539 215 1268); `wa.me` vuole
+  /* Il numero si scrive come lo si legge (+1 201 621 1241); `wa.me` vuole
      solo cifre, quindi il "+" e gli spazi si tolgono qui e in nessun altro
      posto. Il prefisso internazionale resta: senza, WhatsApp cerca il numero
      nel paese di chi apre il link. */
