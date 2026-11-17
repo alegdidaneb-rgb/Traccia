@@ -981,9 +981,9 @@
   }
 
   /* --------------------------------------------------------------- banca -- */
-  /* Tre code e una tabella: bonifici da mandare alla banca, mandati firmati,
-     addebiti da incassare. Il conteggio in cima esiste
-     perché queste sono le cose che, se nessuno guarda, si fermano. */
+  /* Due code e tre tabelle: bonifici da mandare alla banca, mandati firmati,
+     addebiti da incassare, e le conferme da consegnare. Il conteggio in cima
+     esiste perché queste sono le cose che, se nessuno guarda, si fermano. */
   function renderBanca(dati) {
     state.banca = dati || {};
     var c = (dati && dati.conteggi) || {};
@@ -1003,8 +1003,13 @@
         nodo.classList.toggle("is-alert", kp[sel] > 0);
       }
     });
+    /* Il numero accanto a «Banca» somma le due cose che stanno in questa
+       sezione. Le carte non si sommano più: la loro tabella è andata via con la
+       funzione, e sommare una coda che non si può più alimentare gonfiava il
+       contatore di un lavoro che non esiste. `carte_da_attivare` resta nel
+       payload del server — è un dato, non una schermata — e qui si ignora. */
     conta(document.querySelector("[data-count-banca]"),
-      (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0) + (c.carte_da_attivare || 0));
+      (c.bonifici_da_inviare || 0) + (c.addebiti_aperti || 0));
 
     caricaConferme();
     renderBonifici(dati && dati.bonifici);

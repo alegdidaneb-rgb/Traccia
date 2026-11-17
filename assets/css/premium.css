@@ -3642,7 +3642,7 @@ body.is-staff-view #sicurezza { display: none !important; }
 .pill--muted { color: var(--muted); background: var(--line-soft); }
 
 /* --------------------------------------------------------------------------
-   40. Bonifici, mandati, interessi, carta
+   40. Bonifici e mandati
    -------------------------------------------------------------------------- */
 /* Quattro riquadri, non una pagina di tabelle: ognuno è un canale diverso e
    un canale ha uno stato. Il bordo a sinistra colorato è l'unica cosa che
@@ -3765,60 +3765,6 @@ body.is-staff-view #sicurezza { display: none !important; }
 .rail__rows span { color: var(--muted); }
 .rail__rows b { font-variant-numeric: tabular-nums; }
 
-/* --------------------------------------------------------------- carta -- */
-/* Una carta disegnata, non una riga di tabella: è l'oggetto che il cliente
-   deve riconoscere come suo, e deve poterla vedere bloccata. */
-.card-visual {
-  position: relative;
-  margin-top: 0.5rem;
-  border-radius: 14px;
-  padding: 0.95rem 1rem 0.8rem;
-  background: linear-gradient(135deg, #1d2233 0%, #2b3350 55%, #3c2f4a 100%);
-  color: #fff;
-  box-shadow: 0 12px 28px -18px rgba(20, 24, 40, 0.9);
-  overflow: hidden;
-  aspect-ratio: 1.6 / 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: filter 0.25s ease, transform 0.25s ease;
-}
-/* bloccata: si spegne, e resta leggibile */
-.card-visual[data-card-status="blocked"] {
-  filter: grayscale(0.85) brightness(0.85);
-}
-.card-visual[data-card-status="blocked"]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    135deg, rgba(255, 255, 255, 0.09) 0 10px, transparent 10px 20px);
-  pointer-events: none;
-}
-.card-visual__top,
-.card-visual__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.card-visual__brand {
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 0.72rem;
-}
-.card-visual__num {
-  font-size: clamp(0.95rem, 2.4vw, 1.15rem);
-  letter-spacing: 0.12em;
-}
-.card-visual__foot {
-  font-size: 0.72rem;
-  opacity: 0.85;
-  font-variant-numeric: tabular-nums;
-}
-.card-visual .pill { background: rgba(255, 255, 255, 0.16); color: #fff; }
-
 /* ---------------------------------------------------------------- form -- */
 .appv2 .grid-2 {
   display: grid;
@@ -3856,7 +3802,6 @@ body.is-staff-view #sicurezza { display: none !important; }
 @media (max-width: 560px) {
   .appv2 .grid-2 { grid-template-columns: minmax(0, 1fr); }
   .rail-sublist li { grid-template-columns: minmax(0, 1fr) auto auto; }
-  .card-visual { aspect-ratio: 1.55 / 1; }
 }
 
 /* ============================================================================

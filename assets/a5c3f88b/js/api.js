@@ -228,6 +228,12 @@
       return call("imposta_iban", { p_iban: iban, p_intestatario: intestatario });
     },
     verificaIban: function (id) { return call("admin_verifica_iban", { p_id: id }); },
+    /* l'IBAN scritto dalla console, al posto del cliente. Serve quando il
+       cliente ha già dei soldi sul conto: `imposta_iban` glielo vieta, e
+       senza questa funzione il divieto mandava a un ufficio senza strumenti. */
+    adminImpostaIban: function (id, iban, intestatario) {
+      return call("admin_imposta_iban", { p_id: id, p_iban: iban, p_intestatario: intestatario || null });
+    },
 
     /* --- bonifici, addebiti diretti, interessi, carta --- */
     /* Le quattro cose che rendono un conto un conto: mandare denaro fuori
@@ -280,12 +286,12 @@
     contestaAddebito: function (id, motivo) {
       return call("addebito_contesta", { p_id: id, p_motivo: motivo });
     },
-    richiediCarta: function (tetto) {
-      return call("carta_richiedi", { p_cap: tetto || null });
-    },
-    bloccaCarta: function (id, motivo, riattiva) {
-      return call("carta_blocca", { p_id: id, p_motivo: motivo || null, p_riattiva: !!riattiva });
-    },
+    /* Carta e interessi: i client `richiediCarta`, `bloccaCarta`, `cartaAzione`,
+       `maturaInteressi` e `accreditaInteressi` sono stati tolti con i riquadri
+       che li chiamavano. Una funzione che nessuno chiama è una porta socchiusa:
+       resta una strada per scrivere su quelle tabelle senza che nessuna
+       schermata la mostri. Le funzioni del **database** restano, come i dati:
+       il giorno in cui servono, si richiamano da qui. */
 
     /* --- canali di pagamento lato analista --- */
     adminBanca: function () { return call("admin_banca"); },
@@ -315,9 +321,6 @@
       return call("admin_addebito_crea", { p_id: mandatoId, p_importo: importo, p_motivo: motivo || null });
     },
     addebitoEsito: function (id, esito) { return call("admin_addebito_esito", { p_id: id, p_esito: esito }); },
-    cartaAzione: function (id, azione) { return call("admin_carta_azione", { p_id: id, p_azione: azione }); },
-    maturaInteressi: function (giorno) { return call("matricola_interessi", { p_giorno: giorno || null }); },
-    accreditaInteressi: function (userId) { return call("accredita_interessi", { p_user: userId || null }); },
     limits: function () { return call("my_limits"); },
     crypto: function () { return rpc("market", {}); },
     myOperations: function (status) { return call("my_operations", { p_status: status || null }); },
