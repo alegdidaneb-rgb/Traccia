@@ -24,3 +24,6 @@ __pycache__/
 # Banco di prova locale delle storie: serve a guardare le pagine senza
 # scrivere dati veri. Non è materiale del sito, non deve essere versionato.
 .anteprima/
+
+# copie di sicurezza locali prima di una migrazione che cambia dati
+.backup/

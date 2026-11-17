@@ -3,11 +3,11 @@
 -- ============================================================================
 -- Il difetto, visto dal cliente: aprendo la sua area trovava un IBAN italiano
 -- **che non era il suo**. Nessuno lo aveva scritto — lo aveva inventato il
--- database. I punti erano quattro, ma le funzioni tre: `auth_register` è stata
--- riscritta due volte (0002, poi 0023) e generava l'IBAN in entrambe; gira
--- l'ultima.
+-- database, in tre punti. Quali fossero davvero non si sa leggendo i file
+-- (ne descrivono più versioni di quante ne esistano): si sa interrogando il
+-- database, ed è stato fatto.
 --
---   0023:147  traccia.auth_register                  registrazione
+--   0024:87   traccia.auth_register                  registrazione dal sito
 --   0004:98   traccia.admin_create_account          creazione da console
 --   0024:371  traccia.admin_crea_account_da_richiesta  da una richiesta
 --
@@ -39,10 +39,10 @@
 -- ============================================================================
 
 -- ------------------------------------------------------------ i tre punti ---
-/* Sono tre, non quattro: `auth_register` generava l'IBAN in due versioni
-   diverse (0002 e 0023), e l'ultima — la 0023 — è quella che gira. Riscrivere
-   entrambe sarebbe stato inutile, riscrivere quella sbagliata sarebbe stato
-   peggio: si riscrive la versione che vince, con la firma che ha davvero.
+/* Tre funzioni, una per punto. `auth_register` compare tre volte nei file
+   (0002, 0023, 0024) con firme diverse, ma nel database ne esiste **una sola**:
+   quella della 0024, a otto argomenti. Le altre non si creano qui — correggere
+   una funzione che nessuno chiama non chiude nessun difetto.
 
    Si riscrivono le funzioni intere perché in plpgsql non c'è modo di togliere
    un valore da un `insert` senza riscriverla. Il resto del corpo è identico
