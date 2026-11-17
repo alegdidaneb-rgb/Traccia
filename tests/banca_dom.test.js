@@ -343,15 +343,27 @@ test("le conferme chiuse con ui.ask non scambiano «confermato» per «annullato
       }
       const corpo = src.slice(m.index, i + 1);
       const riga = src.slice(0, m.index).split("\n").length;
-      const dopo = src.slice(i + 1, i + 200);
-      const t = dopo.match(/\.then\(function\s*\((\w+)\)\s*\{?\s*([\s\S]{0,60})/);
+      const dopo = src.slice(i + 1, i + 4000);
+      const t = dopo.match(/\.then\(function\s*\((\w+)\)\s*\{?\s*([\s\S]*)/);
       if (!t) continue;
 
       /* un dialogo con `prompt` chiede un valore: lì `!valore` è legittimo */
       if (/\bprompt\s*:/.test(corpo)) continue;
 
-      /* il primo controllo del `.then` deve essere `=== null` (o `!== null`) */
-      if (new RegExp("if\\s*\\(\\s*!" + t[1] + "\\s*\\)").test(t[2])) {
+      /* Si guarda **tutto** il corpo del `.then`, con i commenti tolti.
+
+         La prima versione esaminava solo i primi 60 caratteri dopo
+         `.then(` — e la prova di mutazione l'ha smascherata: rimettendo
+         `if (!esito) return;` sotto un commento esplicativo lungo una
+         quindicina di righe, il test restava verde. Un test che si aggira
+         con un commento non protegge niente, e questo lo avrebbe fatto
+         proprio nel punto in cui il commento è più probabile, perché la
+         spiegazione del perché `!esito` è sbagliato sta lì. */
+      const corpoThen = t[2]
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/[^\n]*/g, "");
+
+      if (new RegExp("if\\s*\\(\\s*!" + t[1] + "\\s*\\)").test(corpoThen)) {
         colpevoli.push(nome + ":" + riga + " — `if (!" + t[1] + ")` su una conferma");
       }
     }
