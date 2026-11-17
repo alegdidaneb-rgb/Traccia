@@ -280,7 +280,7 @@ function normalizza(t) {
 test("console: nessuna colonna senza nome", () => {
   const d = pagina("admin.html");
   const senzaNome = [];
-  trova(d, "table", 12, "console").forEach((t) => {
+  trova(d, "table", 11, "console").forEach((t) => {
     const th = t.querySelectorAll("thead th");
     if (!th.length) return;
     th.forEach((c, i) => {
@@ -308,7 +308,7 @@ test("console: nessuna tabella chiede di scorrere di lato", () => {
   const PAD = 12;
   const larghe = [];
 
-  trova(d, "table", 12, "console").forEach((t) => {
+  trova(d, "table", 11, "console").forEach((t) => {
     const th = t.querySelectorAll("thead th");
     if (!th.length) return;
     const minimi = th.map(() => 0);
@@ -342,7 +342,7 @@ test("console: nessuna tabella chiede di confrontare troppe colonne", () => {
   const MASSIMO = 9;
   const d = pagina("admin.html");
   const larghe = [];
-  trova(d, "table", 12, "console").forEach((t) => {
+  trova(d, "table", 11, "console").forEach((t) => {
     const th = t.querySelectorAll("thead th");
     if (th.length > MASSIMO) {
       larghe.push(`${t.id || "(tabella)"}: ${th.length} colonne — ` +

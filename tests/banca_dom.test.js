@@ -91,13 +91,19 @@ function conDocumento(mappa, fn) {
   const banca = {};
   const fabbrica = new Function(
     "document", "ui", "euro", "dataBreve", "contoState", "bancaState", "window",
-    corpo + "\nreturn { renderBanca, renderInteressi, renderCarta, STATO_BONIFICO, STATO_CARTA };"
+    /* solo quello che esiste ancora: interessi e carta sono stati tolti con
+       i loro riquadri, e un test che li importa prova codice che non c'è più */
+    corpo + "\nreturn { renderBanca, STATO_BONIFICO };"
   );
   return fabbrica(
     documentFinto(mappa), ui, euro, dataBreve, contoState, banca, { ui: ui }
   );
 }
 
+/* `carte` e `interessi` il server li manda ancora, e il test li manda nel
+   payload apposta: `renderBanca` deve ignorarli senza rompersi. Toglierli da
+   qui nasconderebbe il caso vero — un dato che arriva e non ha più una
+   schermata dove finire. */
 const BASE = {
   bonifici: [], mandati: [], carte: [],
   interessi: { rate_pct: 0, maturato_eur: 0, giornaliero_eur: 0, prossimo_accredito: "2026-12-01" },
@@ -188,76 +194,86 @@ test("mandato revocato: niente pulsante di revoca", () => {
   assert.ok(!/data-mandato-revoca/.test(lista.figli[0].innerHTML));
 });
 
-test("interessi a zero: «non previsti», non una cifra che sembra sbagliata", () => {
-  const mappa = {
-    "[data-interessi-tasso]": nodo("span"),
-    "[data-interessi-tasso-testo]": nodo("b"),
-    "[data-interessi-giorno]": nodo("b"),
-    "[data-interessi-maturato]": nodo("b"),
-    "[data-interessi-prossimo]": nodo("b"),
-    "[data-interessi-nota]": nodo("p")
-  };
-  const mod = conDocumento(mappa);
-  mod.renderInteressi({ rate_pct: 0, maturato_eur: 0, giornaliero_eur: 0, prossimo_accredito: "2026-12-01" });
-  assert.strictEqual(mappa["[data-interessi-tasso]"].textContent, "non previsti");
-  assert.match(mappa["[data-interessi-nota]"].textContent, /tasso creditore è a zero/);
+/* ------------------------------------------------------------------------
+   Interessi e Carta: tolti, e questo test è perché restino tolti
+   ------------------------------------------------------------------------
+   I quattro test che stavano qui provavano i due riquadri: tasso a zero detto
+   «non previsti», carta bloccata leggibile. Quei riquadri non esistono più —
+   promettevano un tasso che nessuno applicava e una carta che non arrivava.
+   Provare codice cancellato non serve; quello che serve è impedire che torni
+   senza che nessuno se ne accorga, e che i dati che il server manda ancora per
+   loro facciano danni.
+   ------------------------------------------------------------------------ */
+
+test("il riquadro «Interessi» non è più in pagina, e il codice non lo cerca", () => {
+  const PAGINA = fs.readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+  assert.ok(!/data-rail="interessi"/.test(PAGINA),
+    "il riquadro «Interessi» è tornato in app.html");
+  assert.ok(!/data-interessi-/.test(PAGINA),
+    "app.html ha ancora nodi degli interessi: qualcuno li ha rimessi");
+  /* e nel JS non devono restare le funzioni né i riferimenti: un render che
+     cerca nodi che non esistono gira a vuoto a ogni caricamento del conto */
+  assert.ok(!/function renderInteressi/.test(SRC), "renderInteressi è tornata in case.js");
+  assert.ok(!/data-interessi-/.test(SRC), "case.js cerca ancora i nodi degli interessi");
 });
 
-test("interessi sopra zero: tasso e giornaliero, con la virgola italiana", () => {
-  const mappa = {
-    "[data-interessi-tasso]": nodo("span"),
-    "[data-interessi-tasso-testo]": nodo("b"),
-    "[data-interessi-giorno]": nodo("b"),
-    "[data-interessi-maturato]": nodo("b"),
-    "[data-interessi-prossimo]": nodo("b"),
-    "[data-interessi-nota]": nodo("p")
-  };
-  const mod = conDocumento(mappa);
-  mod.renderInteressi({ rate_pct: 1.5, maturato_eur: 0.1, giornaliero_eur: 0.09, prossimo_accredito: "2026-12-01" });
-  assert.strictEqual(mappa["[data-interessi-tasso]"].textContent, "1,5 % annuo");
-  assert.match(mappa["[data-interessi-giorno]"].textContent, /0,09/);
+test("il riquadro «Carta» non è più in pagina, e il codice non lo cerca", () => {
+  const PAGINA = fs.readFileSync(path.join(__dirname, "..", "app.html"), "utf8");
+  assert.ok(!/data-rail="carta"/.test(PAGINA), "il riquadro «Carta» è tornato in app.html");
+  assert.ok(!/data-carta-/.test(PAGINA), "app.html ha ancora nodi della carta");
+  assert.ok(!/function renderCarta/.test(SRC), "renderCarta è tornata in case.js");
+  assert.ok(!/function richiediCarta/.test(SRC),
+    "richiediCarta è tornata: un pulsante che promette una carta che non arriva");
+  assert.ok(!/data-carta-/.test(SRC), "case.js cerca ancora i nodi della carta");
 });
 
-test("carta bloccata: resta visibile, con la pillola giusta e senza il pulsante di blocco", () => {
-  const box = nodo("div");
-  box.querySelector = function (sel) {
-    this._perSel[sel] = this._perSel[sel] || nodo("span");
-    return this._perSel[sel];
-  };
-  const vuota = nodo("p");
-  const azioni = nodo("div");
-  const richiedi = nodo("button");
-  const mappa = {
-    "[data-carta]": box,
-    "[data-carta-vuota]": vuota,
-    "[data-carta-azioni]": azioni,
-    "[data-carta-richiedi]": richiedi,
-    "[data-carta-blocca]": nodo("button"),
-    "[data-carta-sblocca]": nodo("button")
-  };
-  const mod = conDocumento(mappa);
-  mod.renderCarta({ id: "c1", reference: "TRC-C-2026-000004", last4: "1058",
-    status: "blocked", expires_on: "2029-11-01", monthly_cap_eur: 400 });
-  assert.strictEqual(box.hidden, false, "una carta bloccata si vede, non sparisce");
-  assert.strictEqual(box.getAttribute("data-card-status"), "blocked");
-  assert.strictEqual(mappa["[data-carta-blocca]"].hidden, true);
-  assert.strictEqual(mappa["[data-carta-sblocca]"].hidden, false);
+test("i dati di interessi e carta che arrivano lo stesso non rompono il conto", () => {
+  /* Il server continua a mandare `interessi` e `carte` in `banca()`: sono dati,
+     non schermate, e il giorno in cui servono di nuovo si riparte da qui. Ma
+     `renderBanca` non deve inciampare in un dato senza casa. */
+  const lista = nodo("ul");
+  const mod = conDocumento({ "[data-bonifici]": lista }, null);
+  assert.doesNotThrow(() => mod.renderBanca(Object.assign({}, BASE, {
+    carte: [{ id: "c1", last4: "4242", status: "active", reference: "CRD-1" }],
+    interessi: { rate_pct: 1.5, maturato_eur: 10.78, giornaliero_eur: 0.08 }
+  })), "renderBanca si rompe se arrivano carte e interessi senza riquadri");
 });
 
-test("nessuna carta: il riquadro lo dice e propone di richiederla", () => {
-  const box = nodo("div");
-  const vuota = nodo("p");
-  const mappa = {
-    "[data-carta]": box,
-    "[data-carta-vuota]": vuota,
-    "[data-carta-azioni]": nodo("div"),
-    "[data-carta-richiedi]": nodo("button")
-  };
-  const mod = conDocumento(mappa);
-  mod.renderCarta(undefined);
-  assert.strictEqual(box.hidden, true);
-  assert.strictEqual(vuota.hidden, false);
-  assert.strictEqual(mappa["[data-carta-richiedi]"].hidden, false);
+test("la console non ha più la tabella delle carte né il pulsante degli interessi", () => {
+  /* Togliere «Carta» e «Interessi» dal lato cliente e lasciarli nella console
+     sarebbe stato peggio che non toglierli: un analista avrebbe avuto una
+     tabella per attivare carte che nessuno può chiedere, e una coda «carte da
+     attivare» ferma a zero che sembra un dato. */
+  const CONSOLE = fs.readFileSync(path.join(__dirname, "..", "admin.html"), "utf8");
+  const ADMIN_JS = fs.readFileSync(path.join(__dirname, "..", "assets/js/admin.js"), "utf8");
+
+  assert.ok(!/id="carte-table"/.test(CONSOLE), "la tabella delle carte è tornata in admin.html");
+  assert.ok(!/data-banca-interessi/.test(CONSOLE), "il pulsante «Matura interessi» è tornato");
+  assert.ok(!/data-banca-kpi-cards/.test(CONSOLE), "la coda «Carte da attivare» è tornata");
+
+  assert.ok(!/function renderCarte/.test(ADMIN_JS), "renderCarte è tornata in admin.js");
+  assert.ok(!/function azioneCarta/.test(ADMIN_JS), "azioneCarta è tornata in admin.js");
+  assert.ok(!/function maturaInteressi/.test(ADMIN_JS), "maturaInteressi è tornata in admin.js");
+  assert.ok(!/data-banca-kpi-cards/.test(ADMIN_JS),
+    "admin.js cerca ancora il riquadro delle carte: gira a vuoto a ogni aggiornamento");
+});
+
+test("admin.js non ha funzioni duplicate", () => {
+  /* Trovato mentre toglievo il codice delle carte: la rimozione aveva
+     **duplicato** `azioneAddebito`, definita due volte di seguito. `node
+     --check` non lo vede — è sintassi legale, vince la seconda — e un test
+     comportamentale nemmeno, perché le due copie fanno la stessa cosa. Un
+     controllo sui nomi è l'unico che se ne accorge. */
+  const nomi = [...SRC.matchAll(/^\s{2}function ([a-zA-Z_]+)\(/gm)].map((m) => m[1]);
+  const visti = new Set();
+  const doppi = nomi.filter((n) => (visti.has(n) ? true : (visti.add(n), false)));
+  assert.deepStrictEqual(doppi, [], "funzioni definite due volte: " + doppi.join(", "));
+
+  const ADMIN_JS = fs.readFileSync(path.join(__dirname, "..", "assets/js/admin.js"), "utf8");
+  const nomiAdmin = [...ADMIN_JS.matchAll(/^\s{2}function ([a-zA-Z_]+)\(/gm)].map((m) => m[1]);
+  const vistiAdmin = new Set();
+  const doppiAdmin = nomiAdmin.filter((n) => (vistiAdmin.has(n) ? true : (vistiAdmin.add(n), false)));
+  assert.deepStrictEqual(doppiAdmin, [], "funzioni duplicate in admin.js: " + doppiAdmin.join(", "));
 });
 
 module.exports = casi;
