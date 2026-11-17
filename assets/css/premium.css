@@ -1809,6 +1809,22 @@ body.is-admin .panel__head h2 {
 .auth-shell--photo .auth-card__head h1 { letter-spacing: -0.04em; }
 
 /* --------------------------------------------------------------------------
+   La barra dei cookie non deve coprire il pulsante del modulo
+   --------------------------------------------------------------------------
+   Su un telefono la barra sta in basso, da bordo a bordo, e sopra il pulsante
+   che chiude il modulo: chi compila sei campi arriva in fondo e non trova
+   «Invia richiesta», perché c'è il consenso ai cookie. Succedeva solo lì, e
+   solo a chi non aveva ancora scelto — cioè a chi arriva per la prima volta,
+   che è esattamente la persona che deve poter premere quel pulsante.
+
+   `main.js` mette `has-cookie-bar` sull'elemento radice quando la barra è
+   visibile. Qui la pagina si prende in fondo lo spazio che le serve: il
+   pulsante si può ancora toccare, e la barra resta dov'è.
+   -------------------------------------------------------------------------- */
+html.has-cookie-bar .auth-shell { padding-bottom: calc(clamp(2rem, 5vw, 4rem) + 12rem); }
+html.has-cookie-bar .wa-fab { bottom: 12rem; }
+
+/* --------------------------------------------------------------------------
    27. Le cinque fasi: rail verticale con linea che si riempie allo scroll
    -------------------------------------------------------------------------- */
 .phases {

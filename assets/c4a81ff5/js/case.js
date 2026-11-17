@@ -8,6 +8,52 @@
      che vale true quando un analista apre la pratica di un cliente */
   var state = { me: null };
 
+  /* --------------------------------------------------------- i rimbalzi --
+     Perché esiste. Il cliente che entra con una sessione scaduta faceva
+     questo giro: `app.html` chiede i dati, il server dice «sessione non
+     valida», la pagina lo manda a `login.html?next=app.html`, il login riesce
+     ma il token è già bruciato, si torna qui, e di nuovo al login. Un cerchio,
+     e per chi lo guarda è «la pagina ricarica da sola e non entro».
+
+     Il rimbalzo si riconosce da come si arriva: `login.html?next=app.html`
+     significa «sei appena stato rimandato qui dal login». Non si prova una
+     seconda volta in silenzio: si pulisce il token e si mostra il modulo,
+     dicendo perché. Una spiegazione in chiaro è meglio di un tentativo che
+     fallisce e riporta allo stesso punto. */
+  var RIMBALZI_KEY = "traccia.rimbalzi.app";
+  var RIMBALZI_MAX = 1;
+
+  function rimbalzi() {
+    try { return Number(window.sessionStorage.getItem(RIMBALZI_KEY) || 0); }
+    catch (e) { return 0; }
+  }
+  function annotaRimbalzo() {
+    try {
+      window.sessionStorage.setItem(RIMBALZI_KEY, String(rimbalzi() + 1));
+    } catch (e) { /* niente memoria: si resta senza contatore */ }
+  }
+  function azzeraRimbalzi() {
+    try { window.sessionStorage.removeItem(RIMBALZI_KEY); } catch (e) {}
+  }
+  function arrivoDalLogin() {
+    try {
+      return new URLSearchParams(location.search).get("next") === "app.html";
+    } catch (e) { return false; }
+  }
+
+  /* Il caso che si deve chiudere senza cerchio: si torna dal login e il
+     contatore dice che ci siamo già passati. */
+  function rimbalzoSenzaFine() {
+    return arrivoDalLogin() && rimbalzi() >= RIMBALZI_MAX;
+  }
+
+  function mandaAlLogin(motivo) {
+    annotaRimbalzo();
+    var url = "login.html?next=" + encodeURIComponent("app.html");
+    if (motivo) url += "&motivo=" + encodeURIComponent(motivo);
+    window.location.replace(url);
+  }
+
   var PHASES = [
     { short: "01 · Raccolta", name: "Raccolta", desc: "Documenti e colloquio iniziale acquisiti." },
     { short: "02 · Ricostruzione", name: "Ricostruzione", desc: "Flussi e indirizzi ricostruiti." },
@@ -696,8 +742,18 @@
   }
 
   function guardSession() {
+    if (rimbalzoSenzaFine()) {
+      /* il token c'è ma il server l'ha già rifiutato una volta: insistere
+         produce lo stesso giro. Si butta il token e si spiega, invece di
+         rimandare al login che rimanda qui. */
+      api.setToken("");
+      api.cacheUser(null);
+      azzeraRimbalzi();
+      mandaAlLogin("sessione");
+      return false;
+    }
     if (!api.token()) {
-      window.location.replace("login.html?next=" + encodeURIComponent("app.html"));
+      mandaAlLogin("");
       return false;
     }
     return true;
@@ -705,6 +761,8 @@
 
   /* ---------------------------------------------------------------- boot -- */
   function renderDashboard(data) {
+    /* da qui in poi la sessione è quella buona: i rimbalzi non si contano più */
+    azzeraRimbalzi();
     var user = data.user || {};
     var kase = data.case || {};
 
@@ -951,6 +1009,12 @@
     var holder = document.querySelector("[data-iban-holder]");
     var hint = document.querySelector("[data-iban-hint]");
 
+    /* Vuoto e presente sono due cose diverse, e vanno dette in modo diverso.
+       Prima il sistema un IBAN lo inventava, quindi `dati.iban` c'era sempre e
+       questa pagina mostrava sempre un numero — solo che per molti clienti non
+       era il loro. Ora quel numero arriva solo se l'ha scritto qualcuno, e
+       quando manca la pagina lo dice: un segnaposto che sembra una coordinata
+       bancaria è peggio di nessuna coordinata. */
     if (dati.iban) {
       if (valore) valore.textContent = dati.iban_formatted;
       if (holder) holder.textContent = dati.iban_holder || "";
@@ -962,6 +1026,14 @@
       if (hint) hint.textContent = dati.iban_verified
         ? "Coordinate confermate dall'analista."
         : "Le coordinate sono state salvate. L'analista le verifica prima del primo prelievo.";
+    } else {
+      if (valore) valore.textContent = "Nessun IBAN indicato";
+      if (holder) holder.textContent = "";
+      if (pill) pill.hidden = true;
+      if (hint) hint.textContent =
+        "Non ci sono ancora coordinate su questa pratica: scrivile qui sotto, " +
+        "con un conto intestato a te. Se hai già dei soldi sul conto, scrivi " +
+        "all'assistenza e le carichiamo noi.";
     }
 
     var lista = document.querySelector("[data-movimenti]");
@@ -1206,10 +1278,10 @@
   }
 
   /* ------------------------------------------------ bonifici e canali -- */
-  /* Un conto senza canali di pagamento è un salvadanaio. Qui ci sono le
-     quattro cose che mancavano: mandare denaro fuori (bonifico SEPA),
-     autorizzare qualcuno a prelevarlo (addebito diretto), maturare interessi,
-     e avere una carta da bloccare in fretta.
+  /* Un conto senza canali di pagamento è un salvadanaio. Qui ci sono le due
+     che servono: mandare denaro fuori (bonifico SEPA) e autorizzare qualcuno a
+     prelevarlo (addebito diretto). Interessi e carta sono stati tolti — vedi
+     `app.html`, dove il perché è scritto una volta sola.
      L'interfaccia non decide nulla: mostra lo stato che il database ha già
      deciso, perché un bonifico "inviato" e uno "eseguito" sono cose diverse e
      il cliente deve poterle distinguere a colpo d'occhio. */
@@ -1237,13 +1309,6 @@
     cancelled: { testo: "Annullato", pill: "pill--muted" }
   };
 
-  var STATO_CARTA = {
-    pending: { testo: "In attivazione", pill: "pill--pending" },
-    active: { testo: "Attiva", pill: "pill--active" },
-    blocked: { testo: "Bloccata", pill: "pill--rejected" },
-    cancelled: { testo: "Annullata", pill: "pill--muted" }
-  };
-
   function pillStato(mappa, stato) {
     var s = mappa[stato] || { testo: stato || "—", pill: "pill--pending" };
     return '<span class="pill ' + s.pill + '">' + ui.esc(s.testo) + "</span>";
@@ -1267,8 +1332,11 @@
     bancaState.dati = dati;
     renderBonifici(dati.bonifici || []);
     renderMandati(dati.mandati || []);
-    renderInteressi(dati.interessi || {});
-    renderCarta((dati.carte || [])[0]);
+    /* interessi e carta: le funzioni sono state tolte insieme ai riquadri che
+       riempivano. Il server li manda ancora in `dati`, e va bene: sono dati,
+       non schermate — il giorno in cui servono di nuovo, il posto dove
+       scriverli non c'è più e si riparte da zero invece di riusare codice
+       morto che nessuno ha provato per mesi. */
     popolaCause(dati.purposes || []);
   }
 
@@ -1358,74 +1426,6 @@
         "</div>" + addebiti;
       ul.appendChild(li);
     });
-  }
-
-  /* Gli interessi si mostrano come tasso e come maturato, non come promessa:
-     «0,00 € / giorno» con un tasso a zero è l'informazione giusta, e dice
-     perché non arriva niente. */
-  function renderInteressi(i) {
-    var tasso = Number(i.rate_pct || 0);
-    var testo = tasso > 0
-      ? String(tasso).replace(".", ",") + " % annuo"
-      : "non previsti";
-    var set1 = function (sel, valore) {
-      var nodo = document.querySelector(sel);
-      if (nodo) nodo.textContent = valore;
-    };
-    set1("[data-interessi-tasso]", testo);
-    set1("[data-interessi-tasso-testo]", testo);
-    set1("[data-interessi-giorno]", euro(i.giornaliero_eur || 0));
-    set1("[data-interessi-maturato]", euro(i.maturato_eur || 0));
-    set1("[data-interessi-prossimo]", i.prossimo_accredito ? dataLunga(i.prossimo_accredito) : "—");
-    var nota = document.querySelector("[data-interessi-nota]");
-    if (nota) {
-      nota.textContent = tasso > 0
-        ? "Maturano sulla giacenza e si accreditano in un movimento unico il " +
-          dataLunga(i.prossimo_accredito) + ". Sotto il centesimo si accumulano, non si perdono."
-        : "Su questo conto il tasso creditore è a zero: non maturano interessi. " +
-          "Il tasso è indicato nel contratto e non cambia senza comunicazione.";
-    }
-  }
-
-  function renderCarta(carta) {
-    var box = document.querySelector("[data-carta]");
-    var vuota = document.querySelector("[data-carta-vuota]");
-    var azioni = document.querySelector("[data-carta-azioni]");
-    var richiedi = document.querySelector("[data-carta-richiedi]");
-    if (!box) return;
-
-    if (!carta) {
-      box.hidden = true;
-      if (azioni) azioni.hidden = true;
-      if (vuota) vuota.hidden = false;
-      if (richiedi) richiedi.hidden = false;
-      return;
-    }
-
-    box.hidden = false;
-    if (vuota) vuota.hidden = true;
-    if (richiedi) richiedi.hidden = true;
-    if (azioni) azioni.hidden = carta.status === "cancelled";
-
-    var pill = box.querySelector("[data-carta-pill]");
-    var stato = STATO_CARTA[carta.status] || { testo: carta.status, pill: "pill--pending" };
-    if (pill) {
-      pill.textContent = stato.testo;
-      pill.className = "pill " + stato.pill;
-    }
-    var numero = box.querySelector("[data-carta-numero]");
-    if (numero) numero.textContent = "•••• •••• •••• " + carta.last4;
-    var rif = box.querySelector("[data-carta-reference]");
-    if (rif) rif.textContent = carta.reference;
-    var scad = box.querySelector("[data-carta-scadenza]");
-    if (scad) scad.textContent = "scad. " + (carta.expires_on ? dataLunga(carta.expires_on) : "—");
-
-    var blocca = document.querySelector("[data-carta-blocca]");
-    var sblocca = document.querySelector("[data-carta-sblocca]");
-    if (blocca) blocca.hidden = carta.status !== "pending" && carta.status !== "active";
-    if (sblocca) sblocca.hidden = carta.status !== "blocked";
-
-    box.setAttribute("data-card-status", carta.status);
   }
 
   function popolaCause(lista) {
@@ -2003,45 +2003,10 @@
   }
 
   /* ------------------------------------------------------------ carta -- */
-  function richiediCarta() {
-    var tetto = window.prompt("Limite mensile di spesa della carta, in euro (50 – 10.000):", "500");
-    if (tetto === null) return;
-    var valore = Number(String(tetto).replace(",", "."));
-    if (!valore || valore < 50 || valore > 10000) {
-      if (window.ui && ui.toast) ui.toast("Il limite va da € 50,00 a € 10.000,00.", "error");
-      return;
-    }
-    api.richiediCarta(valore).then(function (res) {
-      if (window.ui && ui.toast) {
-        ui.toast("Carta " + (res.reference || "") + " richiesta. Sarà attiva dopo la verifica dell'analista.", "ok");
-      }
-      return caricaBanca();
-    }).catch(function (err) {
-      if (window.ui && ui.toast) ui.toast(err.message, "error");
-    });
-  }
-
-  /* Il blocco è l'unica azione che non chiede conferma due volte: una carta
-     persa è una corsa contro il tempo, e chiedere "sei sicuro?" è il modo di
-     perderla. La riattivazione invece chiede, perché è irreversibile al
-     contrario. */
-  function bloccaCarta(id, riattiva) {
-    var motivo = null;
-    if (!riattiva) {
-      motivo = window.prompt("Motivo del blocco (facoltativo: smarrimento, furto, sospetto):", "");
-      if (motivo === null) return;
-    } else if (!window.confirm("Riattivare la carta? Tornerà utilizzabile subito.")) {
-      return;
-    }
-    api.bloccaCarta(id, motivo, riattiva).then(function () {
-      if (window.ui && ui.toast) {
-        ui.toast(riattiva ? "Carta riattivata." : "Carta bloccata. Nessun pagamento passerà.", "ok");
-      }
-      return caricaBanca();
-    }).catch(function (err) {
-      if (window.ui && ui.toast) ui.toast(err.message, "error");
-    });
-  }
+  /* Ricerca e blocco carta: tolti con il riquadro. Restano le funzioni del
+     database (`carta_richiedi`, `carta_blocca`), che non fanno danno se
+     nessuno le chiama; quello che non deve restare è un pulsante che promette
+     una carta che non arriva. */
 
   function bindConto() {
     arrayEach("[data-move]", function (bottone) {
@@ -2134,22 +2099,6 @@
 
     arrayEach("[data-bonifico-apri]", function (b) { b.addEventListener("click", apriBonifico); });
     arrayEach("[data-mandato-apri]", function (b) { b.addEventListener("click", apriMandato); });
-    arrayEach("[data-carta-richiedi]", function (b) { b.addEventListener("click", richiediCarta); });
-
-    var blocco = document.querySelector("[data-carta-blocca]");
-    if (blocco) {
-      blocco.addEventListener("click", function () {
-        var c = (bancaState.dati && bancaState.dati.carte && bancaState.dati.carte[0]) || null;
-        if (c) bloccaCarta(c.id, false);
-      });
-    }
-    var sblocco = document.querySelector("[data-carta-sblocca]");
-    if (sblocco) {
-      sblocco.addEventListener("click", function () {
-        var c = (bancaState.dati && bancaState.dati.carte && bancaState.dati.carte[0]) || null;
-        if (c) bloccaCarta(c.id, true);
-      });
-    }
 
     /* modale bonifico */
     var bon = document.querySelector("[data-bonifico-modal]");
@@ -2315,7 +2264,11 @@
       .then(renderDashboard)
       .catch(function (err) {
         if (err.status === 401 || err.status === 403 || err.code === "28000") {
-          window.location.replace("login.html?next=" + encodeURIComponent("app.html"));
+          /* la sessione è scaduta davvero: si pulisce, così il prossimo giro
+             non riparte con lo stesso token già rifiutato */
+          api.setToken("");
+          api.cacheUser(null);
+          mandaAlLogin("sessione");
           return;
         }
         if (window.ui && ui.toast) ui.toast(err.message, "error");

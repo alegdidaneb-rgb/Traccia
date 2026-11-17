@@ -152,6 +152,11 @@ function blocchi() {
     da("/* ------------------------------------------------- la pratica, dal vero -- */", "function animateProgress(value) {"),
     da("function statoDocumento(doc) {", "/* Il documento non ha un indirizzo pubblico"),
     da("function renderDashboard(data) {", "function renderFees(fees) {"),
+    /* `renderDashboard` azzera il contatore dei rimbalzi quando i dati
+       arrivano: senza questa riga il blocco non compila in un ambiente dove
+       `sessionStorage` non esiste. Il giro dei rimbalzi si prova in
+       `login.test.js`; qui serve solo che la storia si disegni. */
+    "function azzeraRimbalzi() {}",
     /* il conto: serve a provare cosa dice la pagina quando il saldo non ha
        movimenti dietro */
     da("var contoState = { dati: null, movimenti: [] };", "function rigaMovimento(m) {")

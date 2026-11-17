@@ -1513,6 +1513,42 @@ html.js-anim .frame[data-reveal].is-visible {
   padding: 0 0.3rem;
 }
 
+/* L'IBAN sulla riga della pratica. Sta nei dettagli, sotto il nome, perché è
+   un dato da leggere insieme a chi è il cliente — e perché era il dato che non
+   si vedeva da nessuna parte finché non si apriva la scheda. Il pulsante è
+   testo, non una pillola: il gesto è raro e non deve competere con «Apri». */
+.pratica__iban {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.1rem;
+}
+.pratica__iban .mono { font-size: 0.72rem; letter-spacing: 0.02em; }
+.pratica__iban--assente {
+  font-style: italic;
+  color: var(--muted);
+}
+.pratica__iban .pill { font-size: 0.62rem; padding: 0.05rem 0.4rem; }
+.pratica__iban-scrivi {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pratica__iban-scrivi:hover { color: var(--accent-ink); }
+.pratica__iban-scrivi:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 /* «cosa manca»: pillole che si leggono come una frase, non come un semaforo */
 .pratica__manca { max-width: 15rem; }
 .pratica__manca .pill + .pill { margin-left: 0.25rem; }
@@ -1771,6 +1807,22 @@ body.is-admin .panel__head h2 {
   box-shadow: 0 40px 100px -40px rgba(0, 0, 0, 0.7);
 }
 .auth-shell--photo .auth-card__head h1 { letter-spacing: -0.04em; }
+
+/* --------------------------------------------------------------------------
+   La barra dei cookie non deve coprire il pulsante del modulo
+   --------------------------------------------------------------------------
+   Su un telefono la barra sta in basso, da bordo a bordo, e sopra il pulsante
+   che chiude il modulo: chi compila sei campi arriva in fondo e non trova
+   «Invia richiesta», perché c'è il consenso ai cookie. Succedeva solo lì, e
+   solo a chi non aveva ancora scelto — cioè a chi arriva per la prima volta,
+   che è esattamente la persona che deve poter premere quel pulsante.
+
+   `main.js` mette `has-cookie-bar` sull'elemento radice quando la barra è
+   visibile. Qui la pagina si prende in fondo lo spazio che le serve: il
+   pulsante si può ancora toccare, e la barra resta dov'è.
+   -------------------------------------------------------------------------- */
+html.has-cookie-bar .auth-shell { padding-bottom: calc(clamp(2rem, 5vw, 4rem) + 12rem); }
+html.has-cookie-bar .wa-fab { bottom: 12rem; }
 
 /* --------------------------------------------------------------------------
    27. Le cinque fasi: rail verticale con linea che si riempie allo scroll
@@ -3921,7 +3973,7 @@ body.is-staff-view #sicurezza { display: none !important; }
    `tests/header_larghezza.test.js` lo esegue a ogni giro: se una di queste
    misure cambia, il test dice a quale larghezza si sborda.
    ------------------------------------------------------------------------ */
-@media (max-width: 1396px) {
+@media (max-width: 1402px) {
   .nav { gap: clamp(0.75rem, 2vw, 1.5rem); }
   /* Le lingue restano nella **barra**, non nel pannello: cambiarle è un gesto
      che non deve chiedere di aprire un menu. Il selettore si prende lo spazio

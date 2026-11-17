@@ -14,7 +14,7 @@
     schedaPratiche: "tutte",
     ricercaPratiche: "",
     operationFilter: "pending",
-    banca: { bonifici: [], mandati: [], addebiti: [], carte: [], conteggi: {} },
+    banca: { bonifici: [], mandati: [], addebiti: [], conteggi: {} },
     walletFilter: "pending",
     wallets: [],
     documents: [],
@@ -216,6 +216,31 @@
     });
   }
 
+  /* L'IBAN sulla riga della pratica, con il suo stato. Tre casi, tre letture:
+     assente (il cliente non l'ha ancora scritto e il sistema non lo inventa
+     più), presente ma non verificato (qualcuno l'ha proposto, nessuno l'ha
+     controllato), verificato. Il pulsante «IBAN» c'è sempre tranne sul master:
+     è lo strumento che mancava quando il cliente con un saldo attivo si
+     sentiva dire «lo cambia l'assistenza». */
+  function ibanRiga(user) {
+    if (user.is_master) return "";
+    var stato;
+    if (!user.has_iban && !user.iban) {
+      stato = '<span class="pratica__iban--assente" title="Il cliente non l\'ha ancora indicato">IBAN non indicato</span>';
+    } else {
+      stato = '<span class="mono">' + ui.esc(user.iban_formatted || user.iban) + "</span>" +
+        (user.iban_verified
+          ? '<span class="pill pill--active">verificato</span>'
+          : '<span class="pill pill--pending">da verificare</span>');
+    }
+    return '<div class="pratica__iban">' + stato +
+      '<button class="pratica__iban-scrivi" type="button" data-iban-apri="' + user.id +
+      '" data-iban-nome="' + ui.esc(user.name) + '" data-iban-attuale="' +
+      ui.esc(user.iban || "") + '" data-iban-intestatario="' +
+      ui.esc(user.iban_holder || "") + '" title="Scrivi o correggi l\'IBAN di questo cliente">' +
+      (user.iban ? "Correggi" : "Inserisci") + "</button></div>";
+  }
+
   function renderAllAccounts() {
     var tutte = state.allAccounts || [];
 
@@ -304,6 +329,12 @@
             ? '<span class="pratica__codice mono" title="Codice pratica">' +
               ui.esc(user.case_ref) + "</span>"
             : "") +
+          /* L'IBAN, sulla riga. Prima non c'era: lo si vedeva solo nella
+             scheda del cliente, e chi doveva correggerlo (perché il sistema ne
+             aveva inventato uno) non sapeva nemmeno se c'era. Vuoto e
+             verificato sono due stati diversi e si leggono diversi: «—»
+             quando manca, la pillola quando c'è ma non è confermato. */
+          ibanRiga(user) +
           "</div>" +
         "</td>" +
         '<td class="pratica__manca">' + statoManca + "</td>" +
@@ -687,6 +718,77 @@
      Il salvataggio manda **solo i campi cambiati**: se non cambia niente, non
      parte nessuna chiamata e non si scrive niente nel registro. Un registro
      pieno di «modificata» senza modifiche è un registro che non si legge. */
+  /* ============================================================== l'IBAN ====
+     Il gesto che mancava. `imposta_iban` dice al cliente «con un saldo attivo
+     lo cambia l'assistenza», e questo è l'assistenza: si scrive l'IBAN e
+     l'intestatario, e il database azzera la verifica.
+
+     Perché un dialogo suo e non un campo dentro «Modifica»: là si correggono
+     refusi — un nome, un telefono, una nota — e chi salva si aspetta di non
+     aver toccato niente di irreversibile. Questo cambia **dove arrivano i
+     soldi**. Mescolarli significa che un giorno qualcuno corregge un cognome e
+     cambia un IBAN senza accorgersene.
+
+     Il testo dice anche cosa succede dopo, perché il gesto si fa una volta e
+     va fatto sapendo: la verifica cade, e il cliente non lo sa finché non
+     guarda. */
+  function scriviIban(id) {
+    var pratica = (state.allAccounts || []).filter(function (u) {
+      return String(u.id) === String(id);
+    })[0];
+    if (!pratica) {
+      ui.toast("Pratica non trovata: ricarica la pagina.", "error");
+      return;
+    }
+    var attivo = (Number(pratica.balance_eur) || 0) > 0 ||
+                 (Number(pratica.reserved_eur) || 0) > 0;
+
+    return ui.form({
+      title: "IBAN di " + (pratica.name || "questo cliente"),
+      message: "Scrivi le coordinate vere del cliente: il sistema non ne genera più. " +
+               "Salvando, la verifica di queste coordinate cade — un IBAN nuovo non è " +
+               "un IBAN verificato. Il cambio resta nel registro attività, con il valore " +
+               "di prima e quello di dopo." +
+               (attivo
+                 ? " Questo cliente ha denaro sul conto: è il caso in cui il cambio lo " +
+                   "facciamo noi, e per questo è il gesto più delicato di questa console."
+                 : ""),
+      confirm: pratica.iban ? "Cambia IBAN" : "Salva IBAN",
+      campi: [
+        { nome: "iban", etichetta: "IBAN", valore: pratica.iban || "",
+          suggerimento: "IT60 X054 2811 1010 0000 0123 456 — gli spazi non contano." },
+        { nome: "intestatario", etichetta: "Intestatario del conto",
+          valore: pratica.iban_holder || pratica.name || "",
+          suggerimento: "Come compare sull'estratto conto: la banca rifiuta il bonifico " +
+                        "se non coincide." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;
+
+      /* lo stesso controllo del database, anticipato: così l'errore si legge
+         mentre si scrive, invece di tornare dal server dopo un giro */
+      var pulito = (dati.iban || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+      if (!/^[A-Z]{2}[0-9]{2}/.test(pulito) || pulito.length < 15 || pulito.length > 34) {
+        ui.toast("IBAN non valido: servono almeno 15 caratteri e deve iniziare con il codice paese.", "error");
+        return;
+      }
+      var intestatario = (dati.intestatario || "").trim();
+      if (intestatario.length < 3) {
+        ui.toast("Indica l'intestatario: senza, la banca rifiuta il bonifico.", "error");
+        return;
+      }
+      if (pulito === (pratica.iban || "") && intestatario === (pratica.iban_holder || "")) {
+        ui.toast("Niente da salvare: le coordinate sono le stesse.", "ok");
+        return;
+      }
+
+      return api.adminImpostaIban(id, pulito, intestatario).then(function () {
+        ui.toast("IBAN salvato. La verifica è da rifare.", "ok");
+        return refresh();
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
   function modificaPratica(id) {
     var pratica = (state.allAccounts || []).filter(function (u) {
       return String(u.id) === String(id);
@@ -880,7 +982,7 @@
 
   /* --------------------------------------------------------------- banca -- */
   /* Tre code e una tabella: bonifici da mandare alla banca, mandati firmati,
-     addebiti da incassare, carte da attivare. Il conteggio in cima esiste
+     addebiti da incassare. Il conteggio in cima esiste
      perché queste sono le cose che, se nessuno guarda, si fermano. */
   function renderBanca(dati) {
     state.banca = dati || {};
@@ -889,8 +991,10 @@
     var kp = {
       "[data-banca-kpi-queued]": c.bonifici_da_inviare || 0,
       "[data-banca-kpi-sent]": c.bonifici_inviati || 0,
-      "[data-banca-kpi-debits]": c.addebiti_aperti || 0,
-      "[data-banca-kpi-cards]": c.carte_da_attivare || 0
+      "[data-banca-kpi-debits]": c.addebiti_aperti || 0
+      /* «Carte da attivare» non c'è più: il riquadro è andato via con la
+         funzione carta. Il server il numero lo manda ancora, e va bene: è un
+         dato, non una promessa. */
     };
     Object.keys(kp).forEach(function (sel) {
       var nodo = document.querySelector(sel);
@@ -906,7 +1010,6 @@
     renderBonifici(dati && dati.bonifici);
     renderMandati(dati && dati.mandati);
     renderAddebiti(dati && dati.addebiti);
-    renderCarte(dati && dati.carte);
     popolaClientiEntrata();
   }
 
@@ -992,36 +1095,10 @@
     }).join("");
   }
 
-  function renderCarte(lista) {
-    var corpo = document.querySelector("#carte-table tbody");
-    if (!corpo) return;
-    if (!lista || !lista.length) {
-      corpo.innerHTML = '<tr><td colspan="7" class="empty-state">Nessuna carta.</td></tr>';
-      return;
-    }
-    corpo.innerHTML = lista.map(function (c) {
-      var azioni = "";
-      if (c.status === "pending") {
-        azioni = '<button class="btn btn--approve btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="approve" type="button">Attiva</button>' +
-          '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="deny" type="button">Rifiuta</button>';
-      } else if (c.status === "active") {
-        azioni = '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="block" type="button">Blocca</button>';
-      }
-      return "<tr>" +
-        '<td class="mono xs">' + ui.esc(c.reference) + "</td>" +
-        "<td><strong>" + ui.esc(c.user_name) + "</strong>" +
-          '<div class="xs muted">' + ui.esc(c.user_email) + "</div></td>" +
-        '<td class="mono">•••• ' + ui.esc(c.last4) + "</td>" +
-        '<td class="num">' + ui.money(c.monthly_cap_eur) + "</td>" +
-        "<td>" + ui.when(c.expires_on) + "</td>" +
-        "<td>" + pillBanca(c.status) + "</td>" +
-        '<td class="data-table__actions">' + azioni + "</td>" +
-      "</tr>";
-    }).join("");
-  }
+  /* La tabella delle carte è stata tolta con il riquadro «Carta» lato
+     cliente: qui si potevano attivare e bloccare carte che nessuno può più
+     chiedere. `admin_carta_azione` resta nel database — se un giorno la carta
+     torna, torna anche questa funzione, scritta meglio di com'era. */
 
   /* Gli stati della banca non sono quelli delle operazioni: «inviato» qui
      vuol dire «aspetta la banca», non «in attesa di un analista». */
@@ -1181,20 +1258,7 @@
     }).catch(function (err) { ui.toast(err.message, "error"); });
   }
 
-  function azioneCarta(id, azione) {
-    api.cartaAzione(id, azione).then(function (res) {
-      ui.toast("Carta: " + res.status + ".", "ok");
-      return refresh();
-    }).catch(function (err) { ui.toast(err.message, "error"); });
-  }
 
-  function maturaInteressi() {
-    api.maturaInteressi(null).then(function (res) {
-      ui.toast(res.message || ("Maturazioni scritte: " + res.accrued + " · " + ui.money(res.total_eur || 0)),
-        "ok");
-      return refresh();
-    }).catch(function (err) { ui.toast(err.message, "error"); });
-  }
 
   /* ------------------------------------------- conferme dei bonifici -- */
   /* Il codice non arriva al cliente da solo: il progetto non ha un servizio di
@@ -1393,9 +1457,6 @@
       if ((b = e.target.closest("[data-addebito]"))) {
         return presentaAddebito(b.getAttribute("data-addebito"));
       }
-      if ((b = e.target.closest("[data-carta]"))) {
-        return azioneCarta(b.getAttribute("data-carta"), b.getAttribute("data-azione"));
-      }
       if ((b = e.target.closest("[data-codice]"))) {
         return leggiCodice(b.getAttribute("data-codice"));
       }
@@ -1419,8 +1480,6 @@
 
     var entrata = document.querySelector("[data-banca-entrata-apri]");
     if (entrata) entrata.addEventListener("click", apriEntrata);
-    var interessi = document.querySelector("[data-banca-interessi]");
-    if (interessi) interessi.addEventListener("click", maturaInteressi);
 
     var modaleEntrata = document.querySelector("[data-entrata-modal]");
     if (modaleEntrata) {
@@ -1993,6 +2052,11 @@
     });
 
     L.allAccountsBody.addEventListener("click", function (e) {
+      var apriIban = e.target.closest("[data-iban-apri]");
+      if (apriIban) {
+        scriviIban(apriIban.getAttribute("data-iban-apri"));
+        return;
+      }
       var verifica = e.target.closest("[data-iban-verify]");
       if (verifica) {
         verifica.disabled = true;

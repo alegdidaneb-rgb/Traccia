@@ -1,4 +1,9 @@
 {
+  "_meta": {
+    "lingua": "it",
+    "nota": "Fonte di verità dei testi italiani del sito: le altre tre lingue devono avere esattamente queste chiavi. `tools/build_i18n.py` sostituisce ogni chiave con il valore della lingua scelta, quindi una chiave che manca è una frase che resta italiana in mezzo a una pagina tradotta.",
+    "pagina": "tutte"
+  },
   ") o all'autorità di controllo del tuo Paese di residenza.": ") o all'autorità di controllo del tuo Paese di residenza.",
   ", PIN o credenziali del conto": ", PIN o credenziali del conto",
   ", con sede legale e direzione generale in Piazza Solferino, 11 - 10121 Torino (TO) — P.IVA e Codice Fiscale 06900230018.": ", con sede legale e direzione generale in Piazza Solferino, 11 - 10121 Torino (TO) — P.IVA e Codice Fiscale 06900230018.",
@@ -88,6 +93,7 @@
   "Accedere al tuo dispositivo o al tuo home banking": "Accedere al tuo dispositivo o al tuo home banking",
   "Accedi": "Accedi",
   "Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.": "Accedi all'area riservata per seguire la tua pratica di analisi o aprire una nuova segnalazione.",
+  "Accedi alla tua pratica": "Accedi alla tua pratica",
   "Accedi alla tua pratica — Traccia": "Accedi alla tua pratica — Traccia",
   "Accesso da remoto": "Accesso da remoto",
   "Accesso o segnalazione": "Accesso o segnalazione",
@@ -407,7 +413,7 @@
   "Formazione": "Formazione",
   "Formazione obbligatoria ·": "Formazione obbligatoria ·",
   "Formazione, credenziali verificabili e percorso di ciascuna persona. Nessun profilo è qui per riempire una griglia: a ogni area di lavoro corrisponde qualcuno che la segue.": "Formazione, credenziali verificabili e percorso di ciascuna persona. Nessun profilo è qui per riempire una griglia: a ogni area di lavoro corrisponde qualcuno che la segue.",
-  "Forse il link è cambiato, oppure hai digitato l'indirizzo in modo diverso. Da qui puoi tornare in carreggiata.": "Forse il link è cambiato, oppure hai digitato l'indirizzo in modo diverso. Da qui puoi tornare in carreggiata.",
+  "Forse il link è cambiato, oppure hai digitato l'indirizzo in modo diverso. Non hai perso niente: la tua pratica è al suo posto, e per rientrare basta rifare l'accesso.": "Forse il link è cambiato, oppure hai digitato l'indirizzo in modo diverso. Non hai perso niente: la tua pratica è al suo posto, e per rientrare basta rifare l'accesso.",
   "Francesca Bruno": "Francesca Bruno",
   "Francese": "Francese",
   "Frodi su pagamenti e carte": "Frodi su pagamenti e carte",
@@ -745,7 +751,6 @@
   "P.IVA 06900230018": "P.IVA 06900230018",
   "Pagamento in cripto verso un wallet personale, spostato immediatamente attraverso un servizio di mixing.": "Pagamento in cripto verso un wallet personale, spostato immediatamente attraverso un servizio di mixing.",
   "Pagamento in criptovaluta": "Pagamento in criptovaluta",
-  "Pagina non trovata — Traccia": "Pagina non trovata — Traccia",
   "Paolo Greco": "Paolo Greco",
   "Parla con noi": "Parla con noi",
   "Parte del denaro era ancora su un conto acceso presso un istituto italiano: bloccato su nostra segnalazione e restituito. Il resto era già stato prelevato in contanti.": "Parte del denaro era ancora su un conto acceso presso un istituto italiano: bloccato su nostra segnalazione e restituito. Il resto era già stato prelevato in contanti.",
@@ -837,7 +842,8 @@
   "Quattro passaggi, e poi la verità.": "Quattro passaggi, e poi la verità.",
   "Quello che non facciamo": "Quello che non facciamo",
   "Questa informativa può essere aggiornata. La data di ultimo aggiornamento è indicata in cima alla pagina.": "Questa informativa può essere aggiornata. La data di ultimo aggiornamento è indicata in cima alla pagina.",
-  "Questa pagina non c'è.": "Questa pagina non c'è.",
+  "Questa pagina non esiste — Traccia": "Questa pagina non esiste — Traccia",
+  "Questa pagina non esiste.": "Questa pagina non esiste.",
   "Questi sono i prezzi reali del mercato, aggiornati. Confrontali con quelli che vedi nell'area personale della piattaforma che stai valutando.": "Questi sono i prezzi reali del mercato, aggiornati. Confrontali con quelli che vedi nell'area personale della piattaforma che stai valutando.",
   "Qui si può agire · 21 mar": "Qui si può agire · 21 mar",
   "Quindici anni tra revisione contabile e contenzioso civile. Coordina l'ufficio, firma le perizie destinate al giudice e tiene i rapporti con i consulenti tecnici d'ufficio.": "Quindici anni tra revisione contabile e contenzioso civile. Coordina l'ufficio, firma le perizie destinate al giudice e tiene i rapporti con i consulenti tecnici d'ufficio.",
@@ -1127,11 +1133,6 @@
   "Wallet intermedi, raggruppamenti, conversioni tra asset, finestre temporali.": "Wallet intermedi, raggruppamenti, conversioni tra asset, finestre temporali.",
   "WhatsApp": "WhatsApp",
   "XRP · Pagamenti": "XRP · Pagamenti",
-  "_meta": {
-    "lingua": "it",
-    "nota": "Fonte di verità dei testi italiani del sito: le altre tre lingue devono avere esattamente queste chiavi. `tools/build_i18n.py` sostituisce ogni chiave con il valore della lingua scelta, quindi una chiave che manca è una frase che resta italiana in mezzo a una pagina tradotta.",
-    "pagina": "tutte"
-  },
   "a chicchessia, inclusi i soggetti che si presentino come incaricati di Traccia;": "a chicchessia, inclusi i soggetti che si presentino come incaricati di Traccia;",
   "a te": "a te",
   "accesso ai dati personali;": "accesso ai dati personali;",
