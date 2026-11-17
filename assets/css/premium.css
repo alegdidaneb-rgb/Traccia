@@ -1542,6 +1542,29 @@ html.js-anim .frame[data-reveal].is-visible {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* «Verifica» è un gesto che si fa una volta e che apre la strada ai soldi:
+   si legge come un pulsante, non come una parola sottolineata accanto a
+   «Correggi». Due gesti diversi non devono avere lo stesso peso. */
+.pratica__iban-verifica {
+  background: var(--accent, #0e6b47);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.16s var(--ease-out, ease);
+}
+.pratica__iban-verifica:hover { background: var(--accent-ink, #0b5236); }
+.pratica__iban-verifica:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.pratica__iban-verifica:disabled { opacity: 0.55; cursor: default; }
+
 .pratica__iban-scrivi:hover { color: var(--accent-ink); }
 .pratica__iban-scrivi:focus-visible {
   outline: 2px solid var(--accent);

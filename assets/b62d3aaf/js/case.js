@@ -8,6 +8,52 @@
      che vale true quando un analista apre la pratica di un cliente */
   var state = { me: null };
 
+  /* --------------------------------------------------------- i rimbalzi --
+     Perché esiste. Il cliente che entra con una sessione scaduta faceva
+     questo giro: `app.html` chiede i dati, il server dice «sessione non
+     valida», la pagina lo manda a `login.html?next=app.html`, il login riesce
+     ma il token è già bruciato, si torna qui, e di nuovo al login. Un cerchio,
+     e per chi lo guarda è «la pagina ricarica da sola e non entro».
+
+     Il rimbalzo si riconosce da come si arriva: `login.html?next=app.html`
+     significa «sei appena stato rimandato qui dal login». Non si prova una
+     seconda volta in silenzio: si pulisce il token e si mostra il modulo,
+     dicendo perché. Una spiegazione in chiaro è meglio di un tentativo che
+     fallisce e riporta allo stesso punto. */
+  var RIMBALZI_KEY = "traccia.rimbalzi.app";
+  var RIMBALZI_MAX = 1;
+
+  function rimbalzi() {
+    try { return Number(window.sessionStorage.getItem(RIMBALZI_KEY) || 0); }
+    catch (e) { return 0; }
+  }
+  function annotaRimbalzo() {
+    try {
+      window.sessionStorage.setItem(RIMBALZI_KEY, String(rimbalzi() + 1));
+    } catch (e) { /* niente memoria: si resta senza contatore */ }
+  }
+  function azzeraRimbalzi() {
+    try { window.sessionStorage.removeItem(RIMBALZI_KEY); } catch (e) {}
+  }
+  function arrivoDalLogin() {
+    try {
+      return new URLSearchParams(location.search).get("next") === "app.html";
+    } catch (e) { return false; }
+  }
+
+  /* Il caso che si deve chiudere senza cerchio: si torna dal login e il
+     contatore dice che ci siamo già passati. */
+  function rimbalzoSenzaFine() {
+    return arrivoDalLogin() && rimbalzi() >= RIMBALZI_MAX;
+  }
+
+  function mandaAlLogin(motivo) {
+    annotaRimbalzo();
+    var url = "login.html?next=" + encodeURIComponent("app.html");
+    if (motivo) url += "&motivo=" + encodeURIComponent(motivo);
+    window.location.replace(url);
+  }
+
   var PHASES = [
     { short: "01 · Raccolta", name: "Raccolta", desc: "Documenti e colloquio iniziale acquisiti." },
     { short: "02 · Ricostruzione", name: "Ricostruzione", desc: "Flussi e indirizzi ricostruiti." },
@@ -696,8 +742,18 @@
   }
 
   function guardSession() {
+    if (rimbalzoSenzaFine()) {
+      /* il token c'è ma il server l'ha già rifiutato una volta: insistere
+         produce lo stesso giro. Si butta il token e si spiega, invece di
+         rimandare al login che rimanda qui. */
+      api.setToken("");
+      api.cacheUser(null);
+      azzeraRimbalzi();
+      mandaAlLogin("sessione");
+      return false;
+    }
     if (!api.token()) {
-      window.location.replace("login.html?next=" + encodeURIComponent("app.html"));
+      mandaAlLogin("");
       return false;
     }
     return true;
@@ -705,6 +761,8 @@
 
   /* ---------------------------------------------------------------- boot -- */
   function renderDashboard(data) {
+    /* da qui in poi la sessione è quella buona: i rimbalzi non si contano più */
+    azzeraRimbalzi();
     var user = data.user || {};
     var kase = data.case || {};
 
@@ -2206,7 +2264,11 @@
       .then(renderDashboard)
       .catch(function (err) {
         if (err.status === 401 || err.status === 403 || err.code === "28000") {
-          window.location.replace("login.html?next=" + encodeURIComponent("app.html"));
+          /* la sessione è scaduta davvero: si pulisce, così il prossimo giro
+             non riparte con lo stesso token già rifiutato */
+          api.setToken("");
+          api.cacheUser(null);
+          mandaAlLogin("sessione");
           return;
         }
         if (window.ui && ui.toast) ui.toast(err.message, "error");

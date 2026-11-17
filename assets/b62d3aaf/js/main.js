@@ -88,11 +88,28 @@
   }
 
   if (bar) {
+    /* La barra sta in basso, a tutta larghezza su un telefono: sopra il
+       pulsante che chiude il modulo («Accedi», «Invia richiesta»), che resta
+       quindi sotto il dito sbagliato. Non si sposta la barra — è lì perché si
+       deve vedere — si segnala al foglio di stile che c'è, e il CSS lascia in
+       fondo alla pagina lo spazio per non coprirlo. */
+    var segnalaBarra = function (visibile) {
+      document.documentElement.classList.toggle("has-cookie-bar", visibile);
+    };
+    if (bar.classList.contains("is-visible")) segnalaBarra(true);
+    var guardia = window.setInterval(function () {
+      if (!bar) return;
+      var visibile = bar.classList.contains("is-visible");
+      segnalaBarra(visibile);
+      if (!visibile && stored()) window.clearInterval(guardia);
+    }, 400);
+
     bar.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-cookie-choice]");
       if (!btn) return;
       store(btn.getAttribute("data-cookie-choice"));
       bar.classList.remove("is-visible");
+      segnalaBarra(false);
       window.dispatchEvent(
         new CustomEvent("cookie:choice", {
           detail: btn.getAttribute("data-cookie-choice")
