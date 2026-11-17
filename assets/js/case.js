@@ -951,6 +951,12 @@
     var holder = document.querySelector("[data-iban-holder]");
     var hint = document.querySelector("[data-iban-hint]");
 
+    /* Vuoto e presente sono due cose diverse, e vanno dette in modo diverso.
+       Prima il sistema un IBAN lo inventava, quindi `dati.iban` c'era sempre e
+       questa pagina mostrava sempre un numero — solo che per molti clienti non
+       era il loro. Ora quel numero arriva solo se l'ha scritto qualcuno, e
+       quando manca la pagina lo dice: un segnaposto che sembra una coordinata
+       bancaria è peggio di nessuna coordinata. */
     if (dati.iban) {
       if (valore) valore.textContent = dati.iban_formatted;
       if (holder) holder.textContent = dati.iban_holder || "";
@@ -962,6 +968,14 @@
       if (hint) hint.textContent = dati.iban_verified
         ? "Coordinate confermate dall'analista."
         : "Le coordinate sono state salvate. L'analista le verifica prima del primo prelievo.";
+    } else {
+      if (valore) valore.textContent = "Nessun IBAN indicato";
+      if (holder) holder.textContent = "";
+      if (pill) pill.hidden = true;
+      if (hint) hint.textContent =
+        "Non ci sono ancora coordinate su questa pratica: scrivile qui sotto, " +
+        "con un conto intestato a te. Se hai già dei soldi sul conto, scrivi " +
+        "all'assistenza e le carichiamo noi.";
     }
 
     var lista = document.querySelector("[data-movimenti]");
