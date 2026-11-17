@@ -228,6 +228,12 @@
       return call("imposta_iban", { p_iban: iban, p_intestatario: intestatario });
     },
     verificaIban: function (id) { return call("admin_verifica_iban", { p_id: id }); },
+    /* l'IBAN scritto dalla console, al posto del cliente. Serve quando il
+       cliente ha già dei soldi sul conto: `imposta_iban` glielo vieta, e
+       senza questa funzione il divieto mandava a un ufficio senza strumenti. */
+    adminImpostaIban: function (id, iban, intestatario) {
+      return call("admin_imposta_iban", { p_id: id, p_iban: iban, p_intestatario: intestatario || null });
+    },
 
     /* --- bonifici, addebiti diretti, interessi, carta --- */
     /* Le quattro cose che rendono un conto un conto: mandare denaro fuori
