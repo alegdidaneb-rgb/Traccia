@@ -38,9 +38,24 @@
     button.textContent = state ? "Attendi…" : button.dataset.label;
   }
 
+  /* Le sole pagine verso cui un accesso riuscito può portare. Sono due, e
+     sono quelle che esistono: `next` arriva dall'indirizzo, quindi un valore
+     scritto a mano, un vecchio link o un errore di battitura bastavano a
+     portare il cliente appena entrato dritto sulla pagina 404 — «ho fatto
+     l'accesso e dice che la pagina non esiste». Senza controllo, il primo
+     difetto è identico al secondo. */
+  var DESTINAZIONI = ["app.html", "admin.html"];
+
+  function destinazioneValida(valore) {
+    var v = String(valore || "").split("#")[0].split("?")[0];
+    v = v.replace(/^\.?\//, "");
+    return DESTINAZIONI.indexOf(v) !== -1 ? v : null;
+  }
+
   function destination(user) {
-    if (next) return next;
-    return user.role === "admin" ? "admin.html" : "app.html";
+    var scelta = destinazioneValida(next);
+    if (scelta) return scelta;
+    return user && user.role === "admin" ? "admin.html" : "app.html";
   }
 
   /* ------------------------------------------- sessione appena chiusa -- */
@@ -54,10 +69,29 @@
     loginForm.addEventListener("submit", function (e) {
       e.preventDefault();
       clearError(loginError);
+      pulisciCampi(loginForm);
+
+      /* Prima di chiamare il server: due campi vuoti sono due errori che si
+         dicono in un istante. Senza, il freno scattava e la pagina restava
+         ferma, senza un messaggio — e chi ha premuto non sa se ha premuto. */
+      var campoEmail = document.getElementById("email");
+      var campoPassword = document.getElementById("password");
+      var emailScritta = campoEmail ? campoEmail.value.trim() : "";
+      var passwordScritta = campoPassword ? campoPassword.value : "";
+      if (!emailScritta) {
+        return segnalaCampo(campoEmail, "Inserisci l'email della tua pratica.");
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(emailScritta)) {
+        return segnalaCampo(campoEmail, "Questo indirizzo email non sembra completo.");
+      }
+      if (!passwordScritta) {
+        return segnalaCampo(campoPassword, "Inserisci la password.");
+      }
+
       var button = loginForm.querySelector('button[type="submit"]');
       busy(button, true);
 
-      api.login(loginForm.email.value.trim(), loginForm.password.value)
+      api.login(emailScritta, passwordScritta)
         .then(function (data) {
           window.location.href = destination(data.user);
         })
@@ -124,6 +158,15 @@
     }
     avviso.textContent = messaggio;
     campo.focus();
+    /* «metti tutto in ordine»: un errore che scatta sotto il bordo dello
+       schermo o sotto la barra dei cookie è un errore che non si legge. Si
+       porta il campo al centro, con un margine che lascia vedere l'avviso
+       sotto di sé. `block: "center"` è innocuo dove non serve nulla. */
+    try {
+      campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    } catch (e) {
+      try { campo.scrollIntoView(); } catch (e2) {}
+    }
   }
 
   function pulisciCampi(form) {
@@ -217,6 +260,22 @@
      doveva togliere. */
   var titleEl = document.getElementById("auth-title");
   var subtitleEl = document.getElementById("auth-subtitle");
+  /* ---------------------------------------------- perché si è qui ---------- */
+  /* `case.js` e `ui.js` rimandano qui con `motivo=sessione` quando il server
+     ha rifiutato il token. Senza questa riga il cliente tornava al modulo
+     senza sapere perché, dopo aver visto la sua pagina caricarsi e sparire.
+     Il messaggio è in cima al modulo, non un avviso che scivola via. */
+  (function motivaArrivo() {
+    var motivo = "";
+    try { motivo = new URLSearchParams(location.search).get("motivo") || ""; } catch (e) {}
+    if (!motivo) return;
+    if (motivo === "sessione") {
+      showError(loginError, "La sessione era scaduta: rifai l'accesso e rientri.");
+      return;
+    }
+    showError(loginError, "Rifai l'accesso per continuare.");
+  })();
+
   /* I testi delle due schede stanno nei `data-` della testata della scheda,
      dove `build_i18n.py` li traduce; gli italiani qui sotto restano come rete
      di sicurezza per una pagina costruita a mano. */

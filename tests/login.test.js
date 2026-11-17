@@ -229,4 +229,88 @@ test("nessun file servito al browser contiene le password degli account", () => 
   assert.ok(file.length > 0 && controllati > 10, "controllati solo " + controllati + " file");
 });
 
+/* ------------------------------------------------- giro di accesso rotto -- */
+/* Tre difetti veri, trovati il 2026-11-17 da una segnalazione sola: «quando
+   accede dice che questa pagina non esiste». Non erano tre casi diversi, era
+   un giro: accesso riuscito, dati rifiutati, ritorno al login, ritorno
+   all'area, e alla fine il cliente davanti a un 404.
+   Questi test non provano che il giro funzioni — quello si vede solo in un
+   browser. Provano che le tre cose che lo rendevano senza uscita non possano
+   tornare in silenzio. */
+/* `AUTH` è già letto più sopra in questo file: si riusa, non si ridichiara. */
+const CASE = fs.readFileSync(path.join(__dirname, "..", "assets/js/case.js"), "utf8");
+const PAGINA404 = fs.readFileSync(path.join(__dirname, "..", "404.html"), "utf8");
+
+test("l'accesso riuscito non porta a una pagina che non è nell'elenco", () => {
+  /* `next` arriva dall'indirizzo: senza un elenco, un vecchio link o un
+     errore di battitura portavano il cliente appena entrato dritto sul 404.
+     Sono due pagine, e sono le uniche due. */
+  assert.match(AUTH, /var DESTINAZIONI = \["app\.html", "admin\.html"\]/,
+    "l'elenco delle destinazioni permesse è sparito da auth.js");
+  assert.match(AUTH, /function destinazioneValida/,
+    "manca il controllo su `next`: qualunque indirizzo passa");
+  assert.ok(!/function destination\(user\) \{\s*if \(next\) return next;/.test(AUTH),
+    "`destination` è tornata a restituire `next` senza controllarlo");
+});
+
+test("il modulo di accesso non ricarica la pagina: il freno c'è sempre", () => {
+  /* Senza `action`, un `<form>` invia a sé stesso: se `auth.js` non è ancora
+     arrivato, premere «Accedi» ricarica e svuota i campi. Il freno deve stare
+     anche nell'HTML, non solo nello script. */
+  const LOGIN = fs.readFileSync(path.join(__dirname, "..", "login.html"), "utf8");
+  const form = LOGIN.match(/<form[^>]*id="login-form"[^>]*>/);
+  assert.ok(form, "il modulo di accesso non c'è più in login.html");
+  assert.match(form[0], /action="#"/,
+    "il modulo di accesso non ha `action`: senza lo script si invia a sé stesso");
+  assert.match(form[0], /onsubmit="return false"/,
+    "il modulo di accesso non ha il freno nell'HTML: senza `auth.js` ricarica la pagina");
+  const reg = LOGIN.match(/<form[^>]*id="register-form"[^>]*>/);
+  assert.ok(reg && /action="#"/.test(reg[0]) && /onsubmit="return false"/.test(reg[0]),
+    "il modulo della segnalazione non ha il freno nell'HTML: senza `auth.js` perde la richiesta");
+});
+
+test("i campi vuoti dell'accesso dicono cosa manca, non restano muti", () => {
+  assert.match(AUTH, /Inserisci l'email della tua pratica\./,
+    "l'accesso non controlla più l'email vuota: il pulsante non risponde e non spiega");
+  assert.match(AUTH, /Inserisci la password\./,
+    "l'accesso non controlla più la password vuota");
+  assert.match(AUTH, /segnalaCampo\(campoEmail/,
+    "l'errore non viene segnalato accanto al campo, ma solo in fondo al modulo");
+});
+
+test("l'area cliente non rimbalza all'infinito fra login e pratica", () => {
+  /* Il giro senza uscita: area → login → area → login. Il contatore in
+     `sessionStorage` è l'unica cosa che lo distingue da un accesso normale,
+     perché l'indirizzo è lo stesso. */
+  assert.match(CASE, /RIMBALZI_KEY/, "case.js non conta più i rimbalzi: il giro può tornare");
+  assert.match(CASE, /function rimbalzoSenzaFine/, "manca il controllo del rimbalzo");
+  assert.match(CASE, /function guardSession\(\) \{\s*if \(rimbalzoSenzaFine\(\)\)/,
+    "`guardSession` non guarda il rimbalzo prima di rimandare al login");
+  assert.match(CASE, /mandaAlLogin\("sessione"\)/,
+    "l'area cliente non dice al login *perché* è tornata lì");
+  assert.match(CASE, /azzeraRimbalzi\(\)/,
+    "il contatore non viene mai azzerato: dopo un accesso riuscito resterebbe sporco");
+});
+
+test("la pagina 404 dice che la pratica non è persa e offre l'accesso", () => {
+  assert.ok(!/Questa pagina non c'è\./.test(PAGINA404),
+    "la 404 è tornata a dire «questa pagina non c'è», che si legge come «hai perso la pratica»");
+  assert.match(PAGINA404, /Non hai perso niente/,
+    "la 404 non rassicura chi è appena stato buttato fuori dalla sua area");
+  assert.match(PAGINA404, /href="login\.html"/,
+    "la 404 non offre il modo di rientrare: la prima cosa che serve a chi è stato sbattuto fuori");
+  /* e non paga il conto di due script che su una pagina d'errore non servono */
+  assert.ok(!/assets\/[0-9a-f]{8}\/js\/api\.js/.test(PAGINA404),
+    "la 404 carica `api.js`: una pagina d'errore non deve avviare sessioni");
+});
+
+test("la barra dei cookie non copre il pulsante del modulo", () => {
+  const CSS = fs.readFileSync(path.join(__dirname, "..", "assets/css/premium.css"), "utf8");
+  const MAIN = fs.readFileSync(path.join(__dirname, "..", "assets/js/main.js"), "utf8");
+  assert.match(MAIN, /has-cookie-bar/,
+    "nessuno segnala che la barra dei cookie è visibile: il CSS non può fare spazio");
+  assert.match(CSS, /html\.has-cookie-bar \.auth-shell/,
+    "manca lo spazio in fondo alla pagina d'accesso quando la barra è visibile");
+});
+
 module.exports = casi;

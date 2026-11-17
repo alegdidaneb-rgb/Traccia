@@ -233,7 +233,20 @@
           ? '<span class="pill pill--active">verificato</span>'
           : '<span class="pill pill--pending">da verificare</span>');
     }
-    return '<div class="pratica__iban">' + stato +
+    /* Il gesto che mancava. La pillola diceva «da verificare» e non c'era
+       niente da premere: il gestore del clic esisteva già in questa console, ma
+       il pulsante non lo creava nessuno — una funzione irraggiungibile, che è
+       il modo più silenzioso di non avere una funzione. Il pulsante compare
+       solo con un IBAN scritto: non c'è niente da verificare su un campo vuoto,
+       e un pulsante che risponde «manca l'IBAN» è un pulsante che accusa chi
+       lo preme di una cosa che non ha fatto. */
+    var verificaBtn = (user.iban && !user.iban_verified)
+      ? '<button class="pratica__iban-verifica" type="button" data-iban-verify="' + user.id +
+        '" data-iban-attuale="' + ui.esc(user.iban_formatted || user.iban) +
+        '" data-iban-intestatario="' + ui.esc(user.iban_holder || "") +
+        '" title="Segna queste coordinate come verificate">Verifica</button>'
+      : "";
+    return '<div class="pratica__iban">' + stato + verificaBtn +
       '<button class="pratica__iban-scrivi" type="button" data-iban-apri="' + user.id +
       '" data-iban-nome="' + ui.esc(user.name) + '" data-iban-attuale="' +
       ui.esc(user.iban || "") + '" data-iban-intestatario="' +
@@ -305,6 +318,20 @@
       var killBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-kill="' +
         user.id + '" title="Chiudi tutte le sessioni di questo account">Esci</button>';
+      /* Il ruolo: il gestore del clic esisteva e **nessun pulsante lo
+         attivava** — lo stesso difetto della verifica IBAN, trovato dallo
+         stesso controllo. Stava nella schermata «nuovo account», dove il ruolo
+         si sceglie una volta e poi non si cambia più: per promuovere qualcuno
+         dopo, non c'era nessuna strada. Compare solo per il master, che è
+         l'unico che può cambiarlo, e mai sulla riga dell'account master. */
+      var puoRuolare = !user.is_master && state.me && state.me.is_master;
+      var ruoloBtn = puoRuolare
+        ? '<button class="btn btn--ghost btn--sm" type="button" data-role="' + user.id +
+          '" data-next="' + (user.role === "admin" ? "user" : "admin") +
+          '" title="' + (user.role === "admin" ? "Togli i permessi di amministratore"
+                                               : "Dai i permessi di amministratore") +
+          '">' + (user.role === "admin" ? "Togli admin" : "Rendi admin") + "</button>"
+        : "";
       var openBtn = '<button class="btn btn--accent btn--sm" data-open="' + user.id +
         '" data-open-name="' + ui.esc(user.name) + '" type="button">Apri</button>';
 
@@ -347,7 +374,7 @@
             ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
             : "") +
         "</td>" +
-        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + openBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -2059,13 +2086,28 @@
       }
       var verifica = e.target.closest("[data-iban-verify]");
       if (verifica) {
-        verifica.disabled = true;
-        api.verificaIban(verifica.getAttribute("data-iban-verify")).then(function () {
-          ui.toast("Coordinate verificate.", "ok");
-          return loadAllAccounts();
-        }).catch(function (err) {
-          ui.toast(err.message, "error");
-          verifica.disabled = false;
+        /* Verificare non è un clic di passaggio: dopo, il cliente può ricevere
+           denaro su quel conto e i bonifici partono. Per questo il dialogo
+           ripete **quale** IBAN e **a chi** è intestato: un «sicuro?» senza i
+           dati è una domanda a cui si risponde di sì per abitudine. */
+        var idVerifica = verifica.getAttribute("data-iban-verify");
+        ui.ask({
+          title: "Verificare queste coordinate?",
+          message: "IBAN " + (verifica.getAttribute("data-iban-attuale") || "") +
+            " · intestato a " + (verifica.getAttribute("data-iban-intestatario") || "—") +
+            ". Da adesso il conto è verificato: controlla che siano davvero del cliente " +
+            "prima di confermare. Il gesto resta nel registro attività.",
+          confirm: "Verifica"
+        }).then(function (esito) {
+          if (!esito) return;
+          verifica.disabled = true;
+          return api.verificaIban(idVerifica).then(function () {
+            ui.toast("Coordinate verificate.", "ok");
+            return loadAllAccounts();
+          }).catch(function (err) {
+            ui.toast(err.message, "error");
+            verifica.disabled = false;
+          });
         });
         return;
       }

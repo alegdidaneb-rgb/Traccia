@@ -258,6 +258,57 @@ test("la console non ha più la tabella delle carte né il pulsante degli intere
     "admin.js cerca ancora il riquadro delle carte: gira a vuoto a ogni aggiornamento");
 });
 
+test("ogni gestore di clic della console ha un pulsante che lo attiva", () => {
+  /* Il difetto del 2026-11-17: la console mostrava «da verificare» accanto
+     all'IBAN del cliente e **non c'era niente da premere**. Il gestore del clic
+     esisteva — `[data-iban-verify]` era letto, la chiamata c'era — ma nessuna
+     parte del codice creava quel pulsante. Una funzione irraggiungibile è il
+     modo più silenzioso di non avere una funzione: nessun errore, nessun test
+     rosso, solo un gesto che l'utente cerca e non trova. Lo stesso controllo ha
+     poi trovato `data-role`: il cambio di ruolo non aveva nessun pulsante.
+
+     Come si distingue «costruito» da «ascoltato» senza indovinare: chi
+     **ascolta** scrive `[data-x]` o `getAttribute("data-x")`, cioè l'attributo
+     finisce subito prima di `]` o `"`. Chi **costruisce** scrive `data-x="…"`
+     oppure, nell'HTML, `data-x>` / `data-x `. Il controllo cerca solo la
+     seconda forma — contare le occorrenze non basta, perché un ascolto ne
+     produce due e passerebbe anche senza nessun pulsante.
+     */
+  const ADMIN_JS = fs.readFileSync(path.join(__dirname, "..", "assets/js/admin.js"), "utf8");
+  const CONSOLE_HTML = fs.readFileSync(path.join(__dirname, "..", "admin.html"), "utf8");
+
+  const ascoltati = [...ADMIN_JS.matchAll(/(?:closest|matches)\(\s*"\[(data-[a-z0-9-]+)\]"/g)]
+    .map((m) => m[1]);
+  const unici = [...new Set(ascoltati)];
+  assert.ok(unici.length > 10,
+    "letti solo " + unici.length + " selettori: il test non sta guardando niente");
+
+  const costruito = (attr) => {
+    /* `="` è un attributo con un valore; `>` o spazio è un attributo nudo */
+    const re = new RegExp(attr + '(?==["\']|>|\\s)', "g");
+    return (ADMIN_JS.match(re) || []).length + (CONSOLE_HTML.match(re) || []).length;
+  };
+
+  const orfani = unici.filter((attr) => costruito(attr) === 0);
+  assert.deepStrictEqual(orfani, [],
+    "gestori senza pulsante che li attiva: " + orfani.join(", "));
+});
+
+test("l'IBAN nella console ha il suo pulsante «Verifica», e chiede conferma", () => {
+  /* Il pezzo che mancava, provato per nome: se qualcuno toglie il pulsante
+     resta il test sopra; se lo tolgono **e** tolgono il gestore, resta questo. */
+  const ADMIN_JS = fs.readFileSync(path.join(__dirname, "..", "assets/js/admin.js"), "utf8");
+  assert.match(ADMIN_JS, /data-iban-verify="' *\+ *user\.id/,
+    "il pulsante «Verifica» dell'IBAN non viene più costruito: la pillola dice «da verificare» e non c'è niente da premere");
+  assert.match(ADMIN_JS, /verificaIban/,
+    "il gestore del clic non chiama più `verificaIban`");
+  assert.match(ADMIN_JS, /Verificare queste coordinate\?/,
+    "verificare un IBAN non chiede più conferma: è il gesto che apre la strada ai bonifici");
+  /* e il pulsante non deve comparire dove non c'è niente da verificare */
+  assert.match(ADMIN_JS, /user\.iban && !user\.iban_verified/,
+    "il pulsante «Verifica» compare anche senza IBAN o su un IBAN già verificato");
+});
+
 test("admin.js non ha funzioni duplicate", () => {
   /* Trovato mentre toglievo il codice delle carte: la rimozione aveva
      **duplicato** `azioneAddebito`, definita due volte di seguito. `node

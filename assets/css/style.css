@@ -3426,3 +3426,14 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
   background: var(--bg);
   box-shadow: 0 0 0 3px var(--accent-wash);
 }
+
+/* Un accesso che fallisce deve guardarsi in faccia. Le due schede in cima alla
+   scheda di accesso sono link che sembrano pulsanti, e il primo campo sta
+   subito sotto: quando l'errore è in fondo al modulo, chi ha sbagliato la
+   password non lo vede. `auth.js` porta qui chi sbaglia — con `scroll-margin`
+   il campo non finisce sotto la testata fissa. */
+.field input[aria-invalid="true"],
+.field[data-campo-errato] {
+  scroll-margin-top: calc(var(--header-h) + 1.5rem);
+  scroll-margin-bottom: 8rem;
+}

@@ -1542,6 +1542,29 @@ html.js-anim .frame[data-reveal].is-visible {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* «Verifica» è un gesto che si fa una volta e che apre la strada ai soldi:
+   si legge come un pulsante, non come una parola sottolineata accanto a
+   «Correggi». Due gesti diversi non devono avere lo stesso peso. */
+.pratica__iban-verifica {
+  background: var(--accent, #0e6b47);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.16s var(--ease-out, ease);
+}
+.pratica__iban-verifica:hover { background: var(--accent-ink, #0b5236); }
+.pratica__iban-verifica:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.pratica__iban-verifica:disabled { opacity: 0.55; cursor: default; }
+
 .pratica__iban-scrivi:hover { color: var(--accent-ink); }
 .pratica__iban-scrivi:focus-visible {
   outline: 2px solid var(--accent);
@@ -1807,6 +1830,22 @@ body.is-admin .panel__head h2 {
   box-shadow: 0 40px 100px -40px rgba(0, 0, 0, 0.7);
 }
 .auth-shell--photo .auth-card__head h1 { letter-spacing: -0.04em; }
+
+/* --------------------------------------------------------------------------
+   La barra dei cookie non deve coprire il pulsante del modulo
+   --------------------------------------------------------------------------
+   Su un telefono la barra sta in basso, da bordo a bordo, e sopra il pulsante
+   che chiude il modulo: chi compila sei campi arriva in fondo e non trova
+   «Invia richiesta», perché c'è il consenso ai cookie. Succedeva solo lì, e
+   solo a chi non aveva ancora scelto — cioè a chi arriva per la prima volta,
+   che è esattamente la persona che deve poter premere quel pulsante.
+
+   `main.js` mette `has-cookie-bar` sull'elemento radice quando la barra è
+   visibile. Qui la pagina si prende in fondo lo spazio che le serve: il
+   pulsante si può ancora toccare, e la barra resta dov'è.
+   -------------------------------------------------------------------------- */
+html.has-cookie-bar .auth-shell { padding-bottom: calc(clamp(2rem, 5vw, 4rem) + 12rem); }
+html.has-cookie-bar .wa-fab { bottom: 12rem; }
 
 /* --------------------------------------------------------------------------
    27. Le cinque fasi: rail verticale con linea che si riempie allo scroll
