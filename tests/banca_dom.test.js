@@ -258,6 +258,40 @@ test("la console non ha più la tabella delle carte né il pulsante degli intere
     "admin.js cerca ancora il riquadro delle carte: gira a vuoto a ogni aggiornamento");
 });
 
+test("il CSS della carta non è rimasto orfano nel foglio di stile", () => {
+  /* Togliere il markup e lasciare `.card-visual` nel CSS non rompe niente e
+     per questo non si vede — ma è la stessa cosa che lasciare il riquadro:
+     un giorno qualcuno trova uno stile pronto e lo usa, e la carta torna
+     senza che nessuno abbia deciso di riportarla. Selettori e regole se ne
+     vanno insieme al markup. */
+  const CSS = fs.readFileSync(path.join(__dirname, "..", "assets/css/premium.css"), "utf8");
+  assert.ok(!/\.card-visual/.test(CSS), "le regole di `.card-visual` sono tornate in premium.css");
+});
+
+test("i client delle carte e degli interessi non sono più nel JS", () => {
+  /* `api.richiediCarta`, `api.cartaAzione`, `api.maturaInteressi` & co. non
+     avevano più chiamanti, ma restavano una strada per scrivere su `cards` e
+     sugli interessi senza che nessuna schermata la mostrasse. Le funzioni del
+     database restano: quello che si toglie è la porta dal browser. */
+  const API = fs.readFileSync(path.join(__dirname, "..", "assets/js/api.js"), "utf8");
+  ["richiediCarta", "bloccaCarta", "cartaAzione", "maturaInteressi", "accreditaInteressi"]
+    .forEach((client) => {
+      assert.ok(!new RegExp(client + ":\\s*function").test(API),
+        "il client `" + client + "` è tornato in api.js: nessuna schermata lo chiama");
+    });
+});
+
+test("il contatore «Banca» non conta più le carte", () => {
+  /* Il numero era la somma di bonifici, addebiti e carte da attivare. Le carte
+     non hanno più una tabella e nemmeno un pulsante: sommarle è un numero che
+     sale per un lavoro che non esiste. */
+  const ADMIN_JS = fs.readFileSync(path.join(__dirname, "..", "assets/js/admin.js"), "utf8");
+  const somma = ADMIN_JS.match(/conta\(document\.querySelector\("\[data-count-banca\]"\)[\s\S]{0,160}?\);/);
+  assert.ok(somma, "il contatore «Banca» non si trova più: il test va riletto, non cancellato");
+  assert.ok(!/carte_da_attivare/.test(somma[0]),
+    "il contatore «Banca» somma ancora `carte_da_attivare`, che non ha più una coda");
+});
+
 test("admin.js non ha funzioni duplicate", () => {
   /* Trovato mentre toglievo il codice delle carte: la rimozione aveva
      **duplicato** `azioneAddebito`, definita due volte di seguito. `node

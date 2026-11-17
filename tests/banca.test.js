@@ -114,13 +114,27 @@ test("api: ogni chiamata della banca usa una funzione che esiste", () => {
        database perché la usano le prove e la conferma. */
     "banca", "bonifico_prepara", "bonifico_conferma", "bonifico_rinuncia",
     "bonifico_annulla", "mandato_crea", "mandato_revoca",
-    "addebito_contesta", "carta_richiedi", "carta_blocca", "admin_banca",
+    "addebito_contesta", "admin_banca",
     "admin_bonifico_invia", "admin_bonifico_esito", "admin_bonifico_entrata",
-    "admin_addebito_crea", "admin_addebito_esito", "admin_carta_azione",
-    "matricola_interessi", "accredita_interessi"
+    "admin_addebito_crea", "admin_addebito_esito"
   ];
   attese.forEach(function (fn) {
     assert.ok(API.includes('"' + fn + '"'), "api.js non chiama " + fn);
+    assert.ok(MIG.includes("function traccia." + fn + "("), "manca traccia." + fn);
+  });
+});
+
+test("le funzioni delle carte e degli interessi restano nel database", () => {
+  /* Separate dal test sopra apposta. Lato client queste funzioni non si
+     chiamano più: i riquadri «Interessi» e «Carta» sono stati tolti, e con
+     loro i client. Lato database **restano** — `carta_richiedi`,
+     `carta_blocca`, `admin_carta_azione`, `matricola_interessi`,
+     `accredita_interessi` — perché togliere l'interfaccia si annulla in dieci
+     minuti, togliere le carte già emesse no. Questo test è quello che dice che
+     il database non è stato svuotato per sbaglio mentre si toglieva la
+     schermata. */
+  ["carta_richiedi", "carta_blocca", "admin_carta_azione",
+   "matricola_interessi", "accredita_interessi"].forEach(function (fn) {
     assert.ok(MIG.includes("function traccia." + fn + "("), "manca traccia." + fn);
   });
 });
@@ -130,8 +144,11 @@ test("api: i parametri inviati esistono nella firma SQL", () => {
     ["bonifico_crea", ["p_iban", "p_beneficiario", "p_importo", "p_causale", "p_purpose", "p_istantaneo", "p_data"]],
     ["mandato_crea", ["p_creditore", "p_creditore_id", "p_scheme"]],
     ["admin_bonifico_esito", ["p_esito", "p_codice", "p_messaggio"]],
-    ["admin_addebito_esito", ["p_esito"]],
-    ["carta_blocca", ["p_motivo", "p_riattiva"]]
+    ["admin_addebito_esito", ["p_esito"]]
+    /* `carta_blocca` è uscita da qui con il riquadro: nessun client manda più
+       `p_motivo` e `p_riattiva`, e un elenco che li pretendeva avrebbe tenuto
+       in vita una chiamata che nessuno fa. La funzione SQL resta, provata dal
+       test sopra. */
   ];
   coppie.forEach(function (c) {
     c[1].forEach(function (p) {
