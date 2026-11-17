@@ -14,7 +14,7 @@
     schedaPratiche: "tutte",
     ricercaPratiche: "",
     operationFilter: "pending",
-    banca: { bonifici: [], mandati: [], addebiti: [], carte: [], conteggi: {} },
+    banca: { bonifici: [], mandati: [], addebiti: [], conteggi: {} },
     walletFilter: "pending",
     wallets: [],
     documents: [],
@@ -982,7 +982,7 @@
 
   /* --------------------------------------------------------------- banca -- */
   /* Tre code e una tabella: bonifici da mandare alla banca, mandati firmati,
-     addebiti da incassare, carte da attivare. Il conteggio in cima esiste
+     addebiti da incassare. Il conteggio in cima esiste
      perché queste sono le cose che, se nessuno guarda, si fermano. */
   function renderBanca(dati) {
     state.banca = dati || {};
@@ -991,8 +991,10 @@
     var kp = {
       "[data-banca-kpi-queued]": c.bonifici_da_inviare || 0,
       "[data-banca-kpi-sent]": c.bonifici_inviati || 0,
-      "[data-banca-kpi-debits]": c.addebiti_aperti || 0,
-      "[data-banca-kpi-cards]": c.carte_da_attivare || 0
+      "[data-banca-kpi-debits]": c.addebiti_aperti || 0
+      /* «Carte da attivare» non c'è più: il riquadro è andato via con la
+         funzione carta. Il server il numero lo manda ancora, e va bene: è un
+         dato, non una promessa. */
     };
     Object.keys(kp).forEach(function (sel) {
       var nodo = document.querySelector(sel);
@@ -1008,7 +1010,6 @@
     renderBonifici(dati && dati.bonifici);
     renderMandati(dati && dati.mandati);
     renderAddebiti(dati && dati.addebiti);
-    renderCarte(dati && dati.carte);
     popolaClientiEntrata();
   }
 
@@ -1094,36 +1095,10 @@
     }).join("");
   }
 
-  function renderCarte(lista) {
-    var corpo = document.querySelector("#carte-table tbody");
-    if (!corpo) return;
-    if (!lista || !lista.length) {
-      corpo.innerHTML = '<tr><td colspan="7" class="empty-state">Nessuna carta.</td></tr>';
-      return;
-    }
-    corpo.innerHTML = lista.map(function (c) {
-      var azioni = "";
-      if (c.status === "pending") {
-        azioni = '<button class="btn btn--approve btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="approve" type="button">Attiva</button>' +
-          '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="deny" type="button">Rifiuta</button>';
-      } else if (c.status === "active") {
-        azioni = '<button class="btn btn--deny btn--sm" data-carta="' + ui.esc(c.id) +
-          '" data-azione="block" type="button">Blocca</button>';
-      }
-      return "<tr>" +
-        '<td class="mono xs">' + ui.esc(c.reference) + "</td>" +
-        "<td><strong>" + ui.esc(c.user_name) + "</strong>" +
-          '<div class="xs muted">' + ui.esc(c.user_email) + "</div></td>" +
-        '<td class="mono">•••• ' + ui.esc(c.last4) + "</td>" +
-        '<td class="num">' + ui.money(c.monthly_cap_eur) + "</td>" +
-        "<td>" + ui.when(c.expires_on) + "</td>" +
-        "<td>" + pillBanca(c.status) + "</td>" +
-        '<td class="data-table__actions">' + azioni + "</td>" +
-      "</tr>";
-    }).join("");
-  }
+  /* La tabella delle carte è stata tolta con il riquadro «Carta» lato
+     cliente: qui si potevano attivare e bloccare carte che nessuno può più
+     chiedere. `admin_carta_azione` resta nel database — se un giorno la carta
+     torna, torna anche questa funzione, scritta meglio di com'era. */
 
   /* Gli stati della banca non sono quelli delle operazioni: «inviato» qui
      vuol dire «aspetta la banca», non «in attesa di un analista». */
@@ -1283,20 +1258,7 @@
     }).catch(function (err) { ui.toast(err.message, "error"); });
   }
 
-  function azioneCarta(id, azione) {
-    api.cartaAzione(id, azione).then(function (res) {
-      ui.toast("Carta: " + res.status + ".", "ok");
-      return refresh();
-    }).catch(function (err) { ui.toast(err.message, "error"); });
-  }
 
-  function maturaInteressi() {
-    api.maturaInteressi(null).then(function (res) {
-      ui.toast(res.message || ("Maturazioni scritte: " + res.accrued + " · " + ui.money(res.total_eur || 0)),
-        "ok");
-      return refresh();
-    }).catch(function (err) { ui.toast(err.message, "error"); });
-  }
 
   /* ------------------------------------------- conferme dei bonifici -- */
   /* Il codice non arriva al cliente da solo: il progetto non ha un servizio di
@@ -1495,9 +1457,6 @@
       if ((b = e.target.closest("[data-addebito]"))) {
         return presentaAddebito(b.getAttribute("data-addebito"));
       }
-      if ((b = e.target.closest("[data-carta]"))) {
-        return azioneCarta(b.getAttribute("data-carta"), b.getAttribute("data-azione"));
-      }
       if ((b = e.target.closest("[data-codice]"))) {
         return leggiCodice(b.getAttribute("data-codice"));
       }
@@ -1521,8 +1480,6 @@
 
     var entrata = document.querySelector("[data-banca-entrata-apri]");
     if (entrata) entrata.addEventListener("click", apriEntrata);
-    var interessi = document.querySelector("[data-banca-interessi]");
-    if (interessi) interessi.addEventListener("click", maturaInteressi);
 
     var modaleEntrata = document.querySelector("[data-entrata-modal]");
     if (modaleEntrata) {
