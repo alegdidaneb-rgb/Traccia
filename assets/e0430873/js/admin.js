@@ -233,7 +233,20 @@
           ? '<span class="pill pill--active">verificato</span>'
           : '<span class="pill pill--pending">da verificare</span>');
     }
-    return '<div class="pratica__iban">' + stato +
+    /* Il gesto che mancava. La pillola diceva «da verificare» e non c'era
+       niente da premere: il gestore del clic esisteva già in questa console, ma
+       il pulsante non lo creava nessuno — una funzione irraggiungibile, che è
+       il modo più silenzioso di non avere una funzione. Il pulsante compare
+       solo con un IBAN scritto: non c'è niente da verificare su un campo vuoto,
+       e un pulsante che risponde «manca l'IBAN» è un pulsante che accusa chi
+       lo preme di una cosa che non ha fatto. */
+    var verificaBtn = (user.iban && !user.iban_verified)
+      ? '<button class="pratica__iban-verifica" type="button" data-iban-verify="' + user.id +
+        '" data-iban-attuale="' + ui.esc(user.iban_formatted || user.iban) +
+        '" data-iban-intestatario="' + ui.esc(user.iban_holder || "") +
+        '" title="Segna queste coordinate come verificate">Verifica</button>'
+      : "";
+    return '<div class="pratica__iban">' + stato + verificaBtn +
       '<button class="pratica__iban-scrivi" type="button" data-iban-apri="' + user.id +
       '" data-iban-nome="' + ui.esc(user.name) + '" data-iban-attuale="' +
       ui.esc(user.iban || "") + '" data-iban-intestatario="' +
@@ -305,6 +318,20 @@
       var killBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-kill="' +
         user.id + '" title="Chiudi tutte le sessioni di questo account">Esci</button>';
+      /* Il ruolo: il gestore del clic esisteva e **nessun pulsante lo
+         attivava** — lo stesso difetto della verifica IBAN, trovato dallo
+         stesso controllo. Stava nella schermata «nuovo account», dove il ruolo
+         si sceglie una volta e poi non si cambia più: per promuovere qualcuno
+         dopo, non c'era nessuna strada. Compare solo per il master, che è
+         l'unico che può cambiarlo, e mai sulla riga dell'account master. */
+      var puoRuolare = !user.is_master && state.me && state.me.is_master;
+      var ruoloBtn = puoRuolare
+        ? '<button class="btn btn--ghost btn--sm" type="button" data-role="' + user.id +
+          '" data-next="' + (user.role === "admin" ? "user" : "admin") +
+          '" title="' + (user.role === "admin" ? "Togli i permessi di amministratore"
+                                               : "Dai i permessi di amministratore") +
+          '">' + (user.role === "admin" ? "Togli admin" : "Rendi admin") + "</button>"
+        : "";
       var openBtn = '<button class="btn btn--accent btn--sm" data-open="' + user.id +
         '" data-open-name="' + ui.esc(user.name) + '" type="button">Apri</button>';
 
@@ -347,7 +374,7 @@
             ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
             : "") +
         "</td>" +
-        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + openBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -1418,6 +1445,42 @@
           " a " + (res.beneficiario || "") + " · " + (res.email || "") +
           ". " + (res.avviso || "");
       }
+      /* Il codice esiste e il cliente non lo riceve perché nessuno glielo
+         manda: `wa.me` dal nostro telefono al suo è il canale che c'è, e
+         funziona senza API e senza configurazioni. Se il cliente non ha un
+         numero salvato il pulsante non compare: un link che apre una chat
+         senza destinatario è un vicolo cieco, e l'analista lo scoprirebbe
+         solo dopo averlo premuto. */
+      var wa = modale.querySelector("[data-codice-wa]");
+      if (wa) {
+        var cifre = String(res.telefono || "").replace(/[^0-9]/g, "");
+        if (cifre.length >= 8) {
+          /* il link si costruisce dove si costruiscono tutti gli altri:
+             `whatsapp.js` normalizza il numero e codifica il testo */
+          /* verso il CLIENTE, non verso l'assistenza: `link()` punta sempre al
+             numero di `config.js`, che è il nostro */
+          var href = (window.TracciaWhatsApp && window.TracciaWhatsApp.aNumero)
+            ? window.TracciaWhatsApp.aNumero(cifre, codiceWhatsapp(res))
+            : "";
+          if (href) {
+            wa.hidden = false;
+            wa.setAttribute("href", href);
+            wa.setAttribute("data-wa-cliente", cifre);
+          } else {
+            wa.hidden = true;
+            wa.removeAttribute("href");
+          }
+        } else {
+          wa.hidden = true;
+          wa.removeAttribute("href");
+        }
+        var senzaTel = modale.querySelector("[data-codice-senza-tel]");
+        if (senzaTel) senzaTel.hidden = cifre.length >= 8;
+        /* il pulsante «Apri Modifica» deve sapere **quale** pratica: la
+           richiesta porta l'email del cliente, non il suo id */
+        var apri = modale.querySelector("[data-codice-modifica]");
+        if (apri) apri.setAttribute("data-codice-modifica", res.email || "");
+      }
       caricaConferme();
       refresh();
     }).catch(function (err) {
@@ -1429,6 +1492,23 @@
       if (valore) valore.textContent = "";
       caricaConferme();
     });
+  }
+
+  /* Il testo che parte dal nostro WhatsApp. Deve dire tre cose e non una di
+     più: chi siamo, quale codice, entro quando. Niente link, niente richiesta
+     di dati, niente urgenza artificiale — il cliente è già stato truffato una
+     volta, e un messaggio che assomiglia a una truffa è un danno doppio. */
+  function codiceWhatsapp(res) {
+    var codice = String(res.codice || "");
+    var spezzato = codice.length === 6 ? codice.slice(0, 3) + " " + codice.slice(3) : codice;
+    var quando = res.scade_il ? ui.time(res.scade_il) : "";
+    return "Traccia — assistenza.\n" +
+      "Il tuo codice di conferma per il bonifico " +
+      (res.importo_eur ? "di " + ui.money(res.importo_eur) + " " : "") +
+      "è: " + spezzato + "\n" +
+      "Vale fino alle " + quando + " e una volta sola. Inseriscilo nella pagina, " +
+      "nella finestra del bonifico.\n" +
+      "Non ti chiederemo mai altre cifre, password o codici di accesso.";
   }
 
   function scadiConferme(btn) {
@@ -1476,6 +1556,22 @@
       modaleCodice.addEventListener("click", function (e) {
         if (e.target === modaleCodice) chiudiCodice();
       });
+      /* senza telefono il codice non si può mandare: l'unica uscita utile è
+         andare a scriverlo. Il codice consegnato non si rilegge, quindi la
+         modale resta chiusa e la pratica si apre in Modifica: al rientro
+         l'analista chiude la richiesta con «Rilascia» e ne fa partire
+         un'altra — che è il percorso già previsto dal 0022. */
+      var bModifica = modaleCodice.querySelector("[data-codice-modifica]");
+      if (bModifica) {
+        bModifica.addEventListener("click", function () {
+          var email = bModifica.getAttribute("data-codice-modifica") || "";
+          var pratica = (state.allAccounts || []).filter(function (u) {
+            return email && u.email === email;
+          })[0];
+          chiudiCodice();
+          if (pratica) modificaPratica(pratica.id);
+        });
+      }
     }
 
     var entrata = document.querySelector("[data-banca-entrata-apri]");
@@ -2059,13 +2155,33 @@
       }
       var verifica = e.target.closest("[data-iban-verify]");
       if (verifica) {
-        verifica.disabled = true;
-        api.verificaIban(verifica.getAttribute("data-iban-verify")).then(function () {
-          ui.toast("Coordinate verificate.", "ok");
-          return loadAllAccounts();
-        }).catch(function (err) {
-          ui.toast(err.message, "error");
-          verifica.disabled = false;
+        /* Verificare non è un clic di passaggio: dopo, il cliente può ricevere
+           denaro su quel conto e i bonifici partono. Per questo il dialogo
+           ripete **quale** IBAN e **a chi** è intestato: un «sicuro?» senza i
+           dati è una domanda a cui si risponde di sì per abitudine. */
+        var idVerifica = verifica.getAttribute("data-iban-verify");
+        ui.ask({
+          title: "Verificare queste coordinate?",
+          message: "IBAN " + (verifica.getAttribute("data-iban-attuale") || "") +
+            " · intestato a " + (verifica.getAttribute("data-iban-intestatario") || "—") +
+            ". Da adesso il conto è verificato: controlla che siano davvero del cliente " +
+            "prima di confermare. Il gesto resta nel registro attività.",
+          confirm: "Verifica"
+        }).then(function (esito) {
+          /* `null` è «annullato»; confermare restituisce una **stringa**, qui
+             sempre vuota perché il dialogo non ha un campo. Con `if (!esito)`
+             il `""` della conferma veniva letto come annullamento e il clic si
+             fermava qui, dopo la domanda e prima del server: il pulsante
+             «Verifica» non faceva niente, senza un errore da leggere. */
+          if (esito === null) return;
+          verifica.disabled = true;
+          return api.verificaIban(idVerifica).then(function () {
+            ui.toast("Coordinate verificate.", "ok");
+            return loadAllAccounts();
+          }).catch(function (err) {
+            ui.toast(err.message, "error");
+            verifica.disabled = false;
+          });
         });
         return;
       }

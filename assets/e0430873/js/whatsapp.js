@@ -55,8 +55,28 @@
     return "+" + n;
   }
 
-  function link(pratica) {
+  /* `scritto` è il testo che vince su quello configurato. Serve alla console:
+     l'analista manda al cliente un messaggio che contiene il codice di
+     conferma, e quel testo non si può mettere in `config.js` — cambia ogni
+     volta. Il resto del percorso (normalizzazione del numero, `encodeURIComponent`)
+     resta identico: un solo posto costruisce i link di WhatsApp. */
+  /* Un link verso un numero qualsiasi, non solo verso l'assistenza. Serve alla
+     console: l'analista scrive a **un cliente**, non a noi. La normalizzazione
+     è la stessa funzione di prima (`digits`), perché due modi di pulire un
+     numero sono due modi di sbagliarlo.
+     Restituisce "" se il numero non può essere un destinatario: un link che
+     apre una chat senza nessuno è peggio di nessun link. */
+  function aNumero(numero, testo) {
+    var n = digits(numero);
+    if (n.length < 8) return "";
+    return "https://wa.me/" + n + "?text=" + encodeURIComponent(String(testo || ""));
+  }
+
+  function link(pratica, scritto) {
     if (!configured()) return "";
+    if (scritto) {
+      return "https://wa.me/" + numero() + "?text=" + encodeURIComponent(String(scritto));
+    }
     var testo = String(TEXT);
 
     /* Se non c'è un codice pratica si toglie l'intera frase che lo contiene:
@@ -122,6 +142,7 @@
 
   global.TracciaWhatsApp = {
     link: link,
+    aNumero: aNumero,
     numero: numero,
     leggibile: leggibile,
     configured: configured,

@@ -3572,6 +3572,32 @@ body.is-staff-view #sicurezza { display: none !important; }
   font-size: 0.95rem;
   line-height: 1.45;
 }
+/* Da dove arriva il codice, e da dove non arriva. È la frase che mancava: il
+   cliente aspettava una email che il progetto non manda. Sta sopra il campo,
+   in una fascia, perché è un'istruzione da leggere prima di digitare. */
+.bonifico-conferma__canale {
+  margin: 0.9rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface, #faf9f6);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Il motivo per cui «Preleva» è spento. Accanto al pulsante, sempre visibile:
+   spento senza spiegazione è uguale a rotto. */
+.prelievo-motivo {
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid var(--line);
+  background: var(--surface, #faf9f6);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink-soft, #555);
+}
+
 #bon-codice {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: 1.35rem;
