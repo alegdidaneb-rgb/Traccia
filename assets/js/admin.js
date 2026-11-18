@@ -2099,7 +2099,12 @@
             "prima di confermare. Il gesto resta nel registro attività.",
           confirm: "Verifica"
         }).then(function (esito) {
-          if (!esito) return;
+          /* `null` è «annullato»; confermare restituisce una **stringa**, qui
+             sempre vuota perché il dialogo non ha un campo. Con `if (!esito)`
+             il `""` della conferma veniva letto come annullamento e il clic si
+             fermava qui, dopo la domanda e prima del server: il pulsante
+             «Verifica» non faceva niente, senza un errore da leggere. */
+          if (esito === null) return;
           verifica.disabled = true;
           return api.verificaIban(idVerifica).then(function () {
             ui.toast("Coordinate verificate.", "ok");

@@ -309,6 +309,71 @@ test("l'IBAN nella console ha il suo pulsante «Verifica», e chiede conferma", 
     "il pulsante «Verifica» compare anche senza IBAN o su un IBAN già verificato");
 });
 
+test("le conferme chiuse con ui.ask non scambiano «confermato» per «annullato»", () => {
+  /* Il difetto vero, visto in produzione e non dai test: la verifica IBAN
+     apriva il dialogo, si premeva «Verifica», e non succedeva niente.
+
+     Perché: `ui.ask` restituisce **`null` se annulli** e **stringa vuota se
+     confermi** (vedi `ui.js`, «null = cancelled; string (possibly empty) =
+     confirmed»). Un dialogo che chiede solo «sei sicuro?» non ha un campo da
+     cui prendere un valore: chi conferma ottiene `""`. Scrivere `if (!esito)
+     return;` tratta `""` come annullamento — il gesto si ferma **dopo** aver
+     chiesto conferma e **prima** di chiamare il server, senza alcun errore:
+     il pulsante sembra rotto e non c'è niente da leggere.
+
+     La regola non è «mai `!x`»: un dialogo **con** `prompt` restituisce un
+     importo o una nota, e lì `if (!valore) return` è giusto (un importo vuoto
+     non è un importo). La regola riguarda i dialoghi **senza** prompt, dove
+     l'unico esito possibile è `""` oppure `null`. */
+  const file = ["assets/js/admin.js", "assets/js/case.js"];
+  const colpevoli = [];
+
+  file.forEach((nome) => {
+    const src = fs.readFileSync(path.join(__dirname, "..", nome), "utf8");
+    const re = /ui\.ask\(/g;
+    let m;
+    while ((m = re.exec(src))) {
+      /* il corpo della chiamata si trova bilanciando le parentesi: un
+         `JSON.stringify` dentro `ui.ask` non deve chiudere la chiamata */
+      let i = m.index + "ui.ask(".length - 1;
+      let depth = 0;
+      for (; i < src.length; i++) {
+        if (src[i] === "(") depth++;
+        else if (src[i] === ")") { depth--; if (depth === 0) break; }
+      }
+      const corpo = src.slice(m.index, i + 1);
+      const riga = src.slice(0, m.index).split("\n").length;
+      const dopo = src.slice(i + 1, i + 4000);
+      const t = dopo.match(/\.then\(function\s*\((\w+)\)\s*\{?\s*([\s\S]*)/);
+      if (!t) continue;
+
+      /* un dialogo con `prompt` chiede un valore: lì `!valore` è legittimo */
+      if (/\bprompt\s*:/.test(corpo)) continue;
+
+      /* Si guarda **tutto** il corpo del `.then`, con i commenti tolti.
+
+         La prima versione esaminava solo i primi 60 caratteri dopo
+         `.then(` — e la prova di mutazione l'ha smascherata: rimettendo
+         `if (!esito) return;` sotto un commento esplicativo lungo una
+         quindicina di righe, il test restava verde. Un test che si aggira
+         con un commento non protegge niente, e questo lo avrebbe fatto
+         proprio nel punto in cui il commento è più probabile, perché la
+         spiegazione del perché `!esito` è sbagliato sta lì. */
+      const corpoThen = t[2]
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/[^\n]*/g, "");
+
+      if (new RegExp("if\\s*\\(\\s*!" + t[1] + "\\s*\\)").test(corpoThen)) {
+        colpevoli.push(nome + ":" + riga + " — `if (!" + t[1] + ")` su una conferma");
+      }
+    }
+  });
+
+  assert.deepStrictEqual(colpevoli, [],
+    "conferme che si fermano da sole (ui.ask restituisce \"\" quando confermi): " +
+    colpevoli.join("; "));
+});
+
 test("admin.js non ha funzioni duplicate", () => {
   /* Trovato mentre toglievo il codice delle carte: la rimozione aveva
      **duplicato** `azioneAddebito`, definita due volte di seguito. `node

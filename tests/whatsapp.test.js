@@ -32,7 +32,7 @@ function carica(config, lingua = "it") {
   return { finte, api: fn({ TRACCIA_CONFIG: config }, document) };
 }
 
-const NUMERO = "+15392151268";
+const NUMERO = "+12016211241";
 const api = () => carica({ whatsapp: NUMERO, whatsappText: "Buongiorno. Pratica {pratica}." }).api;
 
 test("whatsapp: il numero configurato è quello in chiaro, con il +", () => {
@@ -44,7 +44,7 @@ test("whatsapp: il numero configurato è quello in chiaro, con il +", () => {
 
 test("whatsapp: il link porta solo cifre, prefisso compreso", () => {
   const link = api().link("TRC-2026-0042");
-  assert.ok(link.startsWith("https://wa.me/15392151268?"), "link inatteso: " + link);
+  assert.ok(link.startsWith("https://wa.me/12016211241?"), "link inatteso: " + link);
   assert.ok(!/[+\s()]/.test(link.split("?")[0]), "nel percorso del link è rimasto un separatore");
 });
 
@@ -56,7 +56,7 @@ test("whatsapp: il link normale non deve rompersi se il numero è vuoto", () => 
 });
 
 test("whatsapp: la parte leggibile è il numero com'è scritto, non una scommessa", () => {
-  assert.strictEqual(api().leggibile(), "+1 539 215 1268");
+  assert.strictEqual(api().leggibile(), "+1 201 621 1241");
 });
 
 test("whatsapp: senza codice pratica la frase vuota non resta nel messaggio", () => {
