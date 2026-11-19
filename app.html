@@ -3,7 +3,7 @@
 <head>
 <!-- shell:misurazione -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PCHTN7DM');</script>
-  <script src="assets/e162bd75/js/conversione.js" defer></script>
+  <script src="assets/4d02790b/js/conversione.js" defer></script>
   <!-- /shell:misurazione -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,18 +20,18 @@
   <meta property="og:title" content="La mia pratica — Traccia">
   <meta property="og:description" content="Segui lo stato della tua analisi, carica i documenti e consulta la cronologia degli aggiornamenti.">
   <meta property="og:url" content="https://traccia.it.com/app.html">
-  <meta property="og:image" content="https://traccia.it.com/assets/e162bd75/img/og-cover.jpg">
+  <meta property="og:image" content="https://traccia.it.com/assets/4d02790b/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Traccia — indagini forensi su truffe finanziarie e criptovalute">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0a0d'/><text x='50' y='71' font-size='58' font-family='Georgia,serif' font-style='italic' fill='%23c9f26b' text-anchor='middle'>T</text></svg>">
-  <link rel="apple-touch-icon" href="assets/e162bd75/img/apple-touch-icon.png">
-  <link rel="preload" href="assets/e162bd75/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/e162bd75/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/e162bd75/css/style.css">
-  <link rel="stylesheet" href="assets/e162bd75/css/premium.css">
+  <link rel="apple-touch-icon" href="assets/4d02790b/img/apple-touch-icon.png">
+  <link rel="preload" href="assets/4d02790b/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/4d02790b/fonts/display-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/4d02790b/css/style.css">
+  <link rel="stylesheet" href="assets/4d02790b/css/premium.css">
   <!-- applica la classe prima del primo paint: evita il lampo di contenuto
        a piena opacità prima che parta l'animazione d'ingresso -->
   <script>
@@ -43,9 +43,9 @@
     })();
   </script>
 
-  <script src="assets/e162bd75/js/config.js" defer></script>
-  <script src="assets/e162bd75/js/api.js" defer></script>
-  <script src="assets/e162bd75/js/session.js" defer></script>
+  <script src="assets/4d02790b/js/config.js" defer></script>
+  <script src="assets/4d02790b/js/api.js" defer></script>
+  <script src="assets/4d02790b/js/session.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -319,7 +319,8 @@
               <button class="btn btn--accent btn--sm" type="button" data-move="deposit" data-staff-hide>
                 Versa
               </button>
-              <button class="btn btn--ghost btn--sm" type="button" data-move="withdrawal" data-staff-hide>
+              <button class="btn btn--ghost btn--sm" type="button" data-move="withdrawal" data-staff-hide
+                      data-prelievo>
                 Preleva
               </button>
               <button class="btn btn--ghost btn--sm" type="button" data-bonifico-apri data-staff-hide>
@@ -327,6 +328,10 @@
               </button>
             </div>
           </div>
+          <!-- Il motivo per cui «Preleva» è spento, accanto al pulsante e non
+               in un avviso che scompare: un pulsante spento senza spiegazione
+               è indistinguibile da un pulsante rotto. -->
+          <p class="prelievo-motivo" data-prelievo-motivo hidden></p>
           <div class="pnl__body">
 
             <div class="conto-grid">
@@ -730,11 +735,31 @@
       <div data-bonifico-conferma hidden>
         <p class="small muted">
           Il bonifico non è ancora disposto. Un nostro analista ti comunica il
-          codice di sei cifre: inseriscilo qui sotto per confermarlo. Le cifre
+          codice di sei cifre e lo inserisci qui sotto per confermarlo. Le cifre
           valgono <span data-conferma-scadenza>10</span> minuti e una volta sola.
-          La richiesta risulta per <strong data-conferma-email></strong>.
+        </p>
+        <!-- Il cliente deve sapere da dove arriva il codice, e dove *non*
+             arriva. Prima questa riga diceva «la richiesta risulta per
+             l'indirizzo tale», e chi lo leggeva aspettava una email: il
+             progetto non ha un servizio di posta, quindi quella email non è
+             mai partita. Un cliente con 420.000 € in attesa ha rinunciato dopo
+             sei minuti con il codice già pronto per lui. -->
+        <p class="bonifico-conferma__canale" data-conferma-canale>
+          Il codice non arriva per email: te lo comunica un analista su
+          <strong>WhatsApp</strong> o per telefono. Se dopo qualche minuto non
+          l'hai ricevuto, scrivi tu all'assistenza qui sotto — il codice resta
+          valido fino alla scadenza.
+        </p>
+        <p class="mt-2">
+          <a class="wa wa--outline" data-wa-assistenza href="mailto:assistenza@traccia.it.com"
+             target="_blank" rel="noopener">Chiedi il codice all'assistenza</a>
         </p>
         <p class="bonifico-conferma__riepilogo" data-conferma-riepilogo></p>
+        <!-- Il nodo resta perché `case.js` lo cerca in un ciclo, ma non dice
+             più «la richiesta risulta per <indirizzo>»: quella frase faceva
+             aspettare una email che il progetto non spedisce. Ora porta il
+             nome di chi sta confermando, che è un'informazione vera. -->
+        <p class="xs muted mt-2" data-conferma-email></p>
         <form class="form mt-3" data-conferma-form novalidate>
           <div class="field">
             <label for="bon-codice">Codice di conferma</label>
@@ -742,9 +767,9 @@
                    autocomplete="one-time-code" maxlength="6" placeholder="000000"
                    pattern="[0-9]{6}" data-conferma-codice required>
             <span class="field__hint">
-              Sei cifre. Se non lo ricevi entro qualche minuto, scrivi a
-              assistenza@traccia.it.com: ne emettiamo un altro. Nessuno te lo
-              chiederà mai per telefono o per messaggio.
+              Sei cifre. Il codice lo comunica un analista: non arriva per email
+              e nessuno te lo chiederà mai al telefono fingendo di essere la
+              banca. Se serve un altro codice, lo emettiamo.
             </span>
           </div>
           <p class="form__note" data-conferma-error hidden></p>
@@ -1016,19 +1041,19 @@
 </div>
 
 
-  <script src="assets/e162bd75/js/ui.js" defer></script>
-  <script src="assets/e162bd75/js/contract.js" defer></script>
-  <script src="assets/e162bd75/js/case.js" defer></script>
-  <script src="assets/e162bd75/js/main.js" defer></script>
-  <script src="assets/e162bd75/js/market.js" defer></script>
-  <script src="assets/e162bd75/js/premium.js" defer></script>
-  <!-- WhatsApp: il numero sta in assets/e162bd75/js/config.js; senza numero il
+  <script src="assets/4d02790b/js/ui.js" defer></script>
+  <script src="assets/4d02790b/js/contract.js" defer></script>
+  <script src="assets/4d02790b/js/case.js" defer></script>
+  <script src="assets/4d02790b/js/main.js" defer></script>
+  <script src="assets/4d02790b/js/market.js" defer></script>
+  <script src="assets/4d02790b/js/premium.js" defer></script>
+  <!-- WhatsApp: il numero sta in assets/4d02790b/js/config.js; senza numero il
        pulsante non compare affatto -->
   <a class="wa wa-fab" data-whatsapp href="#" target="_blank" rel="noopener"
      aria-label="Scrivici su WhatsApp" hidden>
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4z"/><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.4 5 5.2-1.4A9.8 9.8 0 1 0 12 2.2zm0 17.8c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3A8 8 0 1 1 12 20z"/></svg>
     <span class="wa-fab__label">Scrivici su WhatsApp</span>
   </a>
-  <script src="assets/e162bd75/js/whatsapp.js" defer></script>
+  <script src="assets/4d02790b/js/whatsapp.js" defer></script>
 </body>
 </html>

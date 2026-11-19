@@ -1036,6 +1036,23 @@
         "all'assistenza e le carichiamo noi.";
     }
 
+    /* Il pulsante dice cosa succederà **prima** che il cliente lo prema.
+       Con l'IBAN mancante o non verificato, «Preleva» apriva un avviso che
+       spariva dopo tre secondi: chi non lo legge conclude che il pulsante è
+       rotto. Qui il motivo sta accanto al pulsante e resta. */
+    var preleva = document.querySelector('[data-move="withdrawal"]');
+    if (preleva) {
+      var perche = coordinateMancanti();
+      preleva.disabled = !!perche;
+      preleva.title = perche || "Preleva sul conto che hai indicato";
+      preleva.toggleAttribute("aria-disabled", !!perche);
+      var motivo = document.querySelector("[data-prelievo-motivo]");
+      if (motivo) {
+        motivo.hidden = !perche;
+        motivo.textContent = perche || "";
+      }
+    }
+
     var lista = document.querySelector("[data-movimenti]");
     if (!lista) return;
     if (!dati.movimenti || !dati.movimenti.length) {
@@ -1091,24 +1108,41 @@
      erano due percorsi da tenere allineati, e il prelievo vecchio non passava
      dai canali SEPA (niente IBAN del beneficiario, niente esito della banca).
      Ora c'è un modo solo, e la differenza sta nel beneficiario. */
-  function apriPrelievo() {
+  /* Prima di aprire qualunque cosa: il cliente ha le coordinate per ricevere?
+     Due clienti non le hanno, e scoprirlo **dopo** aver compilato importo e
+     beneficiario è il modo di perdere la voglia. Qui si dice subito, con il
+     cognome del problema, e si porta il campo in vista. */
+  function coordinateMancanti() {
     var dati = contoState.dati || {};
     if (!dati.iban) {
-      if (window.ui && ui.toast) {
-        ui.toast("Prima indica l'IBAN del tuo conto: è lì che vanno i prelievi.", "error");
-      }
-      var form = document.querySelector("[data-iban-form]");
-      if (form) {
-        form.scrollIntoView({ behavior: "smooth", block: "center" });
-        var campo = form.querySelector("#iban-value");
-        if (campo) campo.focus();
-      }
-      return;
+      return "Per prelevare serve un conto su cui mandare il denaro: scrivi il tuo IBAN qui " +
+        "sotto (Conto → Coordinate) e salvalo. Poi torna su «Preleva».";
     }
     if (!dati.iban_verified) {
-      if (window.ui && ui.toast) {
-        ui.toast("Le coordinate sono salvate ma non ancora verificate: il prelievo si dispone dopo la verifica dell'analista.", "error");
-      }
+      return "Le coordinate ci sono, ma un analista non le ha ancora verificate: il prelievo " +
+        "si apre appena le conferma. Se hai fretta, scrivi all'assistenza.";
+    }
+    return null;
+  }
+
+  function portaAlCampoIban() {
+    var form = document.querySelector("[data-iban-form]");
+    if (!form) return;
+    try {
+      form.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (e) {
+      try { form.scrollIntoView(); } catch (e2) {}
+    }
+    var campo = form.querySelector("#iban-value");
+    if (campo) campo.focus();
+  }
+
+  function apriPrelievo() {
+    var dati = contoState.dati || {};
+    var manca = coordinateMancanti();
+    if (manca) {
+      if (window.ui && ui.toast) ui.toast(manca, "error");
+      if (!dati.iban) portaAlCampoIban();
       return;
     }
     apriBonifico();
@@ -1602,8 +1636,14 @@
         ui.esc(res.beneficiario || "") +
         "<br><span class=\"small muted\">" + ui.esc(res.iban || "") + "</span>";
     });
+    /* Il nodo si chiama ancora `data-conferma-email`, ma non promette più un
+       invio: qui ci va **chi** sta confermando, letto dalla sessione. Prima
+       questo posto diceva «la richiesta risulta per <indirizzo>», e il cliente
+       aspettava una email che il progetto non manda — con 420.000 € impegnati
+       e un codice già pronto per lui. */
+    var chi = (window.api && api.cachedUser && api.cachedUser()) || {};
     arrayEach("[data-conferma-email]", function (n) {
-      n.textContent = res.email || "il tuo indirizzo";
+      n.textContent = chi.name ? "Stai confermando come " + chi.name + "." : "";
     });
     arrayEach("[data-conferma-scadenza]", function (n) {
       n.textContent = res.minuti || 10;

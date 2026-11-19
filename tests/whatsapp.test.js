@@ -127,4 +127,44 @@ test("whatsapp: ogni lingua servita ha il suo messaggio configurato", () => {
   });
 });
 
+/* ---------------------------------------------------------------------------
+ * aNumero: scrivere *a un cliente*, non all'assistenza
+ * ---------------------------------------------------------------------------
+ * Serve alla console per mandare il codice di conferma del bonifico. Il caso
+ * vero, dal database: un cliente ha chiesto un prelievo di 420.000 €, l'analista
+ * ha consegnato il codice, e il cliente ha annullato dopo sei minuti — perché
+ * nessuno glielo aveva mandato e la pagina gli faceva aspettare una email che
+ * il progetto non spedisce.
+ */
+test("whatsapp: un link verso il cliente porta solo cifre ed è diverso dal nostro numero", () => {
+  const api = api_();
+  const link = api.aNumero("+39 328 204 1801", "Il tuo codice è 123 456");
+  assert.ok(link.startsWith("https://wa.me/393282041801?"), "link inatteso: " + link);
+  assert.ok(!/[+\s()]/.test(link.split("?")[0]),
+    "nel percorso del link è rimasto un separatore: " + link.split("?")[0]);
+  assert.ok(decodeURIComponent(link.split("text=")[1]).includes("123 456"),
+    "il codice non è arrivato nel testo del messaggio");
+});
+
+test("whatsapp: senza un numero valido non si costruisce nessun link", () => {
+  /* un link che apre una chat con destinatario vuoto è peggio di nessun link:
+     l'analista lo preme, non succede niente, e il codice intanto scade */
+  const api = api_();
+  assert.strictEqual(api.aNumero("", "ciao"), "");
+  assert.strictEqual(api.aNumero("123", "ciao"), "");
+  assert.strictEqual(api.aNumero(null, "ciao"), "");
+});
+
+test("whatsapp: il link al cliente non usa il numero dell'assistenza", () => {
+  const api = api_();
+  const cliente = "393282041801";
+  const link = api.aNumero(cliente, "codice");
+  assert.ok(!link.startsWith("https://wa.me/" + api.numero()),
+    "il messaggio al cliente partirebbe verso il nostro stesso numero");
+});
+
+function api_() {
+  return carica({ whatsapp: "+12016211241", whatsappText: "Buongiorno." }).api;
+}
+
 module.exports = casi;

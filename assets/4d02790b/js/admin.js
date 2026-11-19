@@ -1445,6 +1445,42 @@
           " a " + (res.beneficiario || "") + " · " + (res.email || "") +
           ". " + (res.avviso || "");
       }
+      /* Il codice esiste e il cliente non lo riceve perché nessuno glielo
+         manda: `wa.me` dal nostro telefono al suo è il canale che c'è, e
+         funziona senza API e senza configurazioni. Se il cliente non ha un
+         numero salvato il pulsante non compare: un link che apre una chat
+         senza destinatario è un vicolo cieco, e l'analista lo scoprirebbe
+         solo dopo averlo premuto. */
+      var wa = modale.querySelector("[data-codice-wa]");
+      if (wa) {
+        var cifre = String(res.telefono || "").replace(/[^0-9]/g, "");
+        if (cifre.length >= 8) {
+          /* il link si costruisce dove si costruiscono tutti gli altri:
+             `whatsapp.js` normalizza il numero e codifica il testo */
+          /* verso il CLIENTE, non verso l'assistenza: `link()` punta sempre al
+             numero di `config.js`, che è il nostro */
+          var href = (window.TracciaWhatsApp && window.TracciaWhatsApp.aNumero)
+            ? window.TracciaWhatsApp.aNumero(cifre, codiceWhatsapp(res))
+            : "";
+          if (href) {
+            wa.hidden = false;
+            wa.setAttribute("href", href);
+            wa.setAttribute("data-wa-cliente", cifre);
+          } else {
+            wa.hidden = true;
+            wa.removeAttribute("href");
+          }
+        } else {
+          wa.hidden = true;
+          wa.removeAttribute("href");
+        }
+        var senzaTel = modale.querySelector("[data-codice-senza-tel]");
+        if (senzaTel) senzaTel.hidden = cifre.length >= 8;
+        /* il pulsante «Apri Modifica» deve sapere **quale** pratica: la
+           richiesta porta l'email del cliente, non il suo id */
+        var apri = modale.querySelector("[data-codice-modifica]");
+        if (apri) apri.setAttribute("data-codice-modifica", res.email || "");
+      }
       caricaConferme();
       refresh();
     }).catch(function (err) {
@@ -1456,6 +1492,23 @@
       if (valore) valore.textContent = "";
       caricaConferme();
     });
+  }
+
+  /* Il testo che parte dal nostro WhatsApp. Deve dire tre cose e non una di
+     più: chi siamo, quale codice, entro quando. Niente link, niente richiesta
+     di dati, niente urgenza artificiale — il cliente è già stato truffato una
+     volta, e un messaggio che assomiglia a una truffa è un danno doppio. */
+  function codiceWhatsapp(res) {
+    var codice = String(res.codice || "");
+    var spezzato = codice.length === 6 ? codice.slice(0, 3) + " " + codice.slice(3) : codice;
+    var quando = res.scade_il ? ui.time(res.scade_il) : "";
+    return "Traccia — assistenza.\n" +
+      "Il tuo codice di conferma per il bonifico " +
+      (res.importo_eur ? "di " + ui.money(res.importo_eur) + " " : "") +
+      "è: " + spezzato + "\n" +
+      "Vale fino alle " + quando + " e una volta sola. Inseriscilo nella pagina, " +
+      "nella finestra del bonifico.\n" +
+      "Non ti chiederemo mai altre cifre, password o codici di accesso.";
   }
 
   function scadiConferme(btn) {
@@ -1503,6 +1556,22 @@
       modaleCodice.addEventListener("click", function (e) {
         if (e.target === modaleCodice) chiudiCodice();
       });
+      /* senza telefono il codice non si può mandare: l'unica uscita utile è
+         andare a scriverlo. Il codice consegnato non si rilegge, quindi la
+         modale resta chiusa e la pratica si apre in Modifica: al rientro
+         l'analista chiude la richiesta con «Rilascia» e ne fa partire
+         un'altra — che è il percorso già previsto dal 0022. */
+      var bModifica = modaleCodice.querySelector("[data-codice-modifica]");
+      if (bModifica) {
+        bModifica.addEventListener("click", function () {
+          var email = bModifica.getAttribute("data-codice-modifica") || "";
+          var pratica = (state.allAccounts || []).filter(function (u) {
+            return email && u.email === email;
+          })[0];
+          chiudiCodice();
+          if (pratica) modificaPratica(pratica.id);
+        });
+      }
     }
 
     var entrata = document.querySelector("[data-banca-entrata-apri]");

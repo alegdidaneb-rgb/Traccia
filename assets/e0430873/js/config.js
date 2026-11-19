@@ -27,7 +27,7 @@ window.TRACCIA_CONFIG = {
   /* Numero WhatsApp dell'assistenza, in formato internazionale senza spazi
      né "+" (es. 393331234567). Lascialo vuoto per nascondere ovunque il
      pulsante: nessun collegamento rotto finché il numero non è attivo. */
-  whatsapp: "+15392151268",
+  whatsapp: "+12016211241",
 
   /* Messaggio già scritto nella chat. `{pratica}` viene sostituito con il
      codice della pratica quando il cliente ha una sessione aperta. */
