@@ -2046,7 +2046,16 @@
     lastCredentials = null;
   }
 
-  document.querySelector("[data-new-account]").addEventListener("click", openNewAccount);
+  /* Ogni pulsante «+ Nuova pratica», non il primo soltanto.
+     `querySelector` restituisce il primo elemento del documento, e in
+     `admin.html` i pulsanti sono due: uno sopra «Richieste» e uno sopra
+     «Pratiche». Il secondo è stato aggiunto dopo — «perché è qui che si vede
+     quante pratiche ci sono» — e il collegamento è rimasto singolo: quel
+     pulsante non aveva nessun gestore, e premerlo non faceva nulla senza
+     nemmeno un errore in console. È la segnalazione del 2026-11-23. */
+  document.querySelectorAll("[data-new-account]").forEach(function (pulsante) {
+    pulsante.addEventListener("click", openNewAccount);
+  });
   document.querySelector("[data-na-cancel]").addEventListener("click", closeNewAccount);
   document.querySelector("[data-na-close]").addEventListener("click", function () {
     closeNewAccount();
