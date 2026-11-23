@@ -3956,11 +3956,21 @@ body.is-staff-view #sicurezza { display: none !important; }
 }
 .lang__opt {
   display: inline-flex; align-items: center; justify-content: center;
-  /* 30x30 e non 34x30: quattro pastiglie, 16px in meno. Le sigle sono di due
-     lettere, e 30px è ancora un bersaglio da dito (sotto i 44 dello standard,
-     ma la pillola è alta 30 e il tocco sbaglia di rado: il numero viene dalla
-     riga, non dal dito). */
-  min-width: 30px; height: 30px; padding: 0 6px;
+  /* 44 è la misura del dito, non un numero tondo: sotto, il pollice prende la
+     pastiglia accanto, e quella accanto **cambia lingua** — cioè ricarica la
+     pagina in tedesco o in inglese. È il secondo sintomo della segnalazione
+     del 2026-10-31 («clicco e si ricarica su altre pagine»): su un telefono
+     le quattro sigle stanno in 130px di barra, e il dito che mira
+     all'hamburger prende la «ES».
+
+     Alto 44 e non 44×44: la **larghezza** resta 30 perché quattro pastiglie
+     da 44 sarebbero 176px, e a 360px di schermo non ci stanno con il marchio
+     e l'hamburger. L'area che riceve il tocco però è sempre 44 di altezza,
+     che è la dimensione che conta quando i bersagli sono in fila
+     orizzontale. Il `min-height` non allarga la barra: l'altezza della riga
+     la decide `.nav`, che è alta 72 e queste pastiglie ci stanno dentro con
+     lo spazio attorno. */
+  min-width: 30px; height: 44px; padding: 0 6px;
   border-radius: 999px;
   font-size: 11.5px; font-weight: 650; letter-spacing: .04em;
   line-height: 1;
@@ -4039,8 +4049,14 @@ body.is-staff-view #sicurezza { display: none !important; }
     width: auto;
   }
   .lang { width: auto; }
-  .lang__opt { min-width: 30px; height: 28px; padding: 0 6px; font-size: 11px; }
-  .nav__toggle { margin-inline-start: 0; }
+  /* Altezza 44 anche qui, e per la stessa ragione della regola principale:
+     è l'altezza che riceve il dito. La larghezza resta 30 — quattro
+     pastiglie larghe 44 sarebbero 176px a una barra che ne ha 320. */
+  .lang__opt { min-width: 30px; height: 44px; padding: 0 6px; font-size: 11px; }
+  /* 12px veri fra il selettore e l'hamburger: due bersagli affiancati sono
+     giusti, due bersagli **incollati** no, perché il bordo di uno è il bordo
+     dell'altro e chi sbaglia di 2px cambia lingua invece di aprire il menu. */
+  .nav__toggle { margin-inline-start: 12px; }
 }
 
 @media (max-width: 480px) {
@@ -4050,7 +4066,7 @@ body.is-staff-view #sicurezza { display: none !important; }
   .brand { font-size: 1.05rem; gap: 0.45rem; }
   .brand__mark { width: 26px; height: 26px; font-size: 0.85rem; }
   .lang { gap: 0; padding: 2px; }
-  .lang__opt { min-width: 26px; height: 26px; padding: 0 4px; font-size: 10.5px; }
+  .lang__opt { min-width: 26px; height: 44px; padding: 0 4px; font-size: 10.5px; }
 }
 
 @media (max-width: 480px) { .kpi { grid-template-columns: 1fr; } }

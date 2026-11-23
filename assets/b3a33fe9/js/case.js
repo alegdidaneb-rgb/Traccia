@@ -1636,8 +1636,14 @@
         ui.esc(res.beneficiario || "") +
         "<br><span class=\"small muted\">" + ui.esc(res.iban || "") + "</span>";
     });
+    /* Il nodo si chiama ancora `data-conferma-email`, ma non promette più un
+       invio: qui ci va **chi** sta confermando, letto dalla sessione. Prima
+       questo posto diceva «la richiesta risulta per <indirizzo>», e il cliente
+       aspettava una email che il progetto non manda — con 420.000 € impegnati
+       e un codice già pronto per lui. */
+    var chi = (window.api && api.cachedUser && api.cachedUser()) || {};
     arrayEach("[data-conferma-email]", function (n) {
-      n.textContent = res.email || "il tuo indirizzo";
+      n.textContent = chi.name ? "Stai confermando come " + chi.name + "." : "";
     });
     arrayEach("[data-conferma-scadenza]", function (n) {
       n.textContent = res.minuti || 10;
