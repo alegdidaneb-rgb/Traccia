@@ -81,6 +81,19 @@ html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 1rem);
+  /* La rete sotto il filo. Su un telefono un solo elemento più largo dello
+     schermo non «scorre»: la pagina si sposta a metà, la parte destra finisce
+     fuori dalla finestra e quella che resta è un'altra parte del documento —
+     con i tocchi che cadono dove il dito non guarda. Il caso vero è stato
+     `settings-table` a 620px dentro un 390 (vedi la regola in fondo), ma la
+     rete resta: costa zero e impedisce a un elemento futuro di portarsi via
+     metà pagina.
+     `clip` e non `hidden` dove il browser lo supporta: `overflow-x: hidden`
+     crea un contenitore di scorrimento e rompe `position: sticky` sui figli,
+     che qui è la testata. `clip` no. La seconda dichiarazione è il ripiego
+     per i browser che `clip` non lo conoscono. */
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -609,6 +622,16 @@ textarea:focus-visible {
     transform: translateY(-8px);
     opacity: 0;
     visibility: hidden;
+    /* `pointer-events: none` non si eredita come `visibility`: spegne il
+       pannello **anche** se un figlio prova a riaccendersi. La segnalazione
+       dell'utente del 2026-10-31 — «la metà alta non è cliccabile e ogni
+       clic porta su un'altra pagina» — è nata proprio così: un figlio,
+       `.nav__links`, dichiarava `visibility: visible` senza condizione, e
+       `visibility` si eredita dall'antenato che la dichiara, quindi
+       riaccendeva i link dentro un pannello chiuso. Il pannello resta
+       trasparente ma cliccabile, copre tutto lo schermo da 72px in giù, e
+       il dito che cade lì preme una voce di menu. */
+    pointer-events: none;
     transition: opacity 0.2s var(--ease), transform 0.2s var(--ease),
       visibility 0.2s;
   }
@@ -616,6 +639,7 @@ textarea:focus-visible {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    pointer-events: auto;
   }
 
   .nav__links {
@@ -628,7 +652,14 @@ textarea:focus-visible {
     position: static;
     transform: none;
     opacity: 1;
-    visibility: visible;
+    /* **Niente `visibility` qui.** Da desktop la lista ha bisogno di tornare
+       visibile (il `display: contents` la fa sparire dalla barra), ma su
+       mobile è dentro il pannello, e `visibility` si eredita dall'antenato
+       più vicino che la dichiara: un `visible` scritto qui **riaccende** i
+       link dentro un pannello chiuso. Il risultato è la pagina che non si
+       tocca: il pannello, trasparente, copre lo schermo e le voci si
+       prendono i clic. La visibilità la decide `.nav__panel.is-open`, che è
+       il solo elemento che deve saperlo. */
     background: none;
     border: 0;
     box-shadow: none;
@@ -2407,7 +2438,14 @@ html.no-anim [data-reveal] { opacity: 1 !important; animation: none !important; 
 
 /* compact wallet list on small screens */
 @media (max-width: 900px) {
-  .settings-table { min-width: 620px; }
+  /* Solo la **tabella** della console ha bisogno di 620px per non spezzare
+     gli importi in tre righe. Nel pannello del cliente `settings-table` è un
+     `<div>` — un elenco di righe, non una tabella — e questa regola lo
+     allargava a 620px dentro uno schermo da 390: 230px fuori dalla finestra,
+     senza nessun contenitore che scorresse. Era il modo più diretto di
+     ottenere una pagina larga il doppio del telefono, e con lei la metà
+     bassa irraggiungibile. Il `table` davanti tiene la regola dove serve. */
+  table.settings-table { min-width: 620px; }
 }
 
 /* desktop: la barra resta in cima mentre si scorrono le tabelle. Non ha
