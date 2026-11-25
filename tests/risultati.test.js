@@ -531,4 +531,45 @@ test("il numero vero è dichiarato VERO, i segnaposto no", () => {
     "i segnaposto devono restare dichiarati: se ne trovano " + segnaposti.length);
 });
 
+/* ==================================== i contatori hanno già il loro numero == */
+
+test("nessun contatore parte da zero nel sorgente", () => {
+  /* Trovato in produzione il 2026-11-25, su `casi.html`, in tutte e quattro le
+     lingue:
+
+         <span data-count="31" data-suffix=" %">0</span>
+
+     Il numero c'era nell'attributo, ma il testo era «0»: se lo script non
+     carica — rete lenta, JS bloccato, un errore prima di `premium.js` — il
+     visitatore legge «Chiuse in fase 2, senza costi: 0 %», che è una
+     dichiarazione, non un caricamento in corso. E il contatore comunque
+     *anima* a partire da zero, quindi il numero scritto nel sorgente è
+     l'unica cosa che si vede quando l'animazione non parte.
+
+     La regola vale per ogni contatore: il testo deve essere già il valore
+     finale. `premium.js` lo riscrive comunque con `settle()` quando la pagina
+     è ferma, ma allora non serve a niente. */
+  const sbagliati = [];
+  for (const file of fs.readdirSync(RADICE).filter((f) => f.endsWith(".html")).concat(
+       TRADOTTE.flatMap((l) => (fs.existsSync(path.join(RADICE, l))
+         ? fs.readdirSync(path.join(RADICE, l)).filter((f) => f.endsWith(".html"))
+             .map((f) => `${l}/${f}`)
+         : [])))) {
+    const testo = R(file);
+    for (const m of testo.matchAll(
+      /<span[^>]*data-count="([\d.]+)"[^>]*>([^<]*)<\/span>/g)) {
+      const scritto = m[2].trim();
+      /* il testo deve contenere il numero dell'attributo */
+      const valore = m[1];
+      const numero = scritto.replace(/[^\d.,]/g, "").replace(",", ".");
+      if (!numero || parseFloat(numero) !== parseFloat(valore)) {
+        sbagliati.push(`${file}: data-count="${valore}" ma il testo dice «${scritto}»`);
+      }
+    }
+  }
+  assert.deepStrictEqual(sbagliati, [],
+    "contatori il cui testo non è il valore finale: senza JavaScript il " +
+    "visitatore legge un altro numero (o zero):\n  " + sbagliati.join("\n  "));
+});
+
 module.exports = casi;
