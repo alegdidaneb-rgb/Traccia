@@ -175,37 +175,120 @@ def riscrivi(versione: str) -> list[str]:
     return cambiate
 
 
-def pota(attesa: str, quante: int = 3) -> list[str]:
-    """Elimina le cartelle di asset più vecchie, tenendone `quante`.
+def cartelle_citate() -> set[str]:
+    """Le cartelle di asset che **qualche pagina chiede davvero**.
 
-    Perché non si possono tenere tutte: erano tredici, ognuna una copia intera
-    di CSS, JS, font e immagini. Il motivo per cui nascono — un indirizzo nuovo
-    non è in nessuna cache — vale finché una pagina vecchia può essere ancora
-    nel browser di qualcuno. Con `vercel.json` che non mette `Cache-Control`
-    sull'HTML, la coda è breve: due versioni indietro sono larghe abbastanza.
-    Oltre, la copia non serve più a nessuno e pesa nel repository.
+    È la sola domanda che conta per decidere cosa si può cancellare, e prima
+    non la si faceva: si teneva «la più recente e le due prima», per data di
+    modifica.
 
-    L'ordine è quello dei `git log`… no: è l'ordine di modifica dei file, che
-    qui è `st_mtime`. Se manca, si tiene: cancellare per errore la cartella
-    che il sito usa lo romperebbe, e vale la pena sbagliare per eccesso.
+    Perché quel criterio non poteva funzionare: `st_mtime` non dice quando una
+    cartella è stata **creata**, dice quando è stato toccato l'ultimo dei suoi
+    file. Un `git checkout`, un `git clone`, o questa stessa macchina ricreata
+    da zero, riscrivono tutti i file insieme — così una cartella morta da
+    settimane sembra appena nata e sopravvive a ogni potatura, per sempre. È
+    esattamente quello che è successo: due cartelle da 56 MB in totale, senza
+    una sola pagina che le nominasse, e la potatura che le riportava avanti.
+
+    La regola nuova non ha questo difetto: se una pagina cita l'indirizzo,
+    serve; se nessuna lo cita, non serve a nessuno. Non c'è niente da dedurre
+    e niente da indovinare.
     """
+    citate: set[str] = set()
+    for nome in PAGINE:
+        percorso = ROOT / nome
+        if not percorso.exists():
+            continue
+        testo = percorso.read_text(encoding="utf-8")
+        citate.update(re.findall(r"assets/([0-9a-f]{8})/", testo))
+    return citate
+
+
+def pota(attesa: str) -> list[str]:
+    """Elimina le cartelle di asset che nessuna pagina cita più.
+
+    Perché non si possono tenere tutte: ognuna è una copia intera di CSS, JS,
+    font e immagini (32 MB). Il motivo per cui nascono — un indirizzo nuovo non
+    è in nessuna cache — vale finché una pagina vecchia può essere ancora nel
+    browser di qualcuno. Una volta che nessuna pagina prodotta le nomina, la
+    copia non serve più a nessuno.
+
+    `attesa` è sempre da tenere: è la cartella che questa esecuzione ha appena
+    creato, e le pagine potrebbero non essere ancora state riscritte.
+
+    Il criterio è «citate o no», non «quante». Tenere per data aveva un difetto
+    che si autoalimentava: vedi `cartelle_citate`.
+    """
+    citate = cartelle_citate() | {attesa}
     cartelle = [
         d for d in (ROOT / "assets").iterdir()
         if d.is_dir() and re.fullmatch(r"[0-9a-f]{8}", d.name)
     ]
-    cartelle.sort(key=lambda d: d.stat().st_mtime, reverse=True)
-    tenere = {d.name for d in cartelle[:quante]} | {attesa}
+    # Non si pota niente quando **nessuna pagina cita niente**: senza
+    # citazioni, «cancella le cartelle non citate» vuol dire «cancella tutto»,
+    # compresa quella che il sito sta usando. Il 2026-11-25 è successo proprio
+    # questo: il workspace era stato ricreato a metà e la potatura ha rimosso
+    # dall'indice la cartella viva.
+    #
+    # La condizione è «zero citazioni», non «nessuna citazione oltre la
+    # corrente»: nel caso normale le pagine citano **solo** la versione
+    # corrente, ed è giusto così.
+    citate_dalle_pagine = cartelle_citate()
+    if not citate_dalle_pagine:
+        print("potatura saltata: nessuna pagina cita una cartella di asset, "
+              "quindi non è possibile distinguere una cartella morta da quella viva")
+        return []
+
+    # Una cartella che nessuna pagina cita si può togliere, con un'eccezione:
+    # l'**ultima** che è stata in produzione. Il motivo per cui queste cartelle
+    # esistono è che una pagina già scaricata dal browser di qualcuno continua a
+    # chiedere il vecchio indirizzo; togliendola subito, quella pagina si
+    # caricherebbe senza foglio di stile. Quindi si tiene la più recente per
+    # **data di commit**, non per data dei file: la data dei file la riscrive
+    # un `git checkout` (è il difetto che ha tenuto in vita 56 MB per mesi), la
+    # data di commit no.
+    def quando_committata(nome: str) -> int:
+        esito = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "--", f"assets/{nome}"],
+            cwd=ROOT, check=False, capture_output=True, text=True)
+        try:
+            return int((esito.stdout or "").strip() or 0)
+        except ValueError:
+            return 0
+
+    morte = [d for d in cartelle if d.name not in citate]
+    cuscinetto = ""
+    if morte:
+        cuscinetto = max(morte, key=lambda d: quando_committata(d.name)).name
+        if quando_committata(cuscinetto) == 0:
+            cuscinetto = ""     # nessuna data: non si sceglie, non si tiene
+
     potate = []
-    for d in cartelle:
-        if d.name in tenere:
+    for d in sorted(cartelle, key=lambda d: d.name):
+        if d.name in citate or d.name == cuscinetto:
             continue
         # Se la cartella è nel repository, va togliuta **da git** oltre che dal
         # disco: `rmtree` da solo la fa sparire dal disco e resta nell'indice,
         # e git la considera cancellata. Non è la stessa cosa: un test che
         # scandisce `git ls-files` cerca file che non ci sono più e si rompe
         # con un ENOENT, che non dice niente a chi lo legge.
-        subprocess.run(["git", "rm", "-r", "-q", "--cached", "--ignore-unmatch", str(d)],
-                       cwd=ROOT, check=False, capture_output=True)
+        # L'esito si controlla, e si controlla **prima** di cancellare dal
+        # disco. Il 2026-11-25 questa riga è costata una cartella viva: il
+        # workspace era stato ricreato, `pota()` ha tolto dall'indice
+        # `assets/3762b5d8/` — la cartella che il sito stava usando — e
+        # `rmtree` l'ha cancellata. Il repository non se n'è accorto perché
+        # `git rm` **esce 0 anche quando non toglie niente**
+        # (`--ignore-unmatch`), quindi `check=False` non ha mai potuto dire
+        # niente. Se git non toglie la cartella dall'indice, la cartella resta
+        # dove è: una copia in più costa 32 MB, una cartella viva cancellata
+        # costa il sito.
+        tolta = subprocess.run(
+            ["git", "rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", d.name],
+            cwd=ASSET, check=False, capture_output=True, text=True)
+        if tolta.returncode != 0:
+            print(f"attenzione: git non ha tolto {d.name} dall'indice "
+                  f"({(tolta.stderr or '').strip()}); la cartella resta sul disco")
+            continue
         shutil.rmtree(d)
         potate.append(d.name)
     return potate
