@@ -308,6 +308,14 @@
       var editBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-modifica="' +
         user.id + '" title="Correggi nome, contatti, importo e fase">Modifica</button>';
+      /* Il saldo, subito dopo «Modifica». È un pulsante suo e non un campo là
+         dentro, perché sono due gesti di peso diverso: «Modifica» corregge un
+         refuso, questo muove del denaro — e chi salva un refuso non deve
+         poter cambiare un saldo per sbaglio. La regola è la stessa del
+         dialogo IBAN, per la stessa ragione. */
+      var saldoBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" type="button" data-saldo="' +
+        user.id + '" title="Correggi il saldo registrando una rettifica">Saldo</button>';
       /* «Scrivi» sta sulla riga come «Modifica»: è il gesto che si fa mentre si
          guarda una pratica, e cercarlo in un'altra schermata vuol dire non
          farlo. Non c'è per l'account master, che non ha una campanella. */
@@ -374,7 +382,7 @@
             ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
             : "") +
         "</td>" +
-        '<td class="data-table__actions">' + editBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + saldoBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -812,6 +820,111 @@
       return api.adminImpostaIban(id, pulito, intestatario).then(function () {
         ui.toast("IBAN salvato. La verifica è da rifare.", "ok");
         return refresh();
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  /* ============================================================== il saldo ====
+     «Il saldo deve essere modificabile da parte dell'admin.»
+
+     Non è un `update`: il database ha una regola scritta dal primo giorno —
+     «nessuna funzione deve fare `update users set balance_eur`» — e qui non la
+     si aggira. Si registra un **movimento di rettifica**, quindi:
+
+       * il saldo resta la somma del libro movimenti e i conti tornano sempre;
+       * il cliente vede la rettifica nel suo estratto conto, con la causale
+         che l'analista scrive in questa finestra. Una correzione invisibile è
+         un saldo che cambia di notte: su un sito che si occupa di truffe è
+         precisamente il sospetto da non dare;
+       * resta nel registro attività con il valore di prima e quello di dopo.
+
+     Un dialogo suo e non un campo dentro «Modifica», per la stessa ragione
+     dell'IBAN: là si correggono refusi, chi salva si aspetta di non aver
+     toccato niente di irreversibile. Questo muove denaro.
+
+     Il campo è il saldo **finale**, non la differenza: chi corregge ha in mano
+     un estratto conto e ragiona su quello. La differenza la calcola il
+     database, e la mostra la conferma. */
+  function rettificaSaldo(id) {
+    var pratica = (state.allAccounts || []).filter(function (u) {
+      return String(u.id) === String(id);
+    })[0];
+    if (!pratica) {
+      ui.toast("Pratica non trovata: ricarica la pagina.", "error");
+      return;
+    }
+    var attuale = Number(pratica.balance_eur) || 0;
+    var impegnato = Number(pratica.reserved_eur) || 0;
+    var nome = pratica.name || "questo cliente";
+
+    return ui.form({
+      title: "Saldo di " + nome,
+      message: "Il saldo attuale è " + ui.money(attuale) + " (pratica " +
+               (pratica.case_ref || "—") + "). Scrivi il saldo corretto: il sistema registra " +
+               "la differenza come rettifica, con la motivazione qui sotto. La rettifica la " +
+               "vede anche il cliente nel suo estratto conto — una correzione che il cliente " +
+               "non vede è un saldo che cambia senza spiegazione." +
+               (impegnato > 0
+                 ? " Attenzione: " + ui.money(impegnato) + " sono impegnati in operazioni in " +
+                   "attesa, quindi il saldo non può scendere sotto quella cifra."
+                 : ""),
+      confirm: "Registra la rettifica",
+      campi: [
+        { nome: "saldo", etichetta: "Saldo corretto (€)", tipo: "number", valore: attuale.toFixed(2),
+          suggerimento: "Il totale che deve risultare sul conto, non la differenza." },
+        { nome: "motivo", etichetta: "Motivazione", tipo: "text", valore: "",
+          suggerimento: "Compare nel movimento del cliente e nel registro attività: " +
+                        "«storno bonifico respinto dalla banca», non «ok»." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;
+
+      var nuovo = Number(String(dati.saldo).replace(",", "."));
+      if (!isFinite(nuovo)) {
+        ui.toast("Il saldo indicato non è un numero.", "error");
+        return;
+      }
+      if (nuovo < 0) {
+        ui.toast("Il saldo non può essere negativo.", "error");
+        return;
+      }
+      var motivo = (dati.motivo || "").trim();
+      /* Otto caratteri è la soglia del database, ripetuta qui perché l'errore
+         si legga mentre si scrive invece che dopo un giro sul server */
+      if (motivo.length < 8) {
+        ui.toast("Serve una motivazione di almeno otto caratteri: è l'unica traccia di questa correzione.", "error");
+        return;
+      }
+      var differenza = Math.round((nuovo - attuale) * 100) / 100;
+      if (differenza === 0) {
+        ui.toast("Niente da correggere: il saldo è già " + ui.money(attuale) + ".", "ok");
+        return;
+      }
+
+      /* Una diminuzione si conferma due volte: è l'unico gesto di questa
+         console che toglie denaro a un cliente senza un documento dietro. */
+      var conferma = differenza < 0
+        ? ui.ask({
+            title: "Togliere " + ui.money(Math.abs(differenza)) + " a " + nome + "?",
+            message: "Il saldo passa da " + ui.money(attuale) + " a " + ui.money(nuovo) +
+                     ". Il cliente vedrà la rettifica nel suo estratto conto, con la " +
+                     "motivazione che hai scritto.",
+            confirm: "Togli " + ui.money(Math.abs(differenza)),
+            danger: true
+          })
+        : Promise.resolve(true);
+
+      return conferma.then(function (ok) {
+        if (ok === null) return;
+        return api.rettificaSaldo(id, nuovo, motivo).then(function (res) {
+          if (res && res.changed === false) {
+            ui.toast("Nessuna modifica: il saldo era già quello.", "ok");
+          } else {
+            ui.toast("Saldo aggiornato: " + ui.money(res.balance_after) +
+                     " (" + (differenza > 0 ? "+" : "−") + ui.money(Math.abs(differenza)) + ").", "ok");
+          }
+          return refresh();
+        });
       });
     }).catch(function (err) { ui.toast(err.message, "error"); });
   }
@@ -2198,6 +2311,12 @@
       var modifica = e.target.closest("[data-modifica]");
       if (modifica) {
         modificaPratica(modifica.getAttribute("data-modifica"));
+        return;
+      }
+
+      var saldo = e.target.closest("[data-saldo]");
+      if (saldo) {
+        rettificaSaldo(saldo.getAttribute("data-saldo"));
         return;
       }
 
