@@ -543,6 +543,18 @@
     salvaPratica: function (id, dati) {
       return call("admin_salva_pratica", { p_id: id, p_dati: dati });
     },
+    /* Il saldo, che `admin_salva_pratica` **non** accetta di proposito: là si
+       correggono i dati della pratica, qui si muove del denaro. Non è un
+       `update`: il database registra un movimento di rettifica, quindi il
+       saldo resta la somma del libro movimenti e il cliente vede la
+       correzione nel suo estratto conto con la causale scritta qui.
+       Il terzo argomento è il saldo **finale**, non la differenza: chi
+       corregge ha in mano l'estratto conto, e ragiona su quello. */
+    rettificaSaldo: function (id, nuovoSaldo, motivo) {
+      return call("admin_rettifica_saldo", {
+        p_id: id, p_nuovo_saldo: nuovoSaldo, p_motivo: motivo
+      });
+    },
     /* --- scrivere al cliente -------------------------------------------
        Due funzioni e non una: «a uno» e «a tutti» sono due gesti diversi, con
        due conferme diverse. Una sola funzione con l'id opzionale invita a

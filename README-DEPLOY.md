@@ -887,9 +887,43 @@ ruolo e di KYC, modifiche ai limiti. Non ci sono endpoint per cancellarla.
 
 ## Attenzione prima di andare online per davvero
 
-I numeri e i contenuti dei casi sono **dimostrativi**: 38,4 Mln €, 9,7 Mln €
-rientrati, 612 perizie, i quattro casi con i loro importi, i nomi e le
-biografie delle nove persone del team, gli indirizzi email su `traccia.it.com`.
+### Un numero è ora reale, ed è il primo
+
+Dal 2026-10-31 il sito dichiara cifre. **Una sola è vera**: i **24,0 Mln €
+arrivati ai clienti nel 2026**, forniti dal titolare con i riscontri. Le altre
+— 41,5 Mln € tracciati, 840 casi, 380 perizie, le due percentuali — sono
+segnaposto scelti su richiesta esplicita («fai delle cifre anche numeri
+qualsiasi») e **non hanno riscontri**.
+
+Il registro è `NUMERI.md`: riga per riga, cifra, dove sta, stato (VERO o
+SEGNAPOSTO), fonte. `tests/risultati.test.js` lo legge e fallisce se una cifra
+in pagina non è registrata o se uno stato è ambiguo — così un segnaposto non
+può essere promosso a dato verificato con una modifica di una parola.
+
+Da qui in avanti vale una regola sola:
+
+| Dove sta | Cosa contiene | Chi lo cambia |
+|---|---|---|
+| `tools/i18n/it.json`, chiave `24,0 Mln €` | la cifra, in quattro lingue | chi aggiorna il dato |
+| `index.html` → `.metric-band`, primo riquadro | il numero che si legge | a mano, poi `allinea_catalogo` |
+| `casi.html` → `.metric-band`, primo riquadro | lo stesso numero | a mano, idem |
+
+Il numero compare in **due** pagine e in **quattro** lingue: sei punti che
+devono dire la stessa cosa. Non si tiene allineato da solo — `tests/risultati.test.js`
+lo verifica e grida se una delle sei copie diverge, se la cifra viene
+arrotondata per eccesso o se qualcuno la rimette dentro un contatore animato
+(che in inglese stamperebbe «24,0 Mln €»).
+
+Quando il dato cambia, si cambiano **le due pagine e i quattro cataloghi**
+insieme, poi si rigenera (`build_i18n.py`) e si gira la suite. Aggiornare solo
+il catalogo non cambia la pagina: le pagine sono la fonte.
+
+### Il resto è ancora dimostrativo
+
+I **casi** (`casi.html`: 38.400 €, 12.400 €, 6.900 €, 22.000 € e i loro esiti),
+i **nomi e le biografie** delle nove persone del team, gli indirizzi email su
+`traccia.it.com`: niente di questo è reale. E, come sopra, tutti i numeri
+marcati SEGNAPOSTO in `NUMERI.md`.
 
 Sono affermazioni verificabili. Vanno sostituite con dati reali prima della
 pubblicazione, altrimenti il sito dichiara cose non vere — ed è esattamente il
@@ -898,7 +932,10 @@ tipo di contenuto per cui un servizio di questo settore perde ogni credibilità.
 Le affermazioni non verificabili sono già state tolte: il footer non cita più
 l'Albo delle Banche né una vigilanza che non esercitiamo, `note-legali.html` §7
 dice cosa siamo e cosa non siamo, e gli importi inventati (9,7 Mln €,
-38,4 Mln €, 612 perizie, 1840 casi) sono stati sostituiti da un trattino.
+38,4 Mln €, 612 perizie, 1840 casi) sono stati sostituiti da un trattino. Il
+trattino resta dove il dato non c'è — **non** dove il dato c'è: la cifra dei
+24,0 Mln € ha preso il posto di uno di quei trattini, ed è per questo che è
+l'unica cosa in questa pagina che non va più toccata.
 
 Punti da rivedere, in ordine di rischio:
 
