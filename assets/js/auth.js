@@ -102,6 +102,54 @@
     });
   }
 
+  /* ------------------------------------------------------------- reset -- */
+  /* Chi ha perso la password non è entrato e non deve entrarci per
+     reimpostarla: il codice è l'unica credenziale. Dopo il cambio si torna
+     all'accesso con un messaggio, non si entra da soli — un accesso
+     automatico qui vorrebbe dire che il codice vale come una sessione. */
+  if (resetForm) {
+    resetForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      clearError(resetError);
+      var campoMail = document.getElementById("reset-email");
+      var campoCodice = document.getElementById("reset-code");
+      var campoNuova = document.getElementById("reset-password");
+      var mail = campoMail ? campoMail.value.trim() : "";
+      var codice = campoCodice ? campoCodice.value.trim() : "";
+      var nuova = campoNuova ? campoNuova.value : "";
+
+      if (!mail) return segnalaCampo(campoMail, "Inserisci l'email della tua pratica.");
+      if (!codice) return segnalaCampo(campoCodice, "Inserisci il codice che ti ha dato l'ufficio.");
+      /* otto caratteri è la soglia del database, ripetuta qui perché l'errore
+         si legga mentre si scrive invece che dopo un giro sul server */
+      if (nuova.length < 8) {
+        return segnalaCampo(campoNuova, "La nuova password deve avere almeno 8 caratteri.");
+      }
+
+      var button = resetForm.querySelector('button[type="submit"]');
+      busy(button, true);
+
+      api.resetConCodice(mail, codice, nuova)
+        .then(function () {
+          resetForm.reset();
+          if (campoMail) campoMail.value = mail;
+          setMode("login");
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", location.pathname);
+          }
+          showError(loginError,
+            "Password impostata. Entra con la password che hai appena scelto.");
+          if (loginError) loginError.style.color = "var(--accent)";
+          var campoPassword = document.getElementById("password");
+          if (campoPassword) campoPassword.focus();
+        })
+        .catch(function (err) {
+          showError(resetError, err.message || "Non è stato possibile impostare la password.");
+          busy(button, false);
+        });
+    });
+  }
+
   /* ---------------------------------------------------------- register -- */
   /* Richiesta di informazioni: nome, cognome, email, telefono, importo.
      I controlli stanno qui **e** nel database, non per sfiducia ma perché
@@ -285,9 +333,18 @@
   }
   var schede = Array.prototype.slice.call(document.querySelectorAll("[data-auth-tab]"));
 
+  var resetForm = document.getElementById("reset-form");
+  /* l'id resta sulla riga: è la stessa ancora che porta a `#password`, e
+     cercarla per id funziona anche dove `querySelector` non c'è (i test
+     caricano questo file con un DOM minimo, senza selettori) */
+  var aiutoPassword = document.getElementById("aiuto-password");
+  var apriPassword = document.getElementById("reset-open");
+  var resetError = resetForm && resetForm.querySelector("[data-form-error]");
+
   function setMode(mode) {
     var registrazione = mode === "register";
-    if (loginForm) loginForm.hidden = registrazione;
+    var recupero = mode === "reset";
+    if (loginForm) loginForm.hidden = registrazione || recupero;
 
     /* Un modulo solo. Fino al 2026-11-12 qui c'erano due porte: la via veloce
        (nome e numero) e il modulo completo dietro il link «Preferisco scrivere
@@ -296,10 +353,14 @@
        non deve scoprire che il modulo serio era nascosto sotto quello corto.
        La scheda della segnalazione mostra il modulo completo, e basta. */
     if (registerForm) registerForm.hidden = !registrazione;
+    if (resetForm) resetForm.hidden = !recupero;
     /* la frase «non hai un account» appartiene all'accesso: sulla scheda della
        segnalazione sarebbe una porta che dà sulla stanza in cui sei già */
     var senzaAccount = document.getElementById("auth-no-account");
-    if (senzaAccount) senzaAccount.hidden = registrazione;
+    if (senzaAccount) senzaAccount.hidden = registrazione || recupero;
+    /* «Hai perso la password?» è l'aiuto che porta qui: dentro il pannello
+       sarebbe una porta che dà sulla stanza in cui sei già. */
+    if (aiutoPassword) aiutoPassword.hidden = registrazione || recupero;
     schede.forEach(function (scheda) {
       scheda.setAttribute("aria-selected",
         scheda.getAttribute("data-auth-tab") === mode ? "true" : "false");
@@ -309,6 +370,10 @@
       titleEl.textContent = testo("titoloSegnalazione", "Segnala il tuo caso");
       if (subtitleEl) subtitleEl.textContent = testo("sottotitoloSegnalazione",
         "Bastano pochi dati. Ti ricontattiamo noi, senza password da scegliere.");
+    } else if (recupero) {
+      titleEl.textContent = "Password dimenticata";
+      if (subtitleEl) subtitleEl.textContent =
+        "Con il codice che ti ha dato l'ufficio scegli la password che vuoi.";
     } else {
       titleEl.textContent = testo("titoloAccesso", "Accedi");
       if (subtitleEl) subtitleEl.textContent = testo("sottotitoloAccesso",
@@ -321,7 +386,10 @@
      clic, perché il link può essere premuto da un'altra pagina — in quel caso
      il browser non emette nessun clic qui, cambia solo l'indirizzo. */
   function modalitaDaIndirizzo() {
-    return location.hash.replace(/^#/, "") === "registrati" ? "register" : null;
+    var ancora = location.hash.replace(/^#/, "");
+    if (ancora === "registrati") return "register";
+    if (ancora === "password") return "reset";
+    return null;
   }
 
   function applicaIndirizzo(mettiAFuoco) {
@@ -343,13 +411,43 @@
          apre la scheda giusta, `/login.html` quella dell'accesso */
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, "",
-          location.pathname + (modo === "register" ? "#registrati" : ""));
+          location.pathname + (modo === "register" ? "#registrati"
+            : modo === "reset" ? "#password" : ""));
       }
       setMode(modo);
-      var primo = document.getElementById(modo === "register" ? "reg-first-name" : "email");
+      var primo = document.getElementById(modo === "register" ? "reg-first-name"
+        : modo === "reset" ? "reset-email" : "email");
       if (primo) primo.focus();
     });
   });
+
+  /* «Usa il codice dell'ufficio» non è una scheda, è un aiuto: apre il
+     pannello del codice e lascia l'indirizzo `#password` da incollare in una
+     chat, che è come questo link arriva davvero al cliente. */
+  if (apriPassword) {
+    apriPassword.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", location.pathname + "#password");
+      }
+      setMode("reset");
+      var primo = document.getElementById("reset-email");
+      if (primo) primo.focus();
+    });
+  }
+
+  var tornaAccesso = document.getElementById("reset-back");
+  if (tornaAccesso) {
+    tornaAccesso.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", location.pathname);
+      }
+      setMode("login");
+      var campo = document.getElementById("email");
+      if (campo) campo.focus();
+    });
+  }
 
   /* il tasto indietro e i link `#registrati` premuti da un'altra pagina */
   window.addEventListener("hashchange", function () { applicaIndirizzo(true); });
