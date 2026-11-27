@@ -157,6 +157,13 @@
     isDemo: function () { return false; },
 
     /* --- autenticazione --- */
+    /* Reimpostare la password con il codice monouso: si usa senza essere
+       entrati, quindi non ha un token. Il codice è la credenziale. */
+    resetConCodice: function (email, codice, nuova) {
+      return rpc("reset_password_con_codice", {
+        p_email: email, p_code: codice, p_new: nuova
+      });
+    },
     login: function (email, password) {
       return rpc("auth_login", { p_email: email, p_password: password })
         .then(function (data) {
@@ -555,6 +562,19 @@
         p_id: id, p_nuovo_saldo: nuovoSaldo, p_motivo: motivo
       });
     },
+    /* --- password ------------------------------------------------------
+       Due strade, e non è ridondanza. `resetPassword` scrive una password che
+       l'amministratore sceglie: serve quando si parla al telefono e si vuole
+       che il cliente entri subito. `passwordCode` genera un codice monouso e
+       non tocca niente finché il cliente non lo usa: è la strada normale,
+       perché una password comunicata a voce la conoscono in due.
+       Nessuna delle due legge la password esistente: è bcrypt, non si legge. */
+    resetPassword: function (id, password) {
+      return call("admin_reimposta_password", {
+        p_id: id, p_password: password || null
+      });
+    },
+    passwordCode: function (id) { return call("admin_codice_password", { p_id: id }); },
     /* --- scrivere al cliente -------------------------------------------
        Due funzioni e non una: «a uno» e «a tutti» sono due gesti diversi, con
        due conferme diverse. Una sola funzione con l'id opzionale invita a

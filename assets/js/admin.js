@@ -323,6 +323,13 @@
         '<button class="btn btn--ghost btn--sm" type="button" data-scrivi="' +
         user.id + '" data-scrivi-nome="' + ui.esc(user.name) +
         '" title="Manda un messaggio nella campanella del cliente">Scrivi</button>';
+      /* «Password» accanto a «Saldo»: sono i due gesti che si fanno al
+         telefono con un cliente che non riesce a entrare. Prima non esistevano
+         e si finiva a scrivere nel database a mano — che è il modo in cui una
+         password finisce in una chat. */
+      var pwdBtn = user.is_master ? "" :
+        '<button class="btn btn--ghost btn--sm" type="button" data-password="' +
+        user.id + '" title="Reimposta la password o genera un codice monouso">Password</button>';
       var killBtn = user.is_master ? "" :
         '<button class="btn btn--ghost btn--sm" type="button" data-kill="' +
         user.id + '" title="Chiudi tutte le sessioni di questo account">Esci</button>';
@@ -382,7 +389,7 @@
             ? '<div class="xs muted">+ ' + ui.money(user.holdings_value) + " cripto</div>"
             : "") +
         "</td>" +
-        '<td class="data-table__actions">' + editBtn + saldoBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
+        '<td class="data-table__actions">' + editBtn + saldoBtn + pwdBtn + scriviBtn + killBtn + ruoloBtn + openBtn + "</td>" +
         "</tr>";
     }).join("");
   }
@@ -845,6 +852,135 @@
      Il campo è il saldo **finale**, non la differenza: chi corregge ha in mano
      un estratto conto e ragiona su quello. La differenza la calcola il
      database, e la mostra la conferma. */
+  /* -------------------------------------------------------- password -- */
+  /* Due strade, nello stesso dialogo, perché la domanda che arriva al
+     telefono è sempre la stessa: «non riesco a entrare».
+
+     La strada proposta per prima è il **codice monouso**: il cliente sceglie
+     la password da sé, e chi l'ha generato non la conosce. La seconda è
+     scrivere una password e dettarla — più veloce, ma da quel momento quella
+     password la conoscono in due, e resta valida finché qualcuno non la
+     cambia.
+
+     La scelta è un menù e non due pulsanti, per una ragione precisa: con due
+     pulsanti la password va scritta **prima** di sapere che il campo verrà
+     letto, e chi lascia il campo vuoto non scopre cosa succederà finché non è
+     successo. Così si sceglie l'intento, e il campo dice quando serve. */
+  var MODI_PASSWORD = [
+    { valore: "codice",   testo: "Genera un codice monouso (consigliato)" },
+    { valore: "scritta",  testo: "Scrivo io la password" }
+  ];
+
+  function cambiaPassword(id) {
+    var pratica = (state.allAccounts || []).filter(function (u) {
+      return String(u.id) === String(id);
+    })[0];
+    if (!pratica) {
+      ui.toast("Pratica non trovata: ricarica la pagina.", "error");
+      return;
+    }
+    var nome = pratica.name || "questo cliente";
+    var email = pratica.email || "";
+
+    return ui.form({
+      title: "Password di " + nome,
+      message: "Il cliente non riesce a entrare? Un codice monouso lo consegni e la password " +
+               "la sceglie lui: il codice vale un'ora e smette di funzionare appena viene " +
+               "usato, e tu non vedi mai la password. Se scrivi tu la password, invece, da " +
+               "quel momento la conosci anche tu. In entrambi i casi chiudiamo le sessioni " +
+               "aperte di questo account: se qualcuno era dentro, esce.",
+      confirm: "Vai",
+      campi: [
+        { nome: "modo", etichetta: "Come", tipo: "select", valore: "codice",
+          opzioni: MODI_PASSWORD },
+        { nome: "password", etichetta: "La nuova password", tipo: "text", valore: "",
+          suggerimento: "Solo se hai scelto «Scrivo io la password». Minimo 8 caratteri." }
+      ]
+    }).then(function (dati) {
+      if (dati === null) return;
+      var scelta = (dati.password || "").trim();
+
+      /* Il codice monouso non tocca la password: la cambia il cliente. Qui non
+         c'è niente da confermare, perché non si sta decidendo niente per lui. */
+      if (dati.modo !== "scritta") {
+        return api.passwordCode(id).then(function (res) {
+          mostraCredenziali({
+            titolo: "Codice per " + nome,
+            riepilogo: email + " · vale un'ora · si usa una volta sola",
+            email: res.email || email,
+            codice: res.code,
+            nota: "Consegna questo codice al cliente: entra da «Password dimenticata» nella " +
+                  "pagina di accesso, lo scrive insieme alla password che vuole, e da quel " +
+                  "momento il codice non funziona più. Non è una password — chi lo legge non " +
+                  "può entrare senza sceglierne una."
+          });
+        }).catch(function (err) { ui.toast(err.message, "error"); });
+      }
+
+      if (scelta.length < 8) {
+        ui.toast("La password deve avere almeno 8 caratteri.", "error");
+        return;
+      }
+
+      /* Una password scritta a mano si conferma: da quel momento la conoscono
+         in due, e chi la riceve non lo sa finché non glielo si dice. */
+      return ui.ask({
+        title: "Impostare una password scritta da te?",
+        message: "Da adesso la password di " + nome + " la conosci anche tu, e resta quella " +
+                 "finché il cliente non la cambia. Se puoi parlargli, il codice monouso è " +
+                 "meglio: la password la sceglie lui e tu non la vedi.",
+        confirm: "Imposta la password",
+        cancel: "Usa un codice"
+      }).then(function (ok) {
+        /* `ui.ask` risolve con null se si annulla, con "" se si conferma: non
+           c'è un prompt, quindi il valore di conferma è la stringa vuota. */
+        if (ok === null) return;
+        return api.resetPassword(id, scelta).then(function (res) {
+          mostraCredenziali({
+            titolo: "Password impostata",
+            riepilogo: nome + " · " + ((res && res.sessions_closed) || 0) + " sessioni chiuse",
+            email: res.email || email,
+            password: res.password,
+            nota: "Comunica la password al cliente ora: non viene mostrata di nuovo, e nel " +
+                  "database ne resta solo l'impronta. Digli di cambiarla dal suo profilo " +
+                  "appena entra."
+          });
+        }).catch(function (err) { ui.toast(err.message, "error"); });
+      });
+    }).catch(function (err) { ui.toast(err.message, "error"); });
+  }
+
+  /* Il pannello delle credenziali è lo stesso della creazione account: stesse
+     righe, stessi pulsanti, una sola cosa da imparare. Le righe che non
+     servono si nascondono — etichetta compresa, o resta un «Password» con
+     sotto il vuoto da interpretare. */
+  function mostraCredenziali(d) {
+    lastCredentials = { email: d.email, password: d.password, code: d.codice, iban: d.iban };
+    document.querySelector("[data-na-title]").textContent = d.titolo || "Account creato";
+    document.querySelector("[data-na-summary]").textContent = d.riepilogo || "";
+    document.querySelector("[data-na-email]").textContent = d.email || "—";
+
+    function riga(etichetta, cella, valore) {
+      var e = document.querySelector(etichetta);
+      var c = document.querySelector(cella);
+      if (!e || !c) return;
+      e.hidden = !valore;
+      c.hidden = !valore;
+      c.textContent = valore || "";
+    }
+    riga("[data-na-password-row]", "[data-na-password]", d.password);
+    riga("[data-na-iban-row]", "[data-na-iban]", d.iban);
+    riga("[data-na-code-row]", "[data-na-code]", d.codice);
+
+    document.querySelector("[data-na-generated-note]").textContent = d.nota || "";
+    /* il modulo resta nascosto: qui si è arrivati da un'altra strada */
+    newForm.hidden = true;
+    naResult.hidden = false;
+    newModal.hidden = false;
+    ui.toast(d.password ? "Password impostata." : "Codice generato.", "ok");
+    return refresh();
+  }
+
   function rettificaSaldo(id) {
     var pratica = (state.allAccounts || []).filter(function (u) {
       return String(u.id) === String(id);
@@ -2141,6 +2277,20 @@
 
   function openNewAccount() {
     newForm.reset();
+    /* Le righe del riepilogo si nascondono quando non servono (il codice non è
+       una password, l'IBAN può mancare). Il pannello è lo stesso, quindi prima
+       di riaprirlo vanno rimesse tutte in vista: altrimenti si apre una
+       «nuova pratica» con la riga della password invisibile. */
+    ["na-password-row", "na-iban-row", "na-code-row"].forEach(function (k) {
+      var nodo = document.querySelector("[data-" + k + "]");
+      if (nodo) nodo.hidden = false;
+    });
+    ["na-password", "na-iban", "na-code"].forEach(function (k) {
+      var nodo = document.querySelector("[data-" + k + "]");
+      if (nodo) { nodo.hidden = false; nodo.textContent = ""; }
+    });
+    document.querySelector("[data-na-title]").textContent = "Account creato";
+    document.querySelector("[data-na-generated-note]").textContent = "";
     document.getElementById("na-kyc").value = "2";
     document.getElementById("na-status").value = "active";
     document.getElementById("na-role").value = "user";
@@ -2228,11 +2378,19 @@
 
   document.querySelector("[data-na-copy]").addEventListener("click", function () {
     if (!lastCredentials) return;
-    var text = "traccia — credenziali di accesso\n" +
-      "Email: " + lastCredentials.email + "\n" +
-      "Password: " + lastCredentials.password + "\n" +
-      (lastCredentials.iban ? "IBAN: " + lastCredentials.iban + "\n" : "") +
-      "Accedi da: " + location.origin + "/login.html";
+    /* Il codice non è una password, e il messaggio non deve far credere il
+       contrario: chi lo riceve deve sapere che dovrà sceglierne una. */
+    var text = lastCredentials.code
+      ? "traccia — codice per reimpostare la password\n" +
+        "Email: " + lastCredentials.email + "\n" +
+        "Codice: " + lastCredentials.code + "\n" +
+        "Vale un'ora e si usa una volta sola. Vai su " + location.origin + "/login.html, " +
+        "scegli «Password dimenticata» e scegli la password che vuoi."
+      : "traccia — credenziali di accesso\n" +
+        "Email: " + lastCredentials.email + "\n" +
+        "Password: " + lastCredentials.password + "\n" +
+        (lastCredentials.iban ? "IBAN: " + lastCredentials.iban + "\n" : "") +
+        "Accedi da: " + location.origin + "/login.html";
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text)
         .then(function () { ui.toast("Credenziali copiate.", "ok"); })
@@ -2317,6 +2475,12 @@
       var saldo = e.target.closest("[data-saldo]");
       if (saldo) {
         rettificaSaldo(saldo.getAttribute("data-saldo"));
+        return;
+      }
+
+      var pwd = e.target.closest("[data-password]");
+      if (pwd) {
+        cambiaPassword(pwd.getAttribute("data-password"));
         return;
       }
 
